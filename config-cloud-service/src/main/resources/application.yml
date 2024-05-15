@@ -10,4 +10,5 @@ spring:
      server:
        git:
          uri: https://github.com/broxzx/TaskManager-Microservices
+         searchPaths: config
          default-label: main
