@@ -1,1 +1,10 @@
-spring.application.name=config-cloud-service
+spring:
+  application:
+    name: config-cloud-service
+
+  cloud:
+    config:
+     server:
+       git:
+         uri: https://github.com/broxzx/TaskManager-Microservices
+         default-label: main
