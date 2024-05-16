@@ -24,8 +24,7 @@ spring:
             scope:
               - openid
               - microprofile-jwt
-              - view_catalogue
-              - edit_catalogue
+              - metrics
         provider:
           keycloak:
             issuer-uri: http://localhost:8180/realms/task-manager-microservices
