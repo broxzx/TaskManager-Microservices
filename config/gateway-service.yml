@@ -11,6 +11,25 @@ spring:
       mvc:
         routes:
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8180/realms/task-manager-microservices/protocol/openid-connect/certs
+      client:
+        registration:
+          keycloak:
+            client-id: api-gateway-service
+            client-secret: agp7Tku1bRun9w295R66D7gxJ1L61vPe
+            scope:
+              - openid
+              - microprofile-jwt
+              - view_catalogue
+              - edit_catalogue
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8180/realms/task-manager-microservices
+            user-name-attribute: preferred_username
 eureka:
   client:
     service-url:
