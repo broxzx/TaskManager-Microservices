@@ -1,5 +1,39 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: gateway-service
-  config:
-    import: "optional:configserver:http://localhost:8888"
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+      mvc:
+        routes:
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8180/realms/task-manager-microservices/protocol/openid-connect/certs
+      client:
+        registration:
+          keycloak:
+            client-id: api-gateway-service
+            client-secret: agp7Tku1bRun9w295R66D7gxJ1L61vPe
+            scope:
+              - openid
+              - microprofile-jwt
+              - metrics
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8180/realms/task-manager-microservices
+            user-name-attribute: preferred_username
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
