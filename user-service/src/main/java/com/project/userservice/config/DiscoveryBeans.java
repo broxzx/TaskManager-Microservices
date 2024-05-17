@@ -1,5 +1,6 @@
 package com.project.userservice.config;
 
+import com.project.userservice.exception.AuthorizationFailed;
 import org.apache.http.HttpHeaders;
 import org.springframework.cloud.netflix.eureka.RestTemplateTimeoutProperties;
 import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
@@ -12,7 +13,6 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
 import java.util.List;
-import java.util.Objects;
 
 @Configuration
 public class DiscoveryBeans {
@@ -40,7 +40,7 @@ public class DiscoveryBeans {
                             httpRequest.setHeader(HttpHeaders.AUTHORIZATION,
                                     "Bearer %s".formatted(keycloak.getAccessToken().getTokenValue()));
                         } else {
-                            throw new RuntimeException("Authorization failed for client keycloak");
+                            throw new AuthorizationFailed("Authorization failed for client keycloak");
                         }
                     }
                 })));
