@@ -14,6 +14,19 @@ spring:
     password: admin
     driver-class-name: org.postgresql.Driver
 
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+    user: admin
+    password: admin
+    schemas:
+      - public
+
+
   security:
     oauth2:
       client:
