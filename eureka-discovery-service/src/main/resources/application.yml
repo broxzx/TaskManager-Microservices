@@ -16,11 +16,10 @@ spring:
       client:
         registration:
           keycloak:
-            client-id: api-gateway-service
-            client-secret: agp7Tku1bRun9w295R66D7gxJ1L61vPe
+            client-id: eureka-discovery-server
+            client-secret: yE95fpOusvXrQyXjfsPWagqHy0YgfMy3
             scope:
               - openid
-              - microprofile-jwt
         provider:
           keycloak:
             issuer-uri: http://localhost:8180/realms/task-manager-microservices
