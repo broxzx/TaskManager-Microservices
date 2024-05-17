@@ -34,6 +34,10 @@ spring:
             user-name-attribute: preferred_username
 
 eureka:
+  instance:
+    lease-expiration-duration-in-seconds: 3
+    lease-renewal-interval-in-seconds: 3
   client:
+    registry-fetch-interval-seconds: 3
     service-url:
       defaultZone: http://localhost:8761/eureka

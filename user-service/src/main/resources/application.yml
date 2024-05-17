@@ -1,3 +1,45 @@
+server:
+  port: 0
+
 spring:
   application:
     name: user-service
+
+  config:
+    import: "optional:configserver:http://localhost:8888"
+
+  datasource:
+    url: jdbc:postgresql://localhost:5421/user-db-service
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8180/realms/task-manager-microservices
+            user-name-attribute: preferred_username
+        registration:
+          keycloak:
+            client-id: user-service
+            client-secret: oH3PoO7VxRIjxuSX4cxBMHesUiieZ0E7
+            scope:
+              - openid
+              - microprofile-jwt
+              - metrics
+            authorization-grant-type: client_credentials
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8180/realms/task-manager-microservices/protocol/openid-connect/certs
+
+
+eureka:
+  instance:
+    lease-expiration-duration-in-seconds: 3
+    lease-renewal-interval-in-seconds: 3
+  client:
+    registry-fetch-interval-seconds: 3
+    service-url:
+      defaultZone: http://localhost:8761/eureka

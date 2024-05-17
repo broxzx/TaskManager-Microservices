@@ -20,6 +20,7 @@ spring:
             client-secret: yE95fpOusvXrQyXjfsPWagqHy0YgfMy3
             scope:
               - openid
+              - microprofile-jwt
         provider:
           keycloak:
             issuer-uri: http://localhost:8180/realms/task-manager-microservices

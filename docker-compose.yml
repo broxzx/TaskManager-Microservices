@@ -45,9 +45,24 @@ services:
     volumes:
       - ./keycloak/:/opt/keycloak/data/import/
 
+  postgres-user-service:
+    <<: *default-backend-configuration
+    container_name: postgres-user-service
+    image: postgres:15
+    ports:
+      - "5421:5432"
+    volumes:
+      - user-db-service:/data/db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: user-db-service
+
+
 networks:
   backend:
     driver: bridge
 
 volumes:
   user-task-manager-db:
+  user-db-service:
