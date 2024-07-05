@@ -24,14 +24,27 @@ public class SecurityBeans {
                 .build();
     }
 
+
     @Bean
     @Priority(1)
-    public SecurityFilterChain mainSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain gatewaySecurityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+                        .requestMatchers("/users/login").permitAll()
                         .anyRequest().authenticated())
-                .oauth2Login(Customizer.withDefaults())
-                .oauth2Client(Customizer.withDefaults())
+                .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults()))
                 .build();
     }
+
+//    @Bean
+//    @Priority(1)
+//    public SecurityFilterChain mainSecurityFilterChain(HttpSecurity http) throws Exception {
+//        return http
+//                .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+//                        .anyRequest().authenticated())
+//                .oauth2Login(Customizer.withDefaults())
+//                .oauth2Client(Customizer.withDefaults())
+//                .build();
+//    }
 }

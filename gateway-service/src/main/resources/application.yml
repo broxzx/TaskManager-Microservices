@@ -12,17 +12,22 @@ spring:
           lowerCaseServiceId: true
       mvc:
         routes:
+          - id: user-service
+            uri: lb://user-service
+            predicates:
+              - Path=/users/**
 
   security:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://localhost:8180/realms/task-manager-microservices/protocol/openid-connect/certs
+          jwk-set-uri: http://localhost:8280/realms/task-manager-microservices/protocol/openid-connect/certs
       client:
         registration:
           keycloak:
+            redirect-uri: http://localhost:8080/login/oauth2/code/keycloak
             client-id: api-gateway-service
-            client-secret: agp7Tku1bRun9w295R66D7gxJ1L61vPe
+            client-secret: odgCNxT02jno2rWlwTZVidLlrdoYf6R2
             scope:
               - openid
               - microprofile-jwt
@@ -30,14 +35,14 @@ spring:
             authorization-grant-type: client_credentials
         provider:
           keycloak:
-            issuer-uri: http://localhost:8180/realms/task-manager-microservices
+            issuer-uri: http://localhost:8280/realms/task-manager-microservices
             user-name-attribute: preferred_username
 
 eureka:
   instance:
-    lease-expiration-duration-in-seconds: 3
-    lease-renewal-interval-in-seconds: 3
+    lease-expiration-duration-in-seconds: 10
+    lease-renewal-interval-in-seconds: 10
   client:
-    registry-fetch-interval-seconds: 3
+    registry-fetch-interval-seconds: 10
     service-url:
       defaultZone: http://localhost:8761/eureka

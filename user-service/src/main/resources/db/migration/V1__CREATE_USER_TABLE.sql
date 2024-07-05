@@ -2,6 +2,7 @@ create table users
 (
     id             BIGSERIAL PRIMARY KEY,
     username       varchar(64) unique  not null,
+    password       text                not null,
     email          varchar(128) unique not null,
     email_verified boolean             not null,
     is_deleted     boolean             not null

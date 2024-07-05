@@ -1,7 +1,6 @@
-package com.project.userservice.dto;
+package com.project.userservice.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 
 @Data

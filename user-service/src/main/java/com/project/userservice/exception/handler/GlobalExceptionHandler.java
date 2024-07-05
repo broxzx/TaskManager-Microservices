@@ -1,6 +1,6 @@
 package com.project.userservice.exception.handler;
 
-import com.project.userservice.dto.ErrorDto;
+import com.project.userservice.model.ErrorDto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;

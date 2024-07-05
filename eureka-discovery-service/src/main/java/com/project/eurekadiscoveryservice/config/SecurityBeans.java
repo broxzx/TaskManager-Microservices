@@ -1,6 +1,8 @@
 package com.project.eurekadiscoveryservice.config;
 
+import com.project.eurekadiscoveryservice.security.AuthorizationTokenConverter;
 import jakarta.annotation.Priority;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -21,7 +23,10 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityBeans {
+
+    private final AuthorizationTokenConverter authorizationTokenConverter;
 
     @Bean
     @Priority(0)
@@ -46,6 +51,7 @@ public class SecurityBeans {
                         .anyRequest().hasAnyRole("ADMIN", "MANAGER"))
                 .oauth2Client(Customizer.withDefaults())
                 .oauth2Login(Customizer.withDefaults())
+                .oauth2ResourceServer(jwt -> jwt.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(authorizationTokenConverter)))
                 .build();
     }
 
