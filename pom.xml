@@ -20,6 +20,7 @@
         <module>eureka-discovery-service</module>
         <module>config-cloud-service</module>
         <module>gateway-service</module>
+        <module>user-service</module>
     </modules>
 
     <properties>

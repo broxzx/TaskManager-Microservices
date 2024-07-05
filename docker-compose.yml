@@ -30,20 +30,25 @@ services:
       retries: 5
     command: [ "start-dev", "--import-realm" ]
     ports:
-      - "8180:8080"
+      - "8280:8080"
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://user-keycloak-db/user-db
-      KC_DB_USERNAME: admin
-      KC_DB_PASSWORD: admin
-      KC_HEALTH_ENABLED: true
-      KC_METRICS_ENABLED: true
-    depends_on:
-      - user-keycloak-db
+      KC_DB_NAME:
     volumes:
       - ./keycloak/:/opt/keycloak/data/import/
+
+  mongo-user-service:
+    <<: *default-backend-configuration
+    container_name: mongo-user-service
+    image: mongo:7-jammy
+    ports:
+      - "27016:27017"
+    volumes:
+      - user-db-service:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: user-db
+
 
 networks:
   backend:
@@ -51,3 +56,4 @@ networks:
 
 volumes:
   user-task-manager-db:
+  user-db-service:

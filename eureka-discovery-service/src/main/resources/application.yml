@@ -12,17 +12,19 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://localhost:8180/realms/task-manager-microservices/protocol/openid-connect/certs
+          jwk-set-uri: http://localhost:8280/realms/task-manager-microservices/protocol/openid-connect/certs
       client:
         registration:
           keycloak:
+            redirect-uri: http://localhost:8761/login/oauth2/code/keycloak
             client-id: eureka-discovery-server
-            client-secret: yE95fpOusvXrQyXjfsPWagqHy0YgfMy3
+            client-secret: aHkpku6h1JuGaHpGjofzXh1hzgPU1trP
             scope:
               - openid
+              - microprofile-jwt
         provider:
           keycloak:
-            issuer-uri: http://localhost:8180/realms/task-manager-microservices
+            issuer-uri: http://localhost:8280/realms/task-manager-microservices
             user-name-attribute: preferred_username
 
 eureka:
@@ -32,8 +34,8 @@ eureka:
     fetch-registry: false
     register-with-eureka: false
   instance:
-    lease-renewal-interval-in-seconds: 3
-    lease-expiration-duration-in-seconds: 3
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 10
 
 management:
   endpoints:
