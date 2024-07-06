@@ -4,6 +4,7 @@ import com.project.userservice.exception.EntityNotFoundException;
 import com.project.userservice.user.data.UserEntity;
 import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.user.data.enums.Roles;
+import com.project.userservice.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final JwtUtils jwtUtils;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public List<UserEntity> getAllActiveUsers() {
@@ -37,13 +39,24 @@ public class UserService {
         return userRepository.save(userEntityToSave);
     }
 
-    public UserEntity updateUserEntity(String userId, UserRequest userRequest) {
-        UserEntity userEntityToAlter = getUserEntityById(userId);
+    public UserEntity updateUserEntity(String authorizationToken, UserRequest userRequest) {
+        String usernameByToken = jwtUtils.getUsernameByToken(jwtUtils.extractTokenFromHeader(authorizationToken));
+        UserEntity userEntityToAlter = userRepository.findByUsername(usernameByToken)
+                .orElseThrow(() -> new EntityNotFoundException("user with id '%s' is not found".formatted(usernameByToken)));
 
-        userEntityToAlter.setUsername(userRequest.getUsername());
-        userEntityToAlter.setEmail(userRequest.getEmail());
+        updateUserEntityFields(userEntityToAlter, userRequest);
 
         return userRepository.save(userEntityToAlter);
+    }
+
+    private void updateUserEntityFields(UserEntity user, UserRequest userRequest) {
+        if (userRequest.getUsername() != null) {
+            user.setUsername(user.getUsername());
+        }
+
+        if (userRequest.getEmail() != null) {
+            user.setEmail(userRequest.getEmail());
+        }
     }
 
     public void changePassword(String userId, String password) {
@@ -52,5 +65,4 @@ public class UserService {
 
         userRepository.save(userEntityToChangePassword);
     }
-
 }
