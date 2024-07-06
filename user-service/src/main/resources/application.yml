@@ -50,6 +50,8 @@ spring:
           jwk-set-uri: http://localhost:8280/realms/task-manager-microservices/protocol/openid-connect/certs
 
 keycloak:
+  serverUrl: http://localhost:8280
+  realm: task-manager-microservices
   token:
     client_id: api-gateway-service
     client_secret: odgCNxT02jno2rWlwTZVidLlrdoYf6R2
@@ -63,3 +65,10 @@ eureka:
     registry-fetch-interval-seconds: 10
     service-url:
       defaultZone: http://localhost:8761/eureka
+
+logging:
+  level:
+    org.springframework.security.web.FilterChainProxy: DEBUG
+    org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
+    org.springframework.security.access.vote.AffirmativeBased: DEBUG
+    org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
