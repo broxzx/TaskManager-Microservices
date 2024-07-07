@@ -21,6 +21,7 @@
         <module>config-cloud-service</module>
         <module>gateway-service</module>
         <module>user-service</module>
+        <module>project-service</module>
     </modules>
 
     <properties>

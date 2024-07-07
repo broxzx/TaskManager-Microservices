@@ -1,9 +1,8 @@
-package com.project.userservice.config;
+package com.project.projectservice.config;
 
-import jakarta.annotation.Priority;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -14,8 +13,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityBeans {
 
     @Bean
-    @Priority(0)
-    public SecurityFilterChain metricsFilterChain(HttpSecurity http) throws Exception {
+    @Order(0)
+    public SecurityFilterChain metricsSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .securityMatcher("/actuator/**")
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
@@ -28,17 +27,15 @@ public class SecurityBeans {
 
 
     @Bean
-    @Priority(1)
-    public SecurityFilterChain gatewaySecurityFilterChain(HttpSecurity http) throws Exception {
+    @Order(1)
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .securityMatcher("/projects/**")
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-                        .requestMatchers("/users/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/users/refreshToken").permitAll()
-                )
-                .csrf(AbstractHttpConfigurer::disable)
+                        .anyRequest().authenticated())
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .oauth2ResourceServer(resourceServer -> resourceServer.jwt(Customizer.withDefaults()))
                 .build();
     }
 

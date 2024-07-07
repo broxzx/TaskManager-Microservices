@@ -1,11 +1,14 @@
 package com.project.userservice.exception.handler;
 
+import com.project.userservice.exception.AuthorizationFailed;
+import com.project.userservice.exception.EntityNotFoundException;
+import com.project.userservice.exception.TokenInvalid;
+import com.project.userservice.exception.UserAlreadyExists;
 import com.project.userservice.model.ErrorDto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -39,16 +42,25 @@ public class GlobalExceptionHandler {
                 .body(problemDetail);
     }
 
-    @ExceptionHandler(value = {AuthorizationServiceException.class})
-    public ResponseEntity<ProblemDetail> handleAuthorizationServiceException(AuthorizationServiceException ex, HttpServletRequest request) {
+    @ExceptionHandler(value = {UserAlreadyExists.class, AuthorizationFailed.class, TokenInvalid.class})
+    public ResponseEntity<ProblemDetail> handleCommonBadRequestExceptions(RuntimeException ex, HttpServletRequest request) {
+        return buildExceptionHandling(ex, request, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {EntityNotFoundException.class})
+    public ResponseEntity<ProblemDetail> handleCommonNotfoundException(RuntimeException ex, HttpServletRequest request) {
+        return buildExceptionHandling(ex, request, HttpStatus.NOT_FOUND);
+    }
+
+    private static ResponseEntity<ProblemDetail> buildExceptionHandling(RuntimeException ex, HttpServletRequest request, HttpStatus httpStatus) {
         ProblemDetail problemDetail = ProblemDetail
-                .forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+                .forStatusAndDetail(httpStatus, ex.getMessage());
 
         problemDetail.setProperty(OCCURRED, LocalDateTime.now());
         problemDetail.setProperty("path", request.getRequestURI());
 
         return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
+                .status(httpStatus)
                 .body(problemDetail);
     }
 }

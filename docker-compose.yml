@@ -51,6 +51,16 @@ services:
     environment:
       MONGO_INITDB_DATABASE: user-db
 
+  mongo-projects-service:
+    <<: *default-backend-configuration
+    container_name: mongo-projects-service
+    image: mongo:7-jammy
+    ports:
+      - "27015:27017"
+    environment:
+      MONGO_INITDB_DATABASE: projects-db
+    volumes:
+      - projects-db-service:/data/db
 
 networks:
   backend:
@@ -59,3 +69,4 @@ networks:
 volumes:
   user-task-manager-db:
   user-db-service:
+  projects-db-service:

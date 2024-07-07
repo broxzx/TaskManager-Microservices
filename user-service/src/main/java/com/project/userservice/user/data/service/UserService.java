@@ -1,6 +1,7 @@
 package com.project.userservice.user.data.service;
 
 import com.project.userservice.exception.EntityNotFoundException;
+import com.project.userservice.exception.UserAlreadyExists;
 import com.project.userservice.user.data.UserEntity;
 import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.user.data.enums.Roles;
@@ -29,10 +30,15 @@ public class UserService {
     }
 
     public UserEntity registerUser(UserRequest userRequest) {
+        checkUserDuplicates(userRequest);
+
         UserEntity userEntityToSave = UserEntity.builder()
                 .username(userRequest.getUsername())
                 .password(bCryptPasswordEncoder.encode(userRequest.getPassword()))
                 .email(userRequest.getEmail())
+                .firstName(userRequest.getFirstName())
+                .lastName(userRequest.getLastName())
+                .birthDate(userRequest.getBirthDate())
                 .roles(List.of(Roles.ROLE_USER.toString()))
                 .build();
 
@@ -48,16 +54,6 @@ public class UserService {
         return userRepository.save(userEntityToAlter);
     }
 
-    private void updateUserEntityFields(UserEntity user, UserRequest userRequest) {
-        if (userRequest.getUsername() != null) {
-            user.setUsername(user.getUsername());
-        }
-
-        if (userRequest.getEmail() != null) {
-            user.setEmail(userRequest.getEmail());
-        }
-    }
-
     public void changePassword(String userId, String password) {
         UserEntity userEntityToChangePassword = getUserEntityById(userId);
         userEntityToChangePassword.setPassword(bCryptPasswordEncoder.encode(password));
@@ -68,5 +64,27 @@ public class UserService {
     public UserEntity getUserEntityByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("user with id '%s' is not found".formatted(username)));
+    }
+
+    private void checkUserDuplicates(UserRequest userRequest) {
+        userRepository.findByUsername(userRequest.getUsername())
+                .ifPresent(user -> {
+                    throw new UserAlreadyExists("user with username '%s' already exists".formatted(userRequest.getUsername()));
+                });
+
+        userRepository.findByEmail(userRequest.getEmail())
+                .ifPresent(user -> {
+                    throw new UserAlreadyExists("user with email '%s' already exists".formatted(userRequest.getEmail()));
+                });
+    }
+
+    private void updateUserEntityFields(UserEntity user, UserRequest userRequest) {
+        if (userRequest.getUsername() != null) {
+            user.setUsername(user.getUsername());
+        }
+
+        if (userRequest.getEmail() != null) {
+            user.setEmail(userRequest.getEmail());
+        }
     }
 }
