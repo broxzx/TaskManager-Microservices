@@ -18,7 +18,7 @@ spring:
           keycloak:
             redirect-uri: http://localhost:8761/login/oauth2/code/keycloak
             client-id: eureka-discovery-server
-            client-secret: aHkpku6h1JuGaHpGjofzXh1hzgPU1trP
+            client-secret: Ufze9Y7r32FTt5TQOL3DFpkg1Wfp48u6
             scope:
               - openid
               - microprofile-jwt

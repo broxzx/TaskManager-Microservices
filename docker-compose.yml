@@ -36,7 +36,9 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_DB_NAME:
     volumes:
-      - ./keycloak/:/opt/keycloak/data/import/
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./keycloak/themes/reset-password-web.ftl:/opt/keycloak/themes/mytheme/email/html/executeActions.ftl
+      - ./keycloak/themes/reset-password-txt.ftl:/opt/keycloak/themes/mytheme/email/text/executeActions.ftl
 
   mongo-user-service:
     <<: *default-backend-configuration

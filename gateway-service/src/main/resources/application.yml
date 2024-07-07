@@ -27,7 +27,7 @@ spring:
           keycloak:
             redirect-uri: http://localhost:8080/login/oauth2/code/keycloak
             client-id: api-gateway-service
-            client-secret: odgCNxT02jno2rWlwTZVidLlrdoYf6R2
+            client-secret: K8sqcbKrTEl2631n8nynSuGMScjvgJCe
             scope:
               - openid
               - microprofile-jwt
