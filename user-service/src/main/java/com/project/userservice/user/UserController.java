@@ -1,5 +1,6 @@
 package com.project.userservice.user;
 
+import com.project.userservice.model.TokenResponse;
 import com.project.userservice.user.data.UserEntity;
 import com.project.userservice.user.data.dto.request.LoginRequest;
 import com.project.userservice.user.data.dto.request.UserRequest;
@@ -25,8 +26,8 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String loginUser(@RequestBody @Valid LoginRequest loginRequest) {
-        return keycloakUtils.getUserTokenFromUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword());
+    public ResponseEntity<TokenResponse> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
+        return ResponseEntity.ok(keycloakUtils.getUserTokenFromUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword()));
     }
 
 
@@ -41,5 +42,9 @@ public class UserController {
         keycloakUtils.forgotPassword(userId);
     }
 
+    @PostMapping("/refreshToken")
+    public ResponseEntity<TokenResponse> refreshToken(@RequestParam("token") String refreshToken) {
+        return ResponseEntity.ok(keycloakUtils.refreshToken(refreshToken));
+    }
 
 }

@@ -41,8 +41,7 @@ public class UserService {
 
     public UserEntity updateUserEntity(String authorizationToken, UserRequest userRequest) {
         String usernameByToken = jwtUtils.getUsernameByToken(jwtUtils.extractTokenFromHeader(authorizationToken));
-        UserEntity userEntityToAlter = userRepository.findByUsername(usernameByToken)
-                .orElseThrow(() -> new EntityNotFoundException("user with id '%s' is not found".formatted(usernameByToken)));
+        UserEntity userEntityToAlter = getUserEntityByUsername(usernameByToken);
 
         updateUserEntityFields(userEntityToAlter, userRequest);
 
@@ -64,5 +63,10 @@ public class UserService {
         userEntityToChangePassword.setPassword(bCryptPasswordEncoder.encode(password));
 
         userRepository.save(userEntityToChangePassword);
+    }
+
+    public UserEntity getUserEntityByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("user with id '%s' is not found".formatted(username)));
     }
 }

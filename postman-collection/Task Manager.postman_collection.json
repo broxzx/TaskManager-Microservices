@@ -1,0 +1,174 @@
+{
+	"info": {
+		"_postman_id": "50e1313c-bf3a-4c2b-8f1e-c85ac83281e4",
+		"name": "Task Manager",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30196585"
+	},
+	"item": [
+		{
+			"name": "user-service",
+			"item": [
+				{
+					"name": "login user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"test\",\r\n    \"password\": \"test\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/users/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "forgot password",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0OTZhR3dqbnB3dDhHVVF6c1Y3ZTNRbEx4Y1NEY0kxZnhmT3haLVBBSVZvIn0.eyJleHAiOjE3MjA0MDM3OTUsImlhdCI6MTcyMDM2Nzc5NSwianRpIjoiMDEyOThhYmUtNmVhZC00NGU3LThlMjgtMWVlODQ5NmM2MjRjIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MjgwL3JlYWxtcy90YXNrLW1hbmFnZXItbWljcm9zZXJ2aWNlcyIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJlZTlhMTExYi1mOWE5LTRjYzctYTM5Ni1mNzM5MTFkMDViY2IiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJhcGktZ2F0ZXdheS1zZXJ2aWNlIiwic2Vzc2lvbl9zdGF0ZSI6IjUyNjI3Njg5LWVhMTYtNDJjMS04ODQ3LTI3ZjVlZjBlOWNiZSIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDo4MDgwIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLXRhc2stbWFuYWdlci1taWNyb3NlcnZpY2VzIiwiUk9MRV9VU0VSIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjUyNjI3Njg5LWVhMTYtNDJjMS04ODQ3LTI3ZjVlZjBlOWNiZSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6InRlc3QgdGVzdCIsInByZWZlcnJlZF91c2VybmFtZSI6InRlc3QiLCJnaXZlbl9uYW1lIjoidGVzdCIsImZhbWlseV9uYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEBnbWFpbC5jb20ifQ.TcMSA_DZWb7jRFt_n_Vkzk2WwQ6etDU1Bo1pKa0rLw6U32mgj2a5vt9fvKHr4bgaDroNhVZR1_v7bh7qx6vttDhht_dV5yTz8bGu5AaUVD9jQPkuLhKTdIcIsAMXxC5u4nCsMeuUspoEMWooluyrn0dCyCsU9v4sHiq7V1FEDtoC87dUt2zp5AAIhgII9Ysh9FBXjcJWj1fu-0snV_lFGr6qkz7_3qHbRmI3Awi4nBomu37rmjdR-zjINeNPvftDSE-8i2M_HsykzwrjoAItxN49hzu64aD9vEQa6I653Ou63qOnPDtsnaAZhsfiO5VMf8kVigF4SbpFlGtcCiHKRA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/users/forgotPassword?userId=668978744ded0556351102b8",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"users",
+								"forgotPassword"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "668978744ded0556351102b8"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"test\",\r\n    \"password\": \"test\",\r\n    \"email\": \"test@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/users/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJRaUZGa0EyX0VmS1YyaVd6RmlydWU2bmhUQy1jQnEyYmhRQTBremVSNWswIn0.eyJleHAiOjE3MjAzMjEyNzgsImlhdCI6MTcyMDI4NTI3OCwianRpIjoiNWZmN2Y5ODctYjhjMi00ZDNkLWExZDMtM2U3M2VlNTRiNmNkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MjgwL3JlYWxtcy90YXNrLW1hbmFnZXItbWljcm9zZXJ2aWNlcyIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJkMTE3ZGVjZi0yYTE3LTQyYmEtOTQ0OS04MWVkYjE5NDFhNzkiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJhcGktZ2F0ZXdheS1zZXJ2aWNlIiwic2Vzc2lvbl9zdGF0ZSI6IjBjMjEwZmZmLWY4NWUtNDQ1MC1iODJiLWZiZGE4MjEzNjFkOSIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDo4MDgwIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLXRhc2stbWFuYWdlci1taWNyb3NlcnZpY2VzIiwiUk9MRV9VU0VSIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjBjMjEwZmZmLWY4NWUtNDQ1MC1iODJiLWZiZGE4MjEzNjFkOSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6InRlc3QgdGVzdCIsInByZWZlcnJlZF91c2VybmFtZSI6InRlc3QiLCJnaXZlbl9uYW1lIjoidGVzdCIsImZhbWlseV9uYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEBnbWFpbC5jb20ifQ.uYrKMqEdoFVIpOeB8W3SB0tCBItgFYwMJQUqJHL_nKPYdJPAKqFxn0Q2OFe6Dib4c5XqXrWMPXYlQFZ_3RilNa6UFHNW9fnFvtpi-d-q7-_222FbfGHCMkK1j10lh-k_j5B84YLWuKSNhYS6S37v5xvSVf8pnbGgd24yFW0itiSnw4VzJj7OhBxi_HESiiuDQEUUzNFFXEHyHB-u05SboZLULfVAKzkx7LRGn9xnSOGB1qxSFRFn3Gk3GysZIxuhxrSbB4pRI05rH2JGKVIxs6H1Bot3ldpw9S-EmePUxhHMYt4qIsfh_rWXXdG9MlUZIH60jdOMJhHcQshS1MphSA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"test@gmail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/users/updateUserData",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"users",
+								"updateUserData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "refresh token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/users/refreshToken?token=",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"users",
+								"refreshToken"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
