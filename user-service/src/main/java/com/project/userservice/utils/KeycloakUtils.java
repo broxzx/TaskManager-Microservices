@@ -5,7 +5,6 @@ import com.project.userservice.user.data.UserEntity;
 import com.project.userservice.user.data.dto.response.UserResponse;
 import com.project.userservice.user.data.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -20,6 +19,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.keycloak.OAuth2Constants.*;
 
 @Component
 @RequiredArgsConstructor
@@ -47,15 +48,14 @@ public class KeycloakUtils {
 
 
     public TokenResponse getUserTokenFromUsernameAndPassword(String username, String password) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
+        HttpHeaders headers = buildHttpHeadersToObtainToken();
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "password");
-        body.add("client_id", clientId);
-        body.add("client_secret", clientSecret);
-        body.add("username", username);
-        body.add("password", password);
+        body.add(GRANT_TYPE, PASSWORD);
+        body.add(CLIENT_ID, clientId);
+        body.add(CLIENT_SECRET, clientSecret);
+        body.add(USERNAME, username);
+        body.add(PASSWORD, password);
 
         Map exchangeBody = tokenRequest(body, headers).getBody();
         return buildTokenResponseFromBodyExchange(Objects.requireNonNull(exchangeBody));
@@ -69,7 +69,7 @@ public class KeycloakUtils {
                 .realm(realm)
                 .clientId(clientId)
                 .clientSecret(clientSecret)
-                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+                .grantType(CLIENT_CREDENTIALS)
                 .build();
 
         UserRepresentation user = keycloak.realm(realm)
@@ -91,26 +91,31 @@ public class KeycloakUtils {
     }
 
     public TokenResponse refreshToken(String refreshToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        HttpHeaders headers = buildHttpHeadersToObtainToken();
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add(OAuth2Constants.CLIENT_ID, clientId);
-        body.add(OAuth2Constants.CLIENT_SECRET, clientSecret);
-        body.add(OAuth2Constants.GRANT_TYPE, OAuth2Constants.REFRESH_TOKEN);
-        body.add(OAuth2Constants.REFRESH_TOKEN, refreshToken);
+        body.add(CLIENT_ID, clientId);
+        body.add(CLIENT_SECRET, clientSecret);
+        body.add(GRANT_TYPE, REFRESH_TOKEN);
+        body.add(REFRESH_TOKEN, refreshToken);
 
         Map exchangeBody = tokenRequest(body, headers).getBody();
         return buildTokenResponseFromBodyExchange(Objects.requireNonNull(exchangeBody));
     }
 
+    private static HttpHeaders buildHttpHeadersToObtainToken() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        return headers;
+    }
+
     private TokenResponse buildTokenResponseFromBodyExchange(Map body) {
-        String accessToken = body.get("access_token").toString();
+        String accessToken = body.get(ACCESS_TOKEN).toString();
 
         UserEntity obtainedUserEntity = userService.getUserEntityByUsername(jwtUtils.getUsernameByToken(accessToken));
 
-        return new TokenResponse(body.get(OAuth2Constants.ACCESS_TOKEN).toString(),
-                body.get(OAuth2Constants.REFRESH_TOKEN).toString(), Long.valueOf(body.get(OAuth2Constants.EXPIRES_IN).toString()),
+        return new TokenResponse(body.get(ACCESS_TOKEN).toString(),
+                body.get(REFRESH_TOKEN).toString(), Long.valueOf(body.get(EXPIRES_IN).toString()),
                 modelMapper.map(obtainedUserEntity, UserResponse.class));
     }
 
