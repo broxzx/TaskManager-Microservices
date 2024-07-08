@@ -22,6 +22,7 @@
         <module>gateway-service</module>
         <module>user-service</module>
         <module>project-service</module>
+        <module>custom-user-provider-mongodb</module>
     </modules>
 
     <properties>

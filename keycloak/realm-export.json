@@ -5,12 +5,12 @@
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,
   "refreshTokenMaxReuse": 0,
-  "accessTokenLifespan": 86400,
-  "accessTokenLifespanForImplicitFlow": 900,
+  "accessTokenLifespan": 604800,
+  "accessTokenLifespanForImplicitFlow": 1800,
   "ssoSessionIdleTimeout": 1800,
   "ssoSessionMaxLifespan": 36000,
-  "ssoSessionIdleTimeoutRememberMe": 0,
-  "ssoSessionMaxLifespanRememberMe": 0,
+  "ssoSessionIdleTimeoutRememberMe": 604800,
+  "ssoSessionMaxLifespanRememberMe": 604800,
   "offlineSessionIdleTimeout": 2592000,
   "offlineSessionMaxLifespanEnabled": false,
   "offlineSessionMaxLifespan": 5184000,
@@ -343,6 +343,7 @@
           "attributes": {}
         }
       ],
+      "project-service": [],
       "account": [
         {
           "id": "b8ded09c-fcde-46a0-b6ad-5fcbd86f2b25",
@@ -549,6 +550,22 @@
       "enabled": true,
       "totp": false,
       "serviceAccountClientId": "eureka-discovery-server",
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-task-manager-microservices"
+      ],
+      "notBefore": 0,
+      "groups": []
+    },
+    {
+      "id": "f2c07e66-36ce-428c-8752-ae4501cf0cbc",
+      "username": "service-account-project-service",
+      "emailVerified": false,
+      "createdTimestamp": 1720374583360,
+      "enabled": true,
+      "totp": false,
+      "serviceAccountClientId": "project-service",
       "disableableCredentialTypes": [],
       "requiredActions": [],
       "realmRoles": [
@@ -986,6 +1003,107 @@
       ]
     },
     {
+      "id": "c6b031fc-4df3-491f-81f0-f2e902377ab2",
+      "clientId": "project-service",
+      "name": "project-service",
+      "description": "",
+      "rootUrl": "http://localhost:8080/projects",
+      "adminUrl": "http://localhost:8080/projects",
+      "baseUrl": "",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "SKW61GhBo1qz6whNaeJzMaUVpRZerI5J",
+      "redirectUris": [
+        "http://localhost:8080/login/oauth2/code/keycloak"
+      ],
+      "webOrigins": [
+        "*"
+      ],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": true,
+      "protocol": "openid-connect",
+      "attributes": {
+        "oidc.ciba.grant.enabled": "false",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "client.secret.creation.time": "1720374583",
+        "backchannel.logout.session.required": "true",
+        "backchannel.logout.revoke.offline.tokens": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "protocolMappers": [
+        {
+          "id": "30a34187-4c7f-4dca-92bf-3e75513361be",
+          "name": "Client Host",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.session.note": "clientHost",
+            "introspection.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "clientHost",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "af5e6b3b-9f76-43bf-9fa2-34afdf528476",
+          "name": "Client IP Address",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.session.note": "clientAddress",
+            "introspection.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "clientAddress",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "27ac711b-7098-4b8f-97c3-48f343353f2c",
+          "name": "Client ID",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.session.note": "client_id",
+            "introspection.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "client_id",
+            "jsonType.label": "String"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt",
+        "metrics"
+      ]
+    },
+    {
       "id": "cdd80612-ab78-47df-a04c-28c3edb45631",
       "clientId": "realm-management",
       "name": "${client_realm-management}",
@@ -1095,7 +1213,7 @@
       "clientId": "user-service",
       "name": "user-service",
       "description": "",
-      "rootUrl": "http://localhost:8080",
+      "rootUrl": "",
       "adminUrl": "",
       "baseUrl": "",
       "surrogateAuthRequired": false,
@@ -1104,7 +1222,7 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "OIdp06uPaJgdwH1meKRatic6zuLbFLDQ",
       "redirectUris": [
-        "http://localhost:8080/login/oauth2/code/keycloak"
+        ""
       ],
       "webOrigins": [
         "*"
@@ -1123,7 +1241,6 @@
         "oidc.ciba.grant.enabled": "false",
         "client.secret.creation.time": "1719251523",
         "backchannel.logout.session.required": "true",
-        "post.logout.redirect.uris": "+",
         "display.on.consent.screen": "false",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -1788,6 +1905,10 @@
     "fromDisplayName": "",
     "user": "8a91accfed0cd2"
   },
+  "loginTheme": "",
+  "accountTheme": "",
+  "adminTheme": "",
+  "emailTheme": "mytheme",
   "eventsEnabled": false,
   "eventsListeners": [
     "jboss-logging"
@@ -1795,7 +1916,26 @@
   "enabledEventTypes": [],
   "adminEventsEnabled": false,
   "adminEventsDetailsEnabled": false,
-  "identityProviders": [],
+  "identityProviders": [
+    {
+      "alias": "google",
+      "internalId": "93aed0bc-2e27-46ae-aeb9-959dc0a539aa",
+      "providerId": "google",
+      "enabled": true,
+      "updateProfileFirstLoginMode": "on",
+      "trustEmail": false,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "authenticateByDefault": false,
+      "linkOnly": false,
+      "config": {
+        "offlineAccess": "false",
+        "clientSecret": "**********",
+        "clientId": "863784785750-suv7i4f19ivactd149ggt9m695qqn4nu.apps.googleusercontent.com",
+        "guiOrder": "1"
+      }
+    }
+  ],
   "identityProviderMappers": [],
   "components": {
     "org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy": [
@@ -1819,14 +1959,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-address-mapper",
-            "oidc-usermodel-attribute-mapper",
-            "oidc-sha256-pairwise-sub-mapper",
-            "oidc-full-name-mapper",
-            "saml-user-property-mapper",
             "saml-user-attribute-mapper",
+            "oidc-sha256-pairwise-sub-mapper",
+            "saml-user-property-mapper",
+            "oidc-usermodel-attribute-mapper",
             "saml-role-list-mapper",
-            "oidc-usermodel-property-mapper"
+            "oidc-full-name-mapper",
+            "oidc-usermodel-property-mapper",
+            "oidc-address-mapper"
           ]
         }
       },
@@ -1846,14 +1986,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
+            "oidc-usermodel-attribute-mapper",
+            "oidc-sha256-pairwise-sub-mapper",
+            "saml-role-list-mapper",
+            "oidc-full-name-mapper",
             "oidc-address-mapper",
             "saml-user-attribute-mapper",
-            "oidc-full-name-mapper",
-            "saml-role-list-mapper",
             "oidc-usermodel-property-mapper",
-            "saml-user-property-mapper",
-            "oidc-sha256-pairwise-sub-mapper",
-            "oidc-usermodel-attribute-mapper"
+            "saml-user-property-mapper"
           ]
         }
       },
