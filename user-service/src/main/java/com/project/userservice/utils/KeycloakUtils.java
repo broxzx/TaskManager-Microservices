@@ -47,7 +47,7 @@ public class KeycloakUtils {
     private String realm;
 
 
-    public TokenResponse getUserTokenFromUsernameAndPassword(String username, String password) {
+    public TokenResponse getUserTokenFromUsernameAndPassword(String username, String password, boolean rememberMe) {
         HttpHeaders headers = buildHttpHeadersToObtainToken();
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
@@ -56,6 +56,10 @@ public class KeycloakUtils {
         body.add(CLIENT_SECRET, clientSecret);
         body.add(USERNAME, username);
         body.add(PASSWORD, password);
+
+        if (rememberMe) {
+            body.add(SCOPE, OFFLINE_ACCESS);
+        }
 
         Map exchangeBody = tokenRequest(body, headers).getBody();
         return buildTokenResponseFromBodyExchange(Objects.requireNonNull(exchangeBody));
