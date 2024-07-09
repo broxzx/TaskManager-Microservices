@@ -23,6 +23,7 @@
         <module>user-service</module>
         <module>project-service</module>
         <module>custom-user-provider-mongodb</module>
+        <module>custom-event-listener</module>
     </modules>
 
     <properties>

@@ -40,6 +40,7 @@ services:
       - ./keycloak/themes/reset-password-web.ftl:/opt/keycloak/themes/mytheme/email/html/executeActions.ftl
       - ./keycloak/themes/reset-password-txt.ftl:/opt/keycloak/themes/mytheme/email/text/executeActions.ftl
       - ./custom-user-provider-mongodb/target/keycloak-mongodb-user-storage-provider.jar:/opt/keycloak/providers/keycloak-mongodb-user-storage-provider.jar
+      - ./custom-event-listener/target/custom-user-session-listener.jar:/opt/keycloak/providers/custom-user-session-listener.jar
 
   mongo-user-service:
     <<: *default-backend-configuration
