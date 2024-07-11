@@ -27,6 +27,8 @@ spring:
     schemas:
       - public
 
+  kafka:
+    bootstrap-servers: http://localhost:9092
 
   security:
     oauth2:
@@ -56,6 +58,9 @@ keycloak:
     client_id: api-gateway-service
     client_secret: K8sqcbKrTEl2631n8nynSuGMScjvgJCe
     request: http://localhost:8280/realms/task-manager-microservices/protocol/openid-connect/token
+
+kafka:
+  forgot-password-topic: forgot-password
 
 eureka:
   instance:

@@ -5,6 +5,7 @@ import com.project.userservice.user.data.UserEntity;
 import com.project.userservice.user.data.dto.request.LoginRequest;
 import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.user.data.service.UserService;
+import com.project.userservice.utils.KafkaProducerService;
 import com.project.userservice.utils.KeycloakUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class UserController {
 
     private final UserService userService;
     private final KeycloakUtils keycloakUtils;
+    private final KafkaProducerService kafkaProducerService;
 
     @PostMapping("/register")
     public ResponseEntity<UserEntity> register(@RequestBody @Valid UserRequest userRequest) {
@@ -40,6 +42,11 @@ public class UserController {
     @PostMapping("/forgotPassword")
     public void forgotPassword(@RequestParam("userId") String userId) {
         keycloakUtils.forgotPassword(userId);
+    }
+
+    @PostMapping("/resetPassword")
+    public void changePassword(@RequestParam("email") String userEmail) {
+        kafkaProducerService.sendForgotPasswordMail(userEmail);
     }
 
     @PostMapping("/refreshToken")

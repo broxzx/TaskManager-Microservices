@@ -2,6 +2,8 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/config-cloud-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/custom-event-listener/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/custom-event-listener/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/custom-user-provider-mongodb/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/custom-user-provider-mongodb/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/eureka-discovery-service/src/main/java" charset="UTF-8" />

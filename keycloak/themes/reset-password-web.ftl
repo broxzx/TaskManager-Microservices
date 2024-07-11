@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Forgot Password</title>
 </head>
@@ -7,7 +7,8 @@
 <h1>Execute Actions</h1>
 <p>Hello, ${user.firstName} ${user.lastName},</p>
 <p>We received a request to execute actions. Click the link below:</p>
-<a href="${link}">Reset Password</a>
+<#--<a href="${link}">Reset Password</a>-->
+<a href="http://localhost:8080/users/changePassword">Reset Password</a>
 <p>If you did not request this, please ignore this email.</p>
 <p>Best regards,</p>
 <p>ABI CRM</p>
