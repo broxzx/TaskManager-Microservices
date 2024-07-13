@@ -15,6 +15,11 @@ public class UserTemplateController {
         return "login";
     }
 
+    @GetMapping("/register")
+    public String register() {
+        return "register";
+    }
+
     @GetMapping("/changePassword")
     public String changePassword(@RequestParam(value = "token", required = false) String token, Model model) {
         model.addAttribute("token", token);
