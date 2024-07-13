@@ -3,7 +3,7 @@ package com.project.userservice.utils;
 import com.project.userservice.model.TokenResponse;
 import com.project.userservice.user.data.UserEntity;
 import com.project.userservice.user.data.dto.response.UserResponse;
-import com.project.userservice.user.data.service.UserService;
+import com.project.userservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
@@ -68,29 +68,30 @@ public class KeycloakUtils {
     public void forgotPassword(String userId) {
         UserEntity obtainedUserEntity = userService.getUserEntityById(userId);
 
-        Keycloak keycloak = KeycloakBuilder.builder()
+        try (Keycloak keycloak = KeycloakBuilder.builder()
                 .serverUrl(authServerUrl)
                 .realm(realm)
                 .clientId(clientId)
                 .clientSecret(clientSecret)
                 .grantType(CLIENT_CREDENTIALS)
-                .build();
+                .build()) {
 
-        UserRepresentation user = keycloak.realm(realm)
-                .users()
-                .search(obtainedUserEntity.getUsername())
-                .stream()
-                .findFirst()
-                .orElse(null);
+            UserRepresentation user = keycloak.realm(realm)
+                    .users()
+                    .search(obtainedUserEntity.getUsername())
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
 
-        if (user == null) {
-            throw new RuntimeException("User not found");
+            if (user == null) {
+                throw new RuntimeException("User not found");
+            }
+
+            keycloak.realm(realm)
+                    .users()
+                    .get(user.getId())
+                    .executeActionsEmail(Collections.singletonList("UPDATE_PASSWORD"));
         }
-
-        keycloak.realm(realm)
-                .users()
-                .get(user.getId())
-                .executeActionsEmail(Collections.singletonList("UPDATE_PASSWORD"));
 
     }
 

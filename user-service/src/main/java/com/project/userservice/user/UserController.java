@@ -4,7 +4,7 @@ import com.project.userservice.model.TokenResponse;
 import com.project.userservice.user.data.UserEntity;
 import com.project.userservice.user.data.dto.request.LoginRequest;
 import com.project.userservice.user.data.dto.request.UserRequest;
-import com.project.userservice.user.data.service.UserService;
+import com.project.userservice.user.service.UserService;
 import com.project.userservice.utils.KafkaProducerService;
 import com.project.userservice.utils.KeycloakUtils;
 import jakarta.validation.Valid;

@@ -1,4 +1,4 @@
-package com.project.userservice.user.data.service;
+package com.project.userservice.user.service;
 
 import com.project.userservice.exception.EntityNotFoundException;
 import com.project.userservice.exception.UserAlreadyExists;
@@ -19,10 +19,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-
-    public List<UserEntity> getAllActiveUsers() {
-        return userRepository.findAllActiveUsers();
-    }
 
     public UserEntity getUserEntityById(String id) {
         return userRepository.findById(id)

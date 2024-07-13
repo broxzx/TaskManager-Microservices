@@ -11,6 +11,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -42,22 +43,33 @@ public class GlobalExceptionHandler {
                 .body(problemDetail);
     }
 
+    @ExceptionHandler(value = {MissingServletRequestParameterException.class})
+    public ResponseEntity<ProblemDetail> handleEntityNotFoundException(MissingServletRequestParameterException exception) {
+        ProblemDetail problemDetail = ProblemDetail
+                .forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+
+        problemDetail.setProperty(OCCURRED, LocalDateTime.now());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(problemDetail);
+    }
+
     @ExceptionHandler(value = {UserAlreadyExists.class, AuthorizationFailed.class, TokenInvalid.class})
-    public ResponseEntity<ProblemDetail> handleCommonBadRequestExceptions(RuntimeException ex, HttpServletRequest request) {
-        return buildExceptionHandling(ex, request, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ProblemDetail> handleCommonBadRequestExceptions(RuntimeException ex) {
+        return buildExceptionHandling(ex, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(value = {EntityNotFoundException.class})
-    public ResponseEntity<ProblemDetail> handleCommonNotfoundException(RuntimeException ex, HttpServletRequest request) {
-        return buildExceptionHandling(ex, request, HttpStatus.NOT_FOUND);
+    public ResponseEntity<ProblemDetail> handleCommonNotfoundException(RuntimeException ex) {
+        return buildExceptionHandling(ex, HttpStatus.NOT_FOUND);
     }
 
-    private static ResponseEntity<ProblemDetail> buildExceptionHandling(RuntimeException ex, HttpServletRequest request, HttpStatus httpStatus) {
+    private static ResponseEntity<ProblemDetail> buildExceptionHandling(RuntimeException ex, HttpStatus httpStatus) {
         ProblemDetail problemDetail = ProblemDetail
                 .forStatusAndDetail(httpStatus, ex.getMessage());
 
         problemDetail.setProperty(OCCURRED, LocalDateTime.now());
-        problemDetail.setProperty("path", request.getRequestURI());
 
         return ResponseEntity
                 .status(httpStatus)
