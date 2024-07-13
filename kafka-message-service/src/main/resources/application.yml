@@ -5,6 +5,10 @@ spring:
   application:
     name: kafka-message-service
 
+  mail:
+    host: smtp.freesmtpservers.com
+    port: 25
+
   kafka:
     bootstrap-servers: http://localhost:9092
     consumer:
@@ -43,6 +47,13 @@ eureka:
 
 kafka:
   forgot-password-topic: forgot-password
+
+jwt:
+  secretKey: ccb63ce7180e6ebc737ac6da9570fe55b785d924b074261b5a542e38cfb4a54d
+  expires: 24h
+
+common:
+  baseUrl: http://localhost:8080/
 
 logging:
   level:

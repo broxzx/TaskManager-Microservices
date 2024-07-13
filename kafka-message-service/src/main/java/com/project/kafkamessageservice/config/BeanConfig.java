@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.mail.SimpleMailMessage;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +36,11 @@ public class BeanConfig {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
+    }
+
+    @Bean
+    public SimpleMailMessage simpleMailMessage() {
+        return new SimpleMailMessage();
     }
 
 }

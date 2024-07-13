@@ -1,5 +1,6 @@
 package com.project.userservice.user;
 
+import com.project.userservice.model.ChangePasswordDto;
 import com.project.userservice.model.TokenResponse;
 import com.project.userservice.user.data.UserEntity;
 import com.project.userservice.user.data.dto.request.LoginRequest;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+
 public class UserController {
 
     private final UserService userService;
@@ -45,8 +47,13 @@ public class UserController {
     }
 
     @PostMapping("/resetPassword")
-    public void changePassword(@RequestParam("email") String userEmail) {
+    public void resetPassword(@RequestParam("email") String userEmail) {
         kafkaProducerService.sendForgotPasswordMail(userEmail);
+    }
+
+    @PostMapping("/changePassword")
+    public void changePasswordWithNewPassword(@RequestParam("token") String token, @RequestBody ChangePasswordDto changePasswordDto) {
+        userService.changePasswordWithNewPassword(token, changePasswordDto);
     }
 
     @PostMapping("/refreshToken")

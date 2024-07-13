@@ -4,9 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public class UserAlreadyExists extends RuntimeException {
+public class PasswordNotMatch extends RuntimeException {
 
-    public UserAlreadyExists(String message) {
+    public PasswordNotMatch(String message) {
         super(message);
     }
 }

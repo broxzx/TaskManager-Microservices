@@ -1,9 +1,6 @@
 package com.project.userservice.exception.handler;
 
-import com.project.userservice.exception.AuthorizationFailed;
-import com.project.userservice.exception.EntityNotFoundException;
-import com.project.userservice.exception.TokenInvalid;
-import com.project.userservice.exception.UserAlreadyExists;
+import com.project.userservice.exception.*;
 import com.project.userservice.model.ErrorDto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -44,7 +41,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = {MissingServletRequestParameterException.class})
-    public ResponseEntity<ProblemDetail> handleEntityNotFoundException(MissingServletRequestParameterException exception) {
+    public ResponseEntity<ProblemDetail> handleMissingRequestParameterException(MissingServletRequestParameterException exception) {
         ProblemDetail problemDetail = ProblemDetail
                 .forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
 
@@ -55,7 +52,7 @@ public class GlobalExceptionHandler {
                 .body(problemDetail);
     }
 
-    @ExceptionHandler(value = {UserAlreadyExists.class, AuthorizationFailed.class, TokenInvalid.class})
+    @ExceptionHandler(value = {UserAlreadyExistsException.class, AuthorizationFailed.class, TokenInvalidException.class, ResetPasswordTokenIncorrectException.class})
     public ResponseEntity<ProblemDetail> handleCommonBadRequestExceptions(RuntimeException ex) {
         return buildExceptionHandling(ex, HttpStatus.BAD_REQUEST);
     }

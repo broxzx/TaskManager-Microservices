@@ -32,10 +32,8 @@ public class SecurityBeans {
     public SecurityFilterChain gatewaySecurityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-                        .requestMatchers("/users/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/users/refreshToken").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/users/resetPassword").permitAll()
+                        .requestMatchers("/users/register", "/users/changePassword", "/users/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users/refreshToken", "/users/resetPassword").permitAll()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

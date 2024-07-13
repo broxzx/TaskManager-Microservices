@@ -1,7 +1,9 @@
 package com.project.userservice.user.service;
 
 import com.project.userservice.exception.EntityNotFoundException;
-import com.project.userservice.exception.UserAlreadyExists;
+import com.project.userservice.exception.PasswordNotMatch;
+import com.project.userservice.exception.UserAlreadyExistsException;
+import com.project.userservice.model.ChangePasswordDto;
 import com.project.userservice.user.data.UserEntity;
 import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.user.data.enums.Roles;
@@ -11,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -50,13 +53,6 @@ public class UserService {
         return userRepository.save(userEntityToAlter);
     }
 
-    public void changePassword(String userId, String password) {
-        UserEntity userEntityToChangePassword = getUserEntityById(userId);
-        userEntityToChangePassword.setPassword(bCryptPasswordEncoder.encode(password));
-
-        userRepository.save(userEntityToChangePassword);
-    }
-
     public UserEntity getUserEntityByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("user with id '%s' is not found".formatted(username)));
@@ -65,12 +61,12 @@ public class UserService {
     private void checkUserDuplicates(UserRequest userRequest) {
         userRepository.findByUsername(userRequest.getUsername())
                 .ifPresent(user -> {
-                    throw new UserAlreadyExists("user with username '%s' already exists".formatted(userRequest.getUsername()));
+                    throw new UserAlreadyExistsException("user with username '%s' already exists".formatted(userRequest.getUsername()));
                 });
 
         userRepository.findByEmail(userRequest.getEmail())
                 .ifPresent(user -> {
-                    throw new UserAlreadyExists("user with email '%s' already exists".formatted(userRequest.getEmail()));
+                    throw new UserAlreadyExistsException("user with email '%s' already exists".formatted(userRequest.getEmail()));
                 });
     }
 
@@ -82,5 +78,19 @@ public class UserService {
         if (userRequest.getEmail() != null) {
             user.setEmail(userRequest.getEmail());
         }
+    }
+
+    public void changePasswordWithNewPassword(String token, ChangePasswordDto changePasswordDto) {
+        String userEmail = jwtUtils.getEmailFromResetPasswordToken(token);
+
+        UserEntity userToChangePassword = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException("user with email %s is not found".formatted(userEmail)));
+
+        if (!Objects.equals(changePasswordDto.password(), changePasswordDto.confirmPassword())) {
+            throw new PasswordNotMatch("passwords don't match");
+        }
+
+        userToChangePassword.setPassword(bCryptPasswordEncoder.encode(changePasswordDto.password()));
+        userRepository.save(userToChangePassword);
     }
 }

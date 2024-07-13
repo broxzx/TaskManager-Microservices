@@ -4,9 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public class TokenInvalid extends RuntimeException {
+public class ResetPasswordTokenIncorrectException extends RuntimeException {
 
-    public TokenInvalid(String message) {
+    public ResetPasswordTokenIncorrectException(String message) {
         super(message);
     }
 }
