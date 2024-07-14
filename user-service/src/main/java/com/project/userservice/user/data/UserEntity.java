@@ -1,5 +1,6 @@
 package com.project.userservice.user.data;
 
+import com.project.userservice.user.data.enums.Roles;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +11,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -64,6 +64,7 @@ public class UserEntity {
     @Builder.Default
     private Boolean isDeleted = false;
 
-    private List<String> roles = new ArrayList<>();
+    @Builder.Default
+    private List<String> roles = List.of(Roles.ROLE_USER.toString());
 
 }

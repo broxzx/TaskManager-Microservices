@@ -62,6 +62,10 @@ keycloak:
 kafka:
   forgot-password-topic: forgot-password
 
+google:
+  client-id:
+  client-secret:
+
 eureka:
   instance:
     lease-expiration-duration-in-seconds: 10

@@ -1,6 +1,8 @@
 package com.project.userservice.config;
 
+import com.project.userservice.utils.JwtTokenConverter;
 import jakarta.annotation.Priority;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,7 +13,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityBeans {
+
+    private final JwtTokenConverter jwtTokenConverter;
 
     @Bean
     @Priority(0)
@@ -32,12 +37,14 @@ public class SecurityBeans {
     public SecurityFilterChain gatewaySecurityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-                        .requestMatchers("/users/register", "/users/changePassword", "/users/login").permitAll()
+                        .requestMatchers("/users/register", "/users/changePassword", "/users/login", "/users/grantCode").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users/refreshToken", "/users/resetPassword").permitAll()
+                        .requestMatchers("/users/dashboard").authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtTokenConverter)))
+                .logout(logout -> logout.logoutSuccessUrl("/users/login"))
                 .exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler((request, response, accessDeniedException) -> response.sendRedirect("http://localhost:8080/users/login")))
                 .build();
     }

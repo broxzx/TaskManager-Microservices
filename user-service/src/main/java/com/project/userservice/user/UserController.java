@@ -8,6 +8,7 @@ import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.user.service.UserService;
 import com.project.userservice.utils.KafkaProducerService;
 import com.project.userservice.utils.KeycloakUtils;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +35,14 @@ public class UserController {
         return ResponseEntity.ok(keycloakUtils.getUserTokenFromUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword(), loginRequest.isRememberMe()));
     }
 
+    @GetMapping("/grantCode")
+    public void processGrantCode(@RequestParam("code") String grantCode,
+                                 @RequestParam("scope") String scope,
+                                 @RequestParam("authuser") String authUser,
+                                 @RequestParam("prompt") String prompt,
+                                 HttpServletResponse response) {
+        userService.processGrantCode(grantCode, response);
+    }
 
     @PutMapping("/updateUserData")
     public ResponseEntity<UserEntity> updateUserData(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
