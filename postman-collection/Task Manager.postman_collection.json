@@ -169,6 +169,151 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "project-service",
+			"item": [
+				{
+					"name": "get user's projects",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJzdzFvZzNyQl9GUjIxczhRMGpTcW9ocDdlUU9sbmN3aU1uR01jVmtOQWtnIn0.eyJleHAiOjE3MjE2NTc5MTksImlhdCI6MTcyMTA1MzExOSwianRpIjoiNzJhYzA4ZGMtZjNhYy00M2U3LWE1ODMtMjdiMGZlOWM5NjE3IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MjgwL3JlYWxtcy90YXNrLW1hbmFnZXItbWljcm9zZXJ2aWNlcyIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJmOjdjYTUyZmQ0LWQzZTktNDY5NS05YmRkLWQ5NDE5ZmIwOTE3NTphc2QiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJhcGktZ2F0ZXdheS1zZXJ2aWNlIiwic2Vzc2lvbl9zdGF0ZSI6ImU4NGM0ZTIzLTI5YWItNDlkYS1hODA0LTc4MDg3MjI3YzVmZCIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDo4MDgwIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJST0xFX1VTRVIiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBvZmZsaW5lX2FjY2VzcyBwcm9maWxlIiwic2lkIjoiZTg0YzRlMjMtMjlhYi00OWRhLWE4MDQtNzgwODcyMjdjNWZkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiYXNkIGFzZCIsInByZWZlcnJlZF91c2VybmFtZSI6ImFzZCIsImdpdmVuX25hbWUiOiJhc2QiLCJmYW1pbHlfbmFtZSI6ImFzZCIsImVtYWlsIjoiYXNkQGdtYWlsLmNvbSJ9.0VHnOemG90Ki1vDFnVence8hbIaDJ5FqpnzJlpqgxkfKl_cXXIIJx7s3AtAtAdYrM8qlgryhgjHrxmSo-61LRr36F1SmReipLhmXwv7rgP-6fkbJNkcfTcVkgb3W7AHO80-KPfw7iC5YrI5Er_HaD2JanBV6d8GwdggKxCxrIyrZhFMT_GzT8-6qDHrvppSP7A2bKwIRr6sY9Pq7TflRnDz_iqt4B9iuHl1-awL49FRLzWc4V8-JPbagOiaAsccR6geUE6lgI9BzZDi-GCLtoGqqWpkF2Dyo0zyoXzVungLviSaTsuhdsFjEz2n-lRFkbx-xVy4idfgWiGej2EAewQ",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/projects/getUserProjects",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"projects",
+								"getUserProjects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJzdzFvZzNyQl9GUjIxczhRMGpTcW9ocDdlUU9sbmN3aU1uR01jVmtOQWtnIn0.eyJleHAiOjE3MjE2NTc5MTksImlhdCI6MTcyMTA1MzExOSwianRpIjoiNzJhYzA4ZGMtZjNhYy00M2U3LWE1ODMtMjdiMGZlOWM5NjE3IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MjgwL3JlYWxtcy90YXNrLW1hbmFnZXItbWljcm9zZXJ2aWNlcyIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJmOjdjYTUyZmQ0LWQzZTktNDY5NS05YmRkLWQ5NDE5ZmIwOTE3NTphc2QiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJhcGktZ2F0ZXdheS1zZXJ2aWNlIiwic2Vzc2lvbl9zdGF0ZSI6ImU4NGM0ZTIzLTI5YWItNDlkYS1hODA0LTc4MDg3MjI3YzVmZCIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDo4MDgwIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJST0xFX1VTRVIiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBvZmZsaW5lX2FjY2VzcyBwcm9maWxlIiwic2lkIjoiZTg0YzRlMjMtMjlhYi00OWRhLWE4MDQtNzgwODcyMjdjNWZkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiYXNkIGFzZCIsInByZWZlcnJlZF91c2VybmFtZSI6ImFzZCIsImdpdmVuX25hbWUiOiJhc2QiLCJmYW1pbHlfbmFtZSI6ImFzZCIsImVtYWlsIjoiYXNkQGdtYWlsLmNvbSJ9.0VHnOemG90Ki1vDFnVence8hbIaDJ5FqpnzJlpqgxkfKl_cXXIIJx7s3AtAtAdYrM8qlgryhgjHrxmSo-61LRr36F1SmReipLhmXwv7rgP-6fkbJNkcfTcVkgb3W7AHO80-KPfw7iC5YrI5Er_HaD2JanBV6d8GwdggKxCxrIyrZhFMT_GzT8-6qDHrvppSP7A2bKwIRr6sY9Pq7TflRnDz_iqt4B9iuHl1-awL49FRLzWc4V8-JPbagOiaAsccR6geUE6lgI9BzZDi-GCLtoGqqWpkF2Dyo0zyoXzVungLviSaTsuhdsFjEz2n-lRFkbx-xVy4idfgWiGej2EAewQ",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Random Project\",\r\n  \"description\": \"This is a randomly generated project description.\",\r\n  \"memberIds\": [\"user1\", \"user2\", \"user3\"],\r\n  \"startDate\": \"2024-07-15T10:00:00\",\r\n  \"endDate\": \"2024-12-15T18:00:00\",\r\n  \"status\": \"InProgress\",\r\n  \"taskIds\": [\"task1\", \"task2\", \"task3\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/projects/createProject",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"projects",
+								"createProject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJzdzFvZzNyQl9GUjIxczhRMGpTcW9ocDdlUU9sbmN3aU1uR01jVmtOQWtnIn0.eyJleHAiOjE3MjE2NTc5MTksImlhdCI6MTcyMTA1MzExOSwianRpIjoiNzJhYzA4ZGMtZjNhYy00M2U3LWE1ODMtMjdiMGZlOWM5NjE3IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MjgwL3JlYWxtcy90YXNrLW1hbmFnZXItbWljcm9zZXJ2aWNlcyIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJmOjdjYTUyZmQ0LWQzZTktNDY5NS05YmRkLWQ5NDE5ZmIwOTE3NTphc2QiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJhcGktZ2F0ZXdheS1zZXJ2aWNlIiwic2Vzc2lvbl9zdGF0ZSI6ImU4NGM0ZTIzLTI5YWItNDlkYS1hODA0LTc4MDg3MjI3YzVmZCIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDo4MDgwIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJST0xFX1VTRVIiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBvZmZsaW5lX2FjY2VzcyBwcm9maWxlIiwic2lkIjoiZTg0YzRlMjMtMjlhYi00OWRhLWE4MDQtNzgwODcyMjdjNWZkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiYXNkIGFzZCIsInByZWZlcnJlZF91c2VybmFtZSI6ImFzZCIsImdpdmVuX25hbWUiOiJhc2QiLCJmYW1pbHlfbmFtZSI6ImFzZCIsImVtYWlsIjoiYXNkQGdtYWlsLmNvbSJ9.0VHnOemG90Ki1vDFnVence8hbIaDJ5FqpnzJlpqgxkfKl_cXXIIJx7s3AtAtAdYrM8qlgryhgjHrxmSo-61LRr36F1SmReipLhmXwv7rgP-6fkbJNkcfTcVkgb3W7AHO80-KPfw7iC5YrI5Er_HaD2JanBV6d8GwdggKxCxrIyrZhFMT_GzT8-6qDHrvppSP7A2bKwIRr6sY9Pq7TflRnDz_iqt4B9iuHl1-awL49FRLzWc4V8-JPbagOiaAsccR6geUE6lgI9BzZDi-GCLtoGqqWpkF2Dyo0zyoXzVungLviSaTsuhdsFjEz2n-lRFkbx-xVy4idfgWiGej2EAewQ",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Changed Project\",\r\n  \"description\": \"This is a changed generated project description.\",\r\n  \"memberIds\": [\"user3\", \"user2\", \"user1\"],\r\n  \"startDate\": \"2024-07-15T10:00:00\",\r\n  \"endDate\": \"2024-12-15T18:00:00\",\r\n  \"status\": \"InProgress\",\r\n  \"taskIds\": [\"task2\", \"task1\", \"task3\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/projects/updateProject/66953200c2a5c262a819beea",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"projects",
+								"updateProject",
+								"66953200c2a5c262a819beea"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJzdzFvZzNyQl9GUjIxczhRMGpTcW9ocDdlUU9sbmN3aU1uR01jVmtOQWtnIn0.eyJleHAiOjE3MjE2NTc5MTksImlhdCI6MTcyMTA1MzExOSwianRpIjoiNzJhYzA4ZGMtZjNhYy00M2U3LWE1ODMtMjdiMGZlOWM5NjE3IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MjgwL3JlYWxtcy90YXNrLW1hbmFnZXItbWljcm9zZXJ2aWNlcyIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJmOjdjYTUyZmQ0LWQzZTktNDY5NS05YmRkLWQ5NDE5ZmIwOTE3NTphc2QiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJhcGktZ2F0ZXdheS1zZXJ2aWNlIiwic2Vzc2lvbl9zdGF0ZSI6ImU4NGM0ZTIzLTI5YWItNDlkYS1hODA0LTc4MDg3MjI3YzVmZCIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDo4MDgwIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJST0xFX1VTRVIiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBvZmZsaW5lX2FjY2VzcyBwcm9maWxlIiwic2lkIjoiZTg0YzRlMjMtMjlhYi00OWRhLWE4MDQtNzgwODcyMjdjNWZkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiYXNkIGFzZCIsInByZWZlcnJlZF91c2VybmFtZSI6ImFzZCIsImdpdmVuX25hbWUiOiJhc2QiLCJmYW1pbHlfbmFtZSI6ImFzZCIsImVtYWlsIjoiYXNkQGdtYWlsLmNvbSJ9.0VHnOemG90Ki1vDFnVence8hbIaDJ5FqpnzJlpqgxkfKl_cXXIIJx7s3AtAtAdYrM8qlgryhgjHrxmSo-61LRr36F1SmReipLhmXwv7rgP-6fkbJNkcfTcVkgb3W7AHO80-KPfw7iC5YrI5Er_HaD2JanBV6d8GwdggKxCxrIyrZhFMT_GzT8-6qDHrvppSP7A2bKwIRr6sY9Pq7TflRnDz_iqt4B9iuHl1-awL49FRLzWc4V8-JPbagOiaAsccR6geUE6lgI9BzZDi-GCLtoGqqWpkF2Dyo0zyoXzVungLviSaTsuhdsFjEz2n-lRFkbx-xVy4idfgWiGej2EAewQ",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/projects/deleteProject/66953200c2a5c262a819beea",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"projects",
+								"deleteProject",
+								"66953200c2a5c262a819beea"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [
