@@ -39,13 +39,15 @@ public class SecurityBeans {
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers("/users/register", "/users/changePassword", "/users/login", "/users/grantCode").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users/refreshToken", "/users/resetPassword").permitAll()
+                        .requestMatchers("/users/getUserIdByToken").hasAuthority("SCOPE_view_users")
                         .requestMatchers("/users/dashboard").authenticated()
+                        .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtTokenConverter)))
                 .logout(logout -> logout.logoutSuccessUrl("/users/login"))
-                .exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler((request, response, accessDeniedException) -> response.sendRedirect("http://localhost:8080/users/login")))
+//                .exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler((request, response, accessDeniedException) -> response.sendRedirect("http://localhost:8080/users/login")))
                 .build();
     }
 

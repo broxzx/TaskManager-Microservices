@@ -70,4 +70,9 @@ public class UserController {
         return ResponseEntity.ok(keycloakUtils.refreshToken(refreshToken));
     }
 
+    @GetMapping("/getUserIdByToken")
+    public String getUserIdByToken(@RequestParam("token") String token) {
+        return userService.getUserIdByToken(token);
+    }
+
 }

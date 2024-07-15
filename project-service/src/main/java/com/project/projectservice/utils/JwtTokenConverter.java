@@ -1,4 +1,4 @@
-package com.project.userservice.utils;
+package com.project.projectservice.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
@@ -8,7 +8,9 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -17,21 +19,16 @@ public class JwtTokenConverter implements Converter<Jwt, AbstractAuthenticationT
 
     @Override
     public AbstractAuthenticationToken convert(Jwt source) {
-        Map<String, Collection<String>> realm_access = source.getClaim("realm_access");
-        Collection<String> roles = realm_access.get("roles");
+        Map<String, Collection<String>> keycloakRoles = source.getClaim("realm_access");
 
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>(roles.stream()
+        List<SimpleGrantedAuthority> userRoles = keycloakRoles.get("roles")
+                .stream()
                 .filter(role -> role.startsWith("ROLE_"))
                 .map(SimpleGrantedAuthority::new)
-                .toList());
+                .toList();
 
-        List<String> scopes = source.getClaimAsStringList("scope");
+        log.info("{}", userRoles);
 
-        if (scopes != null) {
-            authorities.addAll(Arrays.stream(scopes.get(0).split(" ")).map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope)).toList());
-        }
-
-        log.info("{}", authorities);
-        return new JwtAuthenticationToken(source, authorities);
+        return new JwtAuthenticationToken(source, userRoles);
     }
 }

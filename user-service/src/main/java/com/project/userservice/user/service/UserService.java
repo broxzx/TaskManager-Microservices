@@ -167,7 +167,7 @@ public class UserService {
             Cookie cookie = new Cookie(HttpHeaders.AUTHORIZATION, encodedValue);
             response.addCookie(cookie);
 
-            response.sendRedirect ("http://localhost:8080/users/dashboard");
+            response.sendRedirect("http://localhost:8080/users/dashboard");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -183,6 +183,13 @@ public class UserService {
         String url = "https://www.googleapis.com/oauth2/v2/userinfo";
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class);
         return new Gson().fromJson(response.getBody(), JsonObject.class);
+    }
+
+    public String getUserIdByToken(String token) {
+        String username = jwtUtils.getUsernameByToken(token);
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("user with username '%s' is not found".formatted(username)))
+                .getId();
     }
 
     @Autowired
