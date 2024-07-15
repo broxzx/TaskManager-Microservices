@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"test\",\r\n    \"password\": \"test\"\r\n}",
+							"raw": "{\r\n    \"username\": \"test\",\r\n    \"password\": \"test\",\r\n    \"rememberMe\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -46,7 +46,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0OTZhR3dqbnB3dDhHVVF6c1Y3ZTNRbEx4Y1NEY0kxZnhmT3haLVBBSVZvIn0.eyJleHAiOjE3MjA0MDM3OTUsImlhdCI6MTcyMDM2Nzc5NSwianRpIjoiMDEyOThhYmUtNmVhZC00NGU3LThlMjgtMWVlODQ5NmM2MjRjIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MjgwL3JlYWxtcy90YXNrLW1hbmFnZXItbWljcm9zZXJ2aWNlcyIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJlZTlhMTExYi1mOWE5LTRjYzctYTM5Ni1mNzM5MTFkMDViY2IiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJhcGktZ2F0ZXdheS1zZXJ2aWNlIiwic2Vzc2lvbl9zdGF0ZSI6IjUyNjI3Njg5LWVhMTYtNDJjMS04ODQ3LTI3ZjVlZjBlOWNiZSIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDo4MDgwIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLXRhc2stbWFuYWdlci1taWNyb3NlcnZpY2VzIiwiUk9MRV9VU0VSIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjUyNjI3Njg5LWVhMTYtNDJjMS04ODQ3LTI3ZjVlZjBlOWNiZSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6InRlc3QgdGVzdCIsInByZWZlcnJlZF91c2VybmFtZSI6InRlc3QiLCJnaXZlbl9uYW1lIjoidGVzdCIsImZhbWlseV9uYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEBnbWFpbC5jb20ifQ.TcMSA_DZWb7jRFt_n_Vkzk2WwQ6etDU1Bo1pKa0rLw6U32mgj2a5vt9fvKHr4bgaDroNhVZR1_v7bh7qx6vttDhht_dV5yTz8bGu5AaUVD9jQPkuLhKTdIcIsAMXxC5u4nCsMeuUspoEMWooluyrn0dCyCsU9v4sHiq7V1FEDtoC87dUt2zp5AAIhgII9Ysh9FBXjcJWj1fu-0snV_lFGr6qkz7_3qHbRmI3Awi4nBomu37rmjdR-zjINeNPvftDSE-8i2M_HsykzwrjoAItxN49hzu64aD9vEQa6I653Ou63qOnPDtsnaAZhsfiO5VMf8kVigF4SbpFlGtcCiHKRA",
+									"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICItN3NkREh5ZVZTZUc0eDc2NFdXaUN0RWQ3VlpvYWxia3BUNXBJTHM2Y0ZrIn0.eyJleHAiOjE3MjE0NjMzMzAsImlhdCI6MTcyMDg1ODUzMCwianRpIjoiNjBiZjQ0ZWItMjEzMS00N2JjLTg0YTAtMDZiNWY3MGNkOWM4IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MjgwL3JlYWxtcy90YXNrLW1hbmFnZXItbWljcm9zZXJ2aWNlcyIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJmOjdjYTUyZmQ0LWQzZTktNDY5NS05YmRkLWQ5NDE5ZmIwOTE3NTp0ZXN0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiYXBpLWdhdGV3YXktc2VydmljZSIsInNlc3Npb25fc3RhdGUiOiJlYWEzNmM4Ni0yN2U2LTQ4NTQtODMyMC0zMTIyNDk1NzY2ZTkiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbImh0dHA6Ly9sb2NhbGhvc3Q6ODA4MCJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiUk9MRV9VU0VSIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgb2ZmbGluZV9hY2Nlc3MgcHJvZmlsZSIsInNpZCI6ImVhYTM2Yzg2LTI3ZTYtNDg1NC04MzIwLTMxMjI0OTU3NjZlOSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6InRlc3QgdGVzdCIsInByZWZlcnJlZF91c2VybmFtZSI6InRlc3QiLCJnaXZlbl9uYW1lIjoidGVzdCIsImZhbWlseV9uYW1lIjoidGVzdCIsImVtYWlsIjoibGhyZHgzOEBnbWFpbC5jb20ifQ.YHQ5G3ASJevqx4s0qamRAWOJxa7B1LbC8z4ZsTl0PxqDQvc0CbGPmuj9gboDSKv1yXqx4qDNI_zMDla8aabQtllOAQzAc8usex8a5O4Py0vhUs5jH5wa6Mhl9-LcGLVsllJNaaWDAF0m3IOwOiajbnBWZpAND9AavjyEPH3knSMAA2UQ0LbPjCtYep2orELGlbGqTD8eL48TkyKVZtBNccO5VaOx1AkK1CtlJJTdnp9KBthrmiqI9k0GSpJVa8kv8qO8tawBEMsKEhA5m31RSh7v4v8NYJfgZJAtX11C2OVD3q3N7I1xYulTCPYPUDtr0n10e_W8xy5-Yq-riN1Sew",
 									"type": "string"
 								}
 							]
@@ -54,7 +54,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/users/forgotPassword?userId=668978744ded0556351102b8",
+							"raw": "http://localhost:8080/users/resetPassword?email=lhrdx38@gmail.com",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -62,12 +62,12 @@
 							"port": "8080",
 							"path": [
 								"users",
-								"forgotPassword"
+								"resetPassword"
 							],
 							"query": [
 								{
-									"key": "userId",
-									"value": "668978744ded0556351102b8"
+									"key": "email",
+									"value": "lhrdx38@gmail.com"
 								}
 							]
 						}
@@ -81,7 +81,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"test\",\r\n    \"password\": \"test\",\r\n    \"email\": \"test@gmail.com\"\r\n}",
+							"raw": "{\r\n    \"username\": \"test\",\r\n    \"password\": \"test\",\r\n    \"email\": \"lhrdx97@gmail.com\",\r\n    \"firstName\": \"test\",\r\n    \"lastName\": \"test\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -169,6 +169,12 @@
 					"response": []
 				}
 			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080"
 		}
 	]
 }
