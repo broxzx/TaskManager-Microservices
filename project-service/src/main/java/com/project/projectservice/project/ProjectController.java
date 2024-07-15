@@ -36,8 +36,16 @@ public class ProjectController {
     }
 
     @DeleteMapping("/deleteProject/{id}")
-    public void deleteProject(@PathVariable("id") String projectId) {
-        projectService.deleteProjectById(projectId);
+    public void deleteProject(@PathVariable("id") String projectId,
+                              @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        projectService.deleteProjectById(projectId, authorizationHeader);
+    }
+
+    @PostMapping("/changeProjectPosition")
+    public ResponseEntity<List<Project>> changeProjectPosition(@RequestParam String projectId,
+                                                               @RequestParam("position") int newProjectPosition,
+                                                               @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return ResponseEntity.ok(projectService.updateProjectPosition(projectId, newProjectPosition, authorizationHeader));
     }
 
 }

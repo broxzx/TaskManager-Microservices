@@ -11,6 +11,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Slf4j
@@ -26,14 +28,18 @@ public class ProjectService {
     public List<Project> getUserProjects(String authorizationHeader) {
         String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
 
-        return projectRepository.findByMemberIdsContainingOrderByOwnerId(userId);
+        return projectRepository.findByMemberIdsContainingOrOwnerId(userId);
     }
 
     public Project createProject(ProjectRequestDto projectRequestDto, String authorizationHeader) {
         String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        int countUserProjects = projectRepository.countByOwnerId(userId);
 
         Project mappedProject = modelMapper.map(projectRequestDto, Project.class);
         mappedProject.setOwnerId(userId);
+        mappedProject.setPosition(countUserProjects + 1);
+
+        removeNullFieldsFromProject(projectRequestDto, mappedProject);
 
         return projectRepository.save(mappedProject);
     }
@@ -41,14 +47,58 @@ public class ProjectService {
     public Project updateProject(String projectIdToUpdate, ProjectRequestDto projectRequestDto, String authorizationHeader) {
         String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
 
-        Project project = projectRepository.findByIdAndOwnerId(projectIdToUpdate, userId)
-                .orElseThrow(() -> new EntityNotFoundException("user with id '%s' is not found".formatted(userId)));
+        Project project = getProjectByIdAndOwnerId(projectIdToUpdate, userId);
 
-        return projectRepository.save(updateProjectFromProjectRequestDto(project, projectRequestDto));
+        Project projectToSave = updateProjectFromProjectRequestDto(project, projectRequestDto);
+
+        return projectRepository.save(projectToSave);
     }
 
-    public void deleteProjectById(String projectId) {
-        projectRepository.deleteById(projectId);
+    public void deleteProjectById(String projectId, String authorizationHeader) {
+        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
+
+        List<Project> userProjects = projectRepository.findByOwnerId(userId);
+
+        List<Project> projectsToChangePosition = userProjects
+                .stream()
+                .filter(project -> project.getPosition() > obtainedProject.getPosition())
+                .peek(project -> project.setPosition(project.getPosition() - 1))
+                .toList();
+
+        projectRepository.saveAll(projectsToChangePosition);
+
+        projectRepository.delete(obtainedProject);
+    }
+
+    public List<Project> updateProjectPosition(String projectId, int newPosition, String authorizationHeader) {
+        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
+        int oldPosition = obtainedProject.getPosition();
+
+        List<Project> userProjects = projectRepository.findByOwnerId(userId);
+        List<Project> projectsToChangePosition = new ArrayList<>();
+
+        if (newPosition > oldPosition) {
+            for (Project project : userProjects) {
+                if (project.getPosition() > oldPosition && project.getPosition() <= newPosition) {
+                    project.setPosition(project.getPosition() - 1);
+                    projectsToChangePosition.add(project);
+                }
+            }
+        } else {
+            for (Project project : userProjects) {
+                if (project.getPosition() < oldPosition && project.getPosition() >= newPosition) {
+                    project.setPosition(project.getPosition() + 1);
+                    projectsToChangePosition.add(project);
+                }
+            }
+        }
+
+        obtainedProject.setPosition(newPosition);
+        projectsToChangePosition.add(obtainedProject);
+
+        return projectRepository.saveAll(projectsToChangePosition);
     }
 
     private Project updateProjectFromProjectRequestDto(Project projectToUpdate, ProjectRequestDto projectRequestDto) {
@@ -59,6 +109,29 @@ public class ProjectService {
         projectToUpdate.setStatus(projectRequestDto.getStatus());
         projectToUpdate.setTaskIds(projectRequestDto.getTaskIds());
 
+        if (projectRequestDto.getMemberIds() == null) {
+            projectToUpdate.setMemberIds(new HashSet<>());
+        }
+
+        if (projectRequestDto.getTaskIds() == null) {
+            projectToUpdate.setTaskIds(new HashSet<>());
+        }
+
         return projectToUpdate;
+    }
+
+    private Project getProjectByIdAndOwnerId(String projectId, String ownerId) {
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("projectId '%s' is not found".formatted(projectId)));
+    }
+
+    private void removeNullFieldsFromProject(ProjectRequestDto projectRequestDto, Project mappedProject) {
+        if (projectRequestDto.getTaskIds() == null) {
+            mappedProject.setTaskIds(new HashSet<>());
+        }
+
+        if (projectRequestDto.getMemberIds() == null) {
+            mappedProject.setMemberIds(new HashSet<>());
+        }
     }
 }
