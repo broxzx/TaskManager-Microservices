@@ -5,6 +5,7 @@ import com.project.userservice.user.data.UserEntity;
 import com.project.userservice.user.data.dto.response.UserResponse;
 import com.project.userservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -22,6 +23,7 @@ import java.util.Objects;
 
 import static org.keycloak.OAuth2Constants.*;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class KeycloakUtils {
@@ -62,6 +64,7 @@ public class KeycloakUtils {
         }
 
         Map exchangeBody = tokenRequest(body, headers).getBody();
+        log.info("{}", buildTokenResponseFromBodyExchange(Objects.requireNonNull(exchangeBody)));
         return buildTokenResponseFromBodyExchange(Objects.requireNonNull(exchangeBody));
     }
 
