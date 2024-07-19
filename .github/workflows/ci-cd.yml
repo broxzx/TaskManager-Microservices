@@ -44,3 +44,9 @@ jobs:
         run: |
           docker-compose -f docker-compose.yml down
           docker-compose -f docker-compose.yml up -d
+      
+      - name: Display all containers
+        run: docker ps -a
+
+      - name: Display docker compose logs
+        run: docker-compose logs
