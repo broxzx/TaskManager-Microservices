@@ -66,23 +66,83 @@ services:
 
   zookeeper:
     <<: *default-backend-configuration
-    image: wurstmeister/zookeeper
+    image: confluentinc/cp-zookeeper:7.0.1
     container_name: zookeeper
     ports:
       - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
 
-  kafka:
+  broker:
     <<: *default-backend-configuration
-    image: wurstmeister/kafka
-    container_name: kafka
+    image: confluentinc/cp-kafka:7.0.1
+    container_name: broker
     ports:
       - "9092:9092"
-    environment:
-      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
-      KAFKA_ADVERTISED_HOST_NAME: localhost
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     depends_on:
       - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+
+  # dockerize applications
+
+  config-cloud-service:
+    <<: *default-backend-configuration
+    container_name: config-cloud-service
+    image: config-cloud-service
+    ports:
+      - "8888:8888"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+
+  eureka-discovery-service:
+    <<: *default-backend-configuration
+    container_name: eureka-discovery-service
+    image: eureka-discovery-service
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+
+  gateway-service:
+    <<: *default-backend-configuration
+    container_name: gateway-service
+    image: gateway-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+
+  kafka-message-service:
+    <<: *default-backend-configuration
+    container_name: kafka-message-service
+    image: kafka-message-service
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+
+  project-service:
+    <<: *default-backend-configuration
+    container_name: project-service
+    image: project-service
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+
+  user-service:
+    <<: *default-backend-configuration
+    container_name: user-service
+    image: user-service
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+
 
 networks:
   backend:

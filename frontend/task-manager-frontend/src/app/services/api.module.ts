@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { ApiConfiguration, ApiConfigurationParams } from './api-configuration';
 
 import { UserControllerService } from './services/user-controller.service';
+import {AuthInterceptor} from "./fn/interceptors/AuthInterceptor";
 
 /**
  * Module that provides all services and configuration.
@@ -15,7 +16,8 @@ import { UserControllerService } from './services/user-controller.service';
   declarations: [],
   providers: [
     UserControllerService,
-    ApiConfiguration
+    ApiConfiguration,
+
   ],
 })
 export class ApiModule {
@@ -25,13 +27,14 @@ export class ApiModule {
       providers: [
         {
           provide: ApiConfiguration,
-          useValue: params
+          useValue: params,
+          useClass: AuthInterceptor
         }
       ]
     }
   }
 
-  constructor( 
+  constructor(
     @Optional() @SkipSelf() parentModule: ApiModule,
     @Optional() http: HttpClient
   ) {
