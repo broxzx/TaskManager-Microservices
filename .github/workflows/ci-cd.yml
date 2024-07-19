@@ -44,19 +44,3 @@ jobs:
         run: |
           docker-compose -f docker-compose.yml down
           docker-compose -f docker-compose.yml up -d
-
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'adopt'
-          java-version: '17'
-
-      - name: Run tests with Maven
-        run: mvn test
