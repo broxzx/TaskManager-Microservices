@@ -48,4 +48,39 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.updateProjectPosition(projectId, newProjectPosition, authorizationHeader));
     }
 
+    @PostMapping("/{projectId}/addMembers")
+    public ResponseEntity<Project> addMembersToProject(@PathVariable("projectId") String projectId,
+                                                       @RequestParam("members") List<String> memberIds,
+                                                       @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return ResponseEntity.ok(projectService.addMembersToProject(projectId, memberIds, authorizationHeader));
+    }
+
+    @DeleteMapping("/{projectId}/deleteMembers")
+    public ResponseEntity<Project> deleteMembersFromProject(@PathVariable("projectId") String projectId,
+                                                            @RequestParam("members") List<String> memberIds,
+                                                            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return ResponseEntity.ok(projectService.deleteMembersFromProject(projectId, memberIds, authorizationHeader));
+    }
+
+    @PostMapping("/{projectId}/statuses")
+    public ResponseEntity<Project> changeProjectStatus(@PathVariable("projectId") String projectId,
+                                                       @RequestParam("status") String status,
+                                                       @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return ResponseEntity.ok(projectService.changeProjectStatus(projectId, status, authorizationHeader));
+    }
+
+    @PostMapping("/{projectId}/tags")
+    public ResponseEntity<Project> addTagsToProject(@PathVariable("projectId") String projectId,
+                                                    @RequestParam List<String> tagIds,
+                                                    @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return ResponseEntity.ok(projectService.addTagsToProject(projectId, tagIds, authorizationHeader));
+    }
+
+    @DeleteMapping("/{projectId}/tags/{tagId}")
+    public ResponseEntity<Project> deleteTagFromProject(@PathVariable("projectId") String projectId,
+                                                        @PathVariable("tagId") String tagId,
+                                                        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return ResponseEntity.ok(projectService.deleteTagFromProject(projectId, tagId, authorizationHeader));
+    }
+
 }

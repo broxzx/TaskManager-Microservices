@@ -11,4 +11,7 @@ public interface UserFeign {
     @GetMapping("/getUserIdByToken")
     String getUserIdByToken(@RequestParam("token") String token);
 
+    @GetMapping("checkUserExists")
+    boolean checkUserExists(@RequestParam("userId") String userId);
+
 }

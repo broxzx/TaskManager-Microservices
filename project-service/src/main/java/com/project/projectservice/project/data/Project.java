@@ -1,5 +1,6 @@
 package com.project.projectservice.project.data;
 
+import com.project.projectservice.tags.data.Tag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +31,8 @@ public class Project {
     private String status = "Pending";
     @Builder.Default
     private Integer position = 0;
+    @Builder.Default
+    private Set<Tag> tagIds = new HashSet<>() ;
     @Builder.Default
     private Set<String> taskIds = new HashSet<>();
     @Builder.Default

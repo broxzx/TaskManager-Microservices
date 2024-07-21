@@ -40,6 +40,7 @@ public class SecurityBeans {
                         .requestMatchers("/users/register", "/users/changePassword", "/users/login", "/users/grantCode").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users/refreshToken", "/users/resetPassword").permitAll()
                         .requestMatchers("/users/getUserIdByToken").hasAuthority("SCOPE_view_users")
+                        .requestMatchers("/users/checkUserExists").hasAuthority("SCOPE_view_users")
                         .requestMatchers("/users/dashboard").authenticated()
                         .requestMatchers("/v2/api-docs","/v3/api-docs","/v3/api-docs/**","/swagger-resources","/swagger-resources/**",
                                 "/configuration/ui","/configuration/security","/swagger-ui/**","/webjars/**","/swagger-ui.html").permitAll()

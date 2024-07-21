@@ -196,4 +196,8 @@ public class UserService {
     public void setKeycloakUtils(@Lazy KeycloakUtils keycloakUtils) {
         this.keycloakUtils = keycloakUtils;
     }
+
+    public boolean checkUserExists(String userId) {
+        return userRepository.existsById(userId);
+    }
 }

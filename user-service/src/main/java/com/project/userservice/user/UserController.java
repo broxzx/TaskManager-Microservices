@@ -75,4 +75,9 @@ public class UserController {
         return userService.getUserIdByToken(token);
     }
 
+    @GetMapping("checkUserExists")
+    public boolean checkUserExists(@RequestParam("userId") String userId) {
+        return userService.checkUserExists(userId);
+    }
+
 }

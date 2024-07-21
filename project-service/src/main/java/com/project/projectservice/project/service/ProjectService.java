@@ -5,6 +5,9 @@ import com.project.projectservice.exceptions.ForbiddenException;
 import com.project.projectservice.feings.UserFeign;
 import com.project.projectservice.project.data.Project;
 import com.project.projectservice.project.data.dto.request.ProjectRequestDto;
+import com.project.projectservice.tags.data.Tag;
+import com.project.projectservice.tags.services.TagRepository;
+import com.project.projectservice.tags.services.TagService;
 import com.project.projectservice.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +28,8 @@ public class ProjectService {
     private final UserFeign userFeign;
     private final JwtUtils jwtUtils;
     private final ModelMapper modelMapper;
+    private final TagRepository tagRepository;
+    private final TagService tagService;
 
     public List<Project> getUserProjects(String authorizationHeader) {
         String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
@@ -68,6 +73,8 @@ public class ProjectService {
                 .toList();
 
         projectRepository.saveAll(projectsToChangePosition);
+
+        tagService.deleteTagsByProjectId(obtainedProject.getId());
 
         projectRepository.deleteByIdAndOwnerId(obtainedProject.getId(), obtainedProject.getOwnerId());
     }
@@ -140,5 +147,57 @@ public class ProjectService {
         if (projectRequestDto.getMemberIds() == null) {
             mappedProject.setMemberIds(new HashSet<>());
         }
+    }
+
+    public Project addMembersToProject(String projectId, List<String> memberIds, String authorizationHeader) {
+        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
+
+        List<String> existMemberIds = memberIds
+                .stream()
+                .filter(userFeign::checkUserExists)
+                .toList();
+
+        obtainedProject.getMemberIds().addAll(existMemberIds);
+        return projectRepository.save(obtainedProject);
+    }
+
+    public Project deleteMembersFromProject(String projectId, List<String> memberIds, String authorizationHeader) {
+        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
+
+        memberIds.forEach(obtainedProject.getMemberIds()::remove);
+        return projectRepository.save(obtainedProject);
+    }
+
+    public Project changeProjectStatus(String projectId, String newStatus, String authorizationHeader) {
+        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
+
+        obtainedProject.setStatus(newStatus);
+
+        return projectRepository.save(obtainedProject);
+    }
+
+    public Project addTagsToProject(String projectId, List<String> tagIds, String authorizationHeader) {
+        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
+
+        List<Tag> tags = tagIds.stream()
+                .map(tagService::getTagById)
+                .toList();
+
+        obtainedProject.getTagIds().addAll(tags);
+
+        return projectRepository.save(obtainedProject);
+    }
+
+    public Project deleteTagFromProject(String projectId, String tagIds, String authorizationHeader) {
+        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
+
+        obtainedProject.getTagIds().removeIf(tag -> tag.getId().equals(tagIds));
+
+        return projectRepository.save(obtainedProject);
     }
 }
