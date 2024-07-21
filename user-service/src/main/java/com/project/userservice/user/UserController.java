@@ -2,7 +2,7 @@ package com.project.userservice.user;
 
 import com.project.userservice.model.ChangePasswordDto;
 import com.project.userservice.model.TokenResponse;
-import com.project.userservice.user.data.UserEntity;
+import com.project.userservice.user.data.User;
 import com.project.userservice.user.data.dto.request.LoginRequest;
 import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.user.service.UserService;
@@ -26,7 +26,7 @@ public class UserController {
     private final KafkaProducerService kafkaProducerService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserEntity> register(@RequestBody @Valid UserRequest userRequest) {
+    public ResponseEntity<User> register(@RequestBody @Valid UserRequest userRequest) {
         return ResponseEntity.ok(userService.registerUser(userRequest));
     }
 
@@ -45,8 +45,8 @@ public class UserController {
     }
 
     @PutMapping("/updateUserData")
-    public ResponseEntity<UserEntity> updateUserData(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
-                                                     @RequestBody @Valid UserRequest userRequest) {
+    public ResponseEntity<User> updateUserData(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
+                                               @RequestBody @Valid UserRequest userRequest) {
         return ResponseEntity.ok(userService.updateUserEntity(authorizationHeader, userRequest));
     }
 

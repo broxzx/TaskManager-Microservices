@@ -7,7 +7,7 @@ import com.project.userservice.exception.PasswordNotMatch;
 import com.project.userservice.exception.UserAlreadyExistsException;
 import com.project.userservice.model.ChangePasswordDto;
 import com.project.userservice.model.TokenResponse;
-import com.project.userservice.user.data.UserEntity;
+import com.project.userservice.user.data.User;
 import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.user.data.enums.Roles;
 import com.project.userservice.utils.JwtUtils;
@@ -50,15 +50,15 @@ public class UserService {
     @Value("${google.client-secret}")
     private String googleClientSecret;
 
-    public UserEntity getUserEntityById(String id) {
+    public User getUserEntityById(String id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("user with id '%s' is not found".formatted(id)));
     }
 
-    public UserEntity registerUser(UserRequest userRequest) {
+    public User registerUser(UserRequest userRequest) {
         checkUserDuplicates(userRequest);
 
-        UserEntity userEntityToSave = UserEntity.builder()
+        User userToSave = User.builder()
                 .username(userRequest.getUsername())
                 .password(bCryptPasswordEncoder.encode(userRequest.getPassword()))
                 .email(userRequest.getEmail())
@@ -68,19 +68,19 @@ public class UserService {
                 .roles(List.of(Roles.ROLE_USER.toString()))
                 .build();
 
-        return userRepository.save(userEntityToSave);
+        return userRepository.save(userToSave);
     }
 
-    public UserEntity updateUserEntity(String authorizationToken, UserRequest userRequest) {
+    public User updateUserEntity(String authorizationToken, UserRequest userRequest) {
         String usernameByToken = jwtUtils.getUsernameByToken(jwtUtils.extractTokenFromHeader(authorizationToken));
-        UserEntity userEntityToAlter = getUserEntityByUsername(usernameByToken);
+        User userToAlter = getUserEntityByUsername(usernameByToken);
 
-        updateUserEntityFields(userEntityToAlter, userRequest);
+        updateUserEntityFields(userToAlter, userRequest);
 
-        return userRepository.save(userEntityToAlter);
+        return userRepository.save(userToAlter);
     }
 
-    public UserEntity getUserEntityByUsername(String username) {
+    public User getUserEntityByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("user with id '%s' is not found".formatted(username)));
     }
@@ -97,7 +97,7 @@ public class UserService {
                 });
     }
 
-    private void updateUserEntityFields(UserEntity user, UserRequest userRequest) {
+    private void updateUserEntityFields(User user, UserRequest userRequest) {
         if (userRequest.getUsername() != null) {
             user.setUsername(user.getUsername());
         }
@@ -110,7 +110,7 @@ public class UserService {
     public void changePasswordWithNewPassword(String token, ChangePasswordDto changePasswordDto) {
         String userEmail = jwtUtils.getEmailFromResetPasswordToken(token);
 
-        UserEntity userToChangePassword = userRepository.findByEmail(userEmail)
+        User userToChangePassword = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new EntityNotFoundException("user with email %s is not found".formatted(userEmail)));
 
         if (!Objects.equals(changePasswordDto.password(), changePasswordDto.confirmPassword())) {
@@ -142,7 +142,7 @@ public class UserService {
 
         JsonObject userProfileDetails = getProfileDetailsGoogle(Objects.requireNonNull(obtainedDataFromCode).get("access_token").toString());
 
-        UserEntity userEntityToSave = UserEntity.builder()
+        User userToSave = User.builder()
                 .username(userProfileDetails.get("email").toString().replace("\"", ""))
                 .password(bCryptPasswordEncoder.encode(userProfileDetails.get("id").toString().replace("\"", "")))
                 .email(userProfileDetails.get("email").toString().replace("\"", ""))
@@ -155,11 +155,11 @@ public class UserService {
                 .build();
 
 
-        userRepository.save(userEntityToSave);
+        userRepository.save(userToSave);
 
         log.info("{}", userProfileDetails);
 
-        TokenResponse userTokenResponse = keycloakUtils.getUserTokenFromUsernameAndPassword(userEntityToSave.getUsername(), userProfileDetails.get("id").toString().replace("\"", ""), true);
+        TokenResponse userTokenResponse = keycloakUtils.getUserTokenFromUsernameAndPassword(userToSave.getUsername(), userProfileDetails.get("id").toString().replace("\"", ""), true);
 
         try {
             String encodedValue = URLEncoder.encode(userTokenResponse.accessToken(), StandardCharsets.UTF_8);

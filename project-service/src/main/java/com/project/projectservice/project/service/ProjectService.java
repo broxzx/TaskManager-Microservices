@@ -1,6 +1,7 @@
 package com.project.projectservice.project.service;
 
 import com.project.projectservice.exceptions.EntityNotFoundException;
+import com.project.projectservice.exceptions.ForbiddenException;
 import com.project.projectservice.feings.UserFeign;
 import com.project.projectservice.project.data.Project;
 import com.project.projectservice.project.data.dto.request.ProjectRequestDto;
@@ -28,7 +29,7 @@ public class ProjectService {
     public List<Project> getUserProjects(String authorizationHeader) {
         String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
 
-        return projectRepository.findByMemberIdsContainingOrOwnerId(userId);
+        return projectRepository.findUserProjects(userId);
     }
 
     public Project createProject(ProjectRequestDto projectRequestDto, String authorizationHeader) {
@@ -68,7 +69,7 @@ public class ProjectService {
 
         projectRepository.saveAll(projectsToChangePosition);
 
-        projectRepository.delete(obtainedProject);
+        projectRepository.deleteByIdAndOwnerId(obtainedProject.getId(), obtainedProject.getOwnerId());
     }
 
     public List<Project> updateProjectPosition(String projectId, int newPosition, String authorizationHeader) {
@@ -121,8 +122,14 @@ public class ProjectService {
     }
 
     private Project getProjectByIdAndOwnerId(String projectId, String ownerId) {
-        return projectRepository.findById(projectId)
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("projectId '%s' is not found".formatted(projectId)));
+
+        if (!project.getMemberIds().contains(ownerId) && !project.getOwnerId().equals(ownerId)) {
+            throw new ForbiddenException("you don't have access to project with name '%s'".formatted(project.getName()));
+        }
+
+        return project;
     }
 
     private void removeNullFieldsFromProject(ProjectRequestDto projectRequestDto, Project mappedProject) {

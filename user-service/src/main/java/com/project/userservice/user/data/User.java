@@ -17,7 +17,7 @@ import java.util.List;
 @Builder
 @Data
 @Document(collection = "users")
-public class UserEntity {
+public class User {
 
     private String id;
 

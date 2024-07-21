@@ -1,7 +1,7 @@
 package com.project.userservice.utils;
 
 import com.project.userservice.model.TokenResponse;
-import com.project.userservice.user.data.UserEntity;
+import com.project.userservice.user.data.User;
 import com.project.userservice.user.data.dto.response.UserResponse;
 import com.project.userservice.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +69,7 @@ public class KeycloakUtils {
     }
 
     public void forgotPassword(String userId) {
-        UserEntity obtainedUserEntity = userService.getUserEntityById(userId);
+        User obtainedUser = userService.getUserEntityById(userId);
 
         try (Keycloak keycloak = KeycloakBuilder.builder()
                 .serverUrl(authServerUrl)
@@ -81,7 +81,7 @@ public class KeycloakUtils {
 
             UserRepresentation user = keycloak.realm(realm)
                     .users()
-                    .search(obtainedUserEntity.getUsername())
+                    .search(obtainedUser.getUsername())
                     .stream()
                     .findFirst()
                     .orElse(null);
@@ -120,11 +120,11 @@ public class KeycloakUtils {
     private TokenResponse buildTokenResponseFromBodyExchange(Map body) {
         String accessToken = body.get(ACCESS_TOKEN).toString();
 
-        UserEntity obtainedUserEntity = userService.getUserEntityByUsername(jwtUtils.getUsernameByToken(accessToken));
+        User obtainedUser = userService.getUserEntityByUsername(jwtUtils.getUsernameByToken(accessToken));
 
         return new TokenResponse(body.get(ACCESS_TOKEN).toString(),
                 body.get(REFRESH_TOKEN).toString(), Long.valueOf(body.get(EXPIRES_IN).toString()),
-                modelMapper.map(obtainedUserEntity, UserResponse.class));
+                modelMapper.map(obtainedUser, UserResponse.class));
     }
 
     private ResponseEntity<Map> tokenRequest(MultiValueMap<String, String> body, HttpHeaders headers) {
