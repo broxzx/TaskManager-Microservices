@@ -49,17 +49,3 @@ jobs:
 
       - name: Display docker compose logs
         run: docker-compose logs
-      
-      - name: Deploy to remote server
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
-          chmod 600 private_key
-          ssh -i private_key -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} << 'EOF'
-            cd ${{ secrets.REMOTE_PROJECT_PATH }}
-            docker-compose down
-            docker-compose pull
-            docker-compose up -d
-          EOF
-        env:
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
