@@ -66,6 +66,11 @@ google:
   client-id:
   client-secret:
 
+db:
+  env:
+    test:
+      user-collection: user-test
+
 eureka:
   instance:
     lease-expiration-duration-in-seconds: 10
