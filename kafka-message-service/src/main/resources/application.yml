@@ -6,8 +6,8 @@ spring:
     name: kafka-message-service
 
   mail:
-    host: smtp.freesmtpservers.com
-    port: 25
+    host: localhost
+    port: 1025
 
   kafka:
     bootstrap-servers: localhost:9092
