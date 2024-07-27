@@ -10,7 +10,7 @@ spring:
     port: 25
 
   kafka:
-    bootstrap-servers: localhost:9093
+    bootstrap-servers: localhost:9092
     consumer:
       group-id: message-service
       auto-offset-reset: earliest
@@ -47,6 +47,7 @@ eureka:
 
 kafka:
   forgot-password-topic: forgot-password
+  bootstrap-server: localhost:9092
 
 jwt:
   secretKey: ccb63ce7180e6ebc737ac6da9570fe55b785d924b074261b5a542e38cfb4a54d
