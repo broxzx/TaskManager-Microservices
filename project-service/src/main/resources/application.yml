@@ -50,7 +50,7 @@ keycloak:
 
 management:
   server:
-    port: 9100
+    port: 9102
   endpoints:
     web:
       exposure:
