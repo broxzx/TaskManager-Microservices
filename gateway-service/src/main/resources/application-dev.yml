@@ -51,9 +51,20 @@ eureka:
     service-url:
       defaultZone: http://eureka-discovery-service:8761/eureka
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - prometheus
+
 logging:
   level:
+    root: info
     org.springframework.security.web.FilterChainProxy: DEBUG
     org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
     org.springframework.security.access.vote.AffirmativeBased: DEBUG
     org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
+#  file:
+#    name: /logs/gateway-service.log

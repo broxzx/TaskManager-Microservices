@@ -21,7 +21,7 @@ services:
 
   keycloak-task-manager:
     <<: *default-backend-configuration
-    container_name: task-manager-keycloak
+    container_name: keycloak-task-manager
     image: quay.io/keycloak/keycloak:24.0.2
     healthcheck:
       test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e \"GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n\" >&3;grep \"HTTP/1.1 200 OK\" <&3" ]
@@ -36,9 +36,9 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_DB_NAME:
     volumes:
-      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
-      - ./keycloak/themes/reset-password-web.ftl:/opt/keycloak/themes/mytheme/email/html/executeActions.ftl
-      - ./keycloak/themes/reset-password-txt.ftl:/opt/keycloak/themes/mytheme/email/text/executeActions.ftl
+      - ./config/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./config/keycloak/themes/reset-password-web.ftl:/opt/keycloak/themes/mytheme/email/html/executeActions.ftl
+      - ./config/keycloak/themes/reset-password-txt.ftl:/opt/keycloak/themes/mytheme/email/text/executeActions.ftl
       - ./custom-user-provider-mongodb/target/keycloak-mongodb-user-storage-provider.jar:/opt/keycloak/providers/keycloak-mongodb-user-storage-provider.jar
       - ./custom-event-listener/target/custom-user-session-listener.jar:/opt/keycloak/providers/custom-user-session-listener.jar
 
@@ -99,8 +99,61 @@ services:
       - "1080:1080"
       - "1025:1025"
 
-  # dockerize applications
+  elasticsearch:
+    <<: *default-backend-configuration
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
 
+  logstash:
+    <<: *default-backend-configuration
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    container_name: logstash
+    ports:
+      - "5044:5044"
+    volumes:
+      - ./config/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./config/logstash/pipeline:/usr/share/logstash/pipeline:ro
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    <<: *default-backend-configuration
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+  victoria-metrics:
+    <<: *default-backend-configuration
+    container_name: victoria-metrics
+    image: victoriametrics/victoria-metrics:v1.93.12
+    ports:
+      - "8428:8428"
+    command: ["-promscrape.config=promscrape.yml"]
+    volumes:
+      - ./config/victoria-metrics/promscrape.yml:/promscrape.yml
+
+  grafana:
+    <<: *default-backend-configuration
+    container_name: grafana
+    image: grafana/grafana:10.2.4
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config/data/grafana:/var/lib/grafana
+
+  # dockerize applications
   config-cloud-service:
     <<: *default-backend-configuration
     container_name: config-cloud-service
@@ -114,7 +167,6 @@ services:
     <<: *default-backend-configuration
     container_name: eureka-discovery-service
     image: eureka-discovery-service
-    restart: unless-stopped
     ports:
       - "8761:8761"
     environment:
@@ -159,3 +211,5 @@ volumes:
   user-task-manager-db:
   user-db-service:
   projects-db-service:
+  esdata:
+    driver: local

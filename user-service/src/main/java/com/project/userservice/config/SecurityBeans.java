@@ -37,6 +37,7 @@ public class SecurityBeans {
     public SecurityFilterChain gatewaySecurityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+                        .requestMatchers("/actuator/**").hasAuthority("SCOPE_metrics")
                         .requestMatchers("/users/register", "/users/changePassword", "/users/login", "/users/grantCode").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users/refreshToken", "/users/resetPassword").permitAll()
                         .requestMatchers("/users/getUserIdByToken").hasAuthority("SCOPE_view_users")

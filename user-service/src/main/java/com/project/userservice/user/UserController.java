@@ -11,6 +11,8 @@ import com.project.userservice.utils.KeycloakUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +20,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-
 public class UserController {
+
+    Logger logger = LoggerFactory.getLogger(UserController.class);
 
     private final UserService userService;
     private final KeycloakUtils keycloakUtils;
@@ -32,6 +35,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
+        logger.info("user with name '%s' tried to login".formatted(loginRequest.getUsername()));
         return ResponseEntity.ok(keycloakUtils.getUserTokenFromUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword(), loginRequest.isRememberMe()));
     }
 

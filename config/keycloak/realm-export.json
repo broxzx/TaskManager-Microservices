@@ -345,6 +345,7 @@
         }
       ],
       "project-service": [],
+      "victoria-metrics": [],
       "account": [
         {
           "id": "b8ded09c-fcde-46a0-b6ad-5fcbd86f2b25",
@@ -599,6 +600,22 @@
       "enabled": true,
       "totp": false,
       "serviceAccountClientId": "user-service",
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-task-manager-microservices"
+      ],
+      "notBefore": 0,
+      "groups": []
+    },
+    {
+      "id": "426d8a27-f130-4496-ac88-d73938234958",
+      "username": "service-account-victoria-metrics",
+      "emailVerified": false,
+      "createdTimestamp": 1722156843370,
+      "enabled": true,
+      "totp": false,
+      "serviceAccountClientId": "victoria-metrics",
       "disableableCredentialTypes": [],
       "requiredActions": [],
       "realmRoles": [
@@ -1441,6 +1458,108 @@
         "microprofile-jwt",
         "metrics"
       ]
+    },
+    {
+      "id": "dcfa4264-7016-4fd8-951a-7fd754989239",
+      "clientId": "victoria-metrics",
+      "name": "victoria-metrics",
+      "description": "victoria-metrics",
+      "rootUrl": "",
+      "adminUrl": "",
+      "baseUrl": "",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "hUSY5iMFjZxRTW4UJqX6DukheNMukZnA",
+      "redirectUris": [
+        "/*"
+      ],
+      "webOrigins": [
+        "/*"
+      ],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": true,
+      "protocol": "openid-connect",
+      "attributes": {
+        "oidc.ciba.grant.enabled": "false",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "client.secret.creation.time": "1722156843",
+        "backchannel.logout.session.required": "true",
+        "backchannel.logout.revoke.offline.tokens": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "protocolMappers": [
+        {
+          "id": "22e4c575-1042-4267-9f66-8ba1cc829442",
+          "name": "Client Host",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.session.note": "clientHost",
+            "introspection.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "clientHost",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "5f2f4fbe-0bed-43af-a182-6bf079ee0855",
+          "name": "Client IP Address",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.session.note": "clientAddress",
+            "introspection.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "clientAddress",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "16f7deac-420e-4bdd-82e3-cfc624a8616c",
+          "name": "Client ID",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.session.note": "client_id",
+            "introspection.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "client_id",
+            "jsonType.label": "String"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "view_users",
+        "phone",
+        "offline_access",
+        "microprofile-jwt",
+        "metrics"
+      ]
     }
   ],
   "clientScopes": [
@@ -2274,7 +2393,7 @@
     ],
     "org.keycloak.storage.UserStorageProvider": [
       {
-        "id": "7ca52fd4-d3e9-4695-9bdd-d9419fb09175",
+        "id": "a54adfc3-5ad6-4fa4-b2b0-2b35f3dcf67d",
         "name": "mongodb",
         "providerId": "mongo-user-provider",
         "subComponents": {},

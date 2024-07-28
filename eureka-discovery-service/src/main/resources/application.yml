@@ -22,6 +22,7 @@ spring:
             scope:
               - openid
               - microprofile-jwt
+              - metrics
         provider:
           keycloak:
             issuer-uri: http://localhost:8280/realms/task-manager-microservices
@@ -48,14 +49,18 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
+        include:
+          - health
+          - prometheus
+
 
 logging:
   level:
+    root: info
     org.springframework.security.web.FilterChainProxy: DEBUG
     org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
     org.springframework.security.access.vote.AffirmativeBased: DEBUG
     org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
+#  file:
+#    name: /logs/eureka-discovery-service.log
+#    path: .

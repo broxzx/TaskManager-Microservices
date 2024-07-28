@@ -56,9 +56,25 @@ jwt:
 common:
   baseUrl: http://gateway-service:8081/
 
+management:
+  server:
+    port: 9100
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - prometheus
+
 logging:
   level:
+    root: info
     org.springframework.security.web.FilterChainProxy: DEBUG
     org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
     org.springframework.security.access.vote.AffirmativeBased: DEBUG
     org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
+#  file:
+#    name: logs/spring-boot-app.log
+#  logstash:
+#    enabled: true
+#    destination: logstash:5044

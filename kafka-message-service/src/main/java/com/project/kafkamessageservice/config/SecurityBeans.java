@@ -1,6 +1,5 @@
 package com.project.kafkamessageservice.config;
 
-import jakarta.annotation.Priority;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -12,7 +11,6 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityBeans {
 
     @Bean
-    @Priority(0)
     public SecurityFilterChain metricsFilterChain(HttpSecurity http) throws Exception {
         return http
                 .securityMatcher("/actuator/**")

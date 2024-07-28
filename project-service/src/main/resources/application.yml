@@ -48,9 +48,26 @@ keycloak:
   client-secret: SKW61GhBo1qz6whNaeJzMaUVpRZerI5J
   server-url: http://localhost:8280
 
+management:
+  server:
+    port: 9100
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - prometheus
+
+
 logging:
   level:
+    root: info
     org.springframework.security.web.FilterChainProxy: DEBUG
     org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
     org.springframework.security.access.vote.AffirmativeBased: DEBUG
     org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
+#  file:
+#    name: logs/spring-boot-app.log
+#  logstash:
+#    enabled: true
+#    destination: localhost:5044
