@@ -151,6 +151,21 @@ services:
     ports:
       - "3100:3100"
 
+  grafana-tempo:
+    <<: *default-backend-configuration
+    container_name: grafana-tempo
+    image: grafana/tempo:2.3.1
+    command: ["-config.file=/etc/tempo.yml"]
+    volumes:
+      - ./config/tempo/tempo.yml:/etc/tempo.yml
+    ports:
+      - "3200:3200"
+      - "9095:9095"
+      - "4317:4317"
+      - "4318:4318"
+      - "9411:9411"
+      - "14268:14268"
+
   grafana:
     <<: *default-backend-configuration
     container_name: grafana
