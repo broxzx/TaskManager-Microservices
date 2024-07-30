@@ -1,6 +1,7 @@
 package com.project.projectservice.config;
 
 import feign.RequestInterceptor;
+import io.micrometer.observation.ObservationRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
@@ -8,8 +9,11 @@ import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.representations.AccessTokenResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.mongo.MongoClientSettingsBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.observability.ContextProviderFactory;
+import org.springframework.data.mongodb.observability.MongoObservationCommandListener;
 import org.springframework.http.HttpHeaders;
 
 @Slf4j
@@ -43,6 +47,12 @@ public class BeanConfig {
 
             requestTemplate.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getToken());
         };
+    }
+
+    @Bean
+    public MongoClientSettingsBuilderCustomizer mongoClientSettingsBuilderCustomizer(ObservationRegistry observationRegistry) {
+        return builder -> builder.contextProvider(ContextProviderFactory.create(observationRegistry))
+                .addCommandListener(new MongoObservationCommandListener(observationRegistry));
     }
 
     @Bean
