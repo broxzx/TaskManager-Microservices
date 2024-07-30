@@ -71,8 +71,4 @@ logging:
     org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
     org.springframework.security.access.vote.AffirmativeBased: DEBUG
     org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
-#  file:
-#    name: logs/spring-boot-app.log
-#  logstash:
-#    enabled: true
-#    destination: localhost:5044
+  config: classpath:logback.xml

@@ -66,6 +66,4 @@ logging:
     org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
     org.springframework.security.access.vote.AffirmativeBased: DEBUG
     org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
-#  file:
-#    name: /logs/eureka-discovery-service.log
-#    path: .
+  config: classpath:logback.xml

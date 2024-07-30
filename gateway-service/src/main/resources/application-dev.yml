@@ -58,6 +58,12 @@ management:
         include:
           - health
           - prometheus
+  zipkin:
+    tracing:
+      endpoint: http://grafana-tempo:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1.0
 
 logging:
   level:
@@ -66,5 +72,4 @@ logging:
     org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
     org.springframework.security.access.vote.AffirmativeBased: DEBUG
     org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
-#  file:
-#    name: /logs/gateway-service.log
+  config: classpath:logback-dev.xml
