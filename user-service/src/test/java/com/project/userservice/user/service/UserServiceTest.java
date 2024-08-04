@@ -2,6 +2,7 @@ package com.project.userservice.user.service;
 
 import com.project.userservice.UserServiceApplication;
 import com.project.userservice.exception.EntityNotFoundException;
+import com.project.userservice.exception.UserAlreadyExistsException;
 import com.project.userservice.user.data.User;
 import com.project.userservice.user.data.dto.request.UserRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -99,6 +100,34 @@ public class UserServiceTest {
         verify(userRepository, times(1)).findByUsername(any(String.class));
         verify(userRepository, times(1)).findByEmail(any(String.class));
         verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    void givenUser_whenRegisterUserWithUsernameDuplicateInDB_thenFailure() {
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(baseUser));
+        when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.empty());
+
+        UserAlreadyExistsException exception = assertThrows(UserAlreadyExistsException.class, () -> userService.registerUser(baseUserRequest));
+
+        assertThat(exception.getMessage()).isEqualTo("user with username '%s' already exists".formatted(baseUser.getUsername()));
+
+        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(0)).findByEmail(any(String.class));
+        verify(userRepository, times(0)).save(any(User.class));
+    }
+
+    @Test
+    void givenUser_whenRegisterUserWithEmailDuplicateInDB_thenFailure() {
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(baseUser));
+
+        UserAlreadyExistsException exception = assertThrows(UserAlreadyExistsException.class, () -> userService.registerUser(baseUserRequest));
+
+        assertThat(exception.getMessage()).isEqualTo("user with email '%s' already exists".formatted(baseUser.getEmail()));
+
+        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByEmail(any(String.class));
+        verify(userRepository, times(0)).save(any(User.class));
     }
 
     @Test
