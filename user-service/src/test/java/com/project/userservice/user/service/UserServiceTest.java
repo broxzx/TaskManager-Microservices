@@ -4,6 +4,7 @@ import com.project.userservice.UserServiceApplication;
 import com.project.userservice.exception.EntityNotFoundException;
 import com.project.userservice.user.data.User;
 import com.project.userservice.user.data.dto.request.UserRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,6 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = UserServiceApplication.class)
+@Slf4j
 public class UserServiceTest {
 
     @MockBean
@@ -37,7 +41,7 @@ public class UserServiceTest {
         this.baseUserRequest = UserRequest.builder()
                 .username("username")
                 .password("password")
-                .email("email")
+                .email("email@email.com")
                 .firstName("firstName")
                 .lastName("lastName")
                 .birthDate(LocalDate.now())
@@ -46,8 +50,8 @@ public class UserServiceTest {
         this.baseUser = User.builder()
                 .id(UUID.randomUUID().toString())
                 .username("username")
-                .email("email@email.com")
                 .password("password")
+                .email("email@email.com")
                 .firstName("firstName")
                 .lastName("lastName")
                 .birthDate(LocalDate.now())
@@ -82,9 +86,19 @@ public class UserServiceTest {
     }
 
     @Test
-    void givenUser() {
+    void givenUser_whenRegisterUser_thenReturnUser() {
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.empty());
+        when(userRepository.save(any(User.class))).thenReturn(baseUser);
 
+        User savedUser = userService.registerUser(baseUserRequest);
 
+        assertNotNull(savedUser);
+        assertThat(areUserEqual(baseUser, savedUser)).isTrue();
+
+        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByEmail(any(String.class));
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
@@ -109,5 +123,27 @@ public class UserServiceTest {
 
     @Test
     void checkUserExists() {
+    }
+
+    private boolean areUserEqual(User expected, User actual) {
+        return expected.getId().equals(actual.getId()) &&
+                expected.getUsername().equals(actual.getUsername()) &&
+                expected.getPassword().equals(actual.getPassword()) &&
+                expected.getEmail().equals(actual.getEmail()) &&
+                expected.getEmailVerified() == actual.getEmailVerified() &&
+                expected.getFirstName().equals(actual.getFirstName()) &&
+                expected.getLastName().equals(actual.getLastName()) &&
+                expected.getBirthDate().equals(actual.getBirthDate()) &&
+                expected.getProfilePictureUrl().equals(actual.getProfilePictureUrl()) &&
+                expected.getGoogleAccountId().equals(actual.getGoogleAccountId()) &&
+                expected.isCalendarSyncEnabled() == actual.isCalendarSyncEnabled() &&
+                expected.getCreatedDate().truncatedTo(ChronoUnit.MILLIS).equals(actual.getCreatedDate().truncatedTo(ChronoUnit.MILLIS)) &&
+                expected.getLastLoginDate().truncatedTo(ChronoUnit.MILLIS).equals(actual.getLastLoginDate().truncatedTo(ChronoUnit.MILLIS)) &&
+                Objects.equals(expected.getTaskCompletionRate(), actual.getTaskCompletionRate()) &&
+                expected.getAchievements().equals(actual.getAchievements()) &&
+                Objects.equals(expected.getPoints(), actual.getPoints()) &&
+                Objects.equals(expected.getLevel(), actual.getLevel()) &&
+                expected.getIsDeleted() == actual.getIsDeleted() &&
+                expected.getRoles().equals(actual.getRoles());
     }
 }
