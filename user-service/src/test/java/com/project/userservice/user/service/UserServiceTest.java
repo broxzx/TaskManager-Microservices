@@ -2,6 +2,7 @@ package com.project.userservice.user.service;
 
 import com.project.userservice.UserServiceApplication;
 import com.project.userservice.exception.EntityNotFoundException;
+import com.project.userservice.exception.ResetPasswordTokenIncorrectException;
 import com.project.userservice.exception.UserAlreadyExistsException;
 import com.project.userservice.user.data.User;
 import com.project.userservice.user.data.dto.request.UserRequest;
@@ -20,8 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -152,6 +152,37 @@ public class UserServiceTest {
         verify(userRepository, times(2)).findByUsername(any(String.class));
         verify(jwtUtils, times(1)).extractTokenFromHeader(any(String.class));
         verify(jwtUtils, times(1)).getUsernameByToken(any(String.class));
+    }
+
+    @Test
+    void givenUserRequest_whenUpdateUserEntityWithInvalidToken_thenFailure() {
+        final String dummyTokenValue = " ";
+        when(jwtUtils.extractTokenFromHeader(any(String.class))).thenThrow(new ResetPasswordTokenIncorrectException("reset password token is invalid"));
+
+        assertThrows(ResetPasswordTokenIncorrectException.class, () -> userService.updateUserEntity(dummyTokenValue, baseUserRequest));
+
+        verify(jwtUtils, times(1)).extractTokenFromHeader(any(String.class));
+    }
+
+    @Test
+    void givenUserRequest_whenUpdateUserEntityWithIncorrectFields_thenFailure() {
+        UserRequest badUserRequest = UserRequest.builder()
+                .username("")
+                .password("")
+                .email("")
+                .firstName("")
+                .lastName("")
+                .birthDate(LocalDate.now())
+                .build();
+
+        when(jwtUtils.extractTokenFromHeader(any(String.class))).thenReturn(UUID.randomUUID().toString());
+        when(jwtUtils.getUsernameByToken(any(String.class))).thenReturn(baseUser.getUsername());
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(baseUser));
+        when(userRepository.save(any(User.class))).thenReturn(baseUser);
+
+        User updatedUserEntity = userService.updateUserEntity("dummyToken", badUserRequest);
+
+        assertThat(areUserEqual(baseUser, updatedUserEntity)).isTrue();
     }
 
     @Test

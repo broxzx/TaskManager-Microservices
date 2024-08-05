@@ -98,13 +98,22 @@ public class UserService {
     }
 
     private void updateUserEntityFields(User user, UserRequest userRequest) {
-        if (userRequest.getUsername() != null) {
+        if (userRequest.getUsername() != null && !userRequest.getUsername().isBlank()) {
             user.setUsername(user.getUsername());
         }
 
-        if (userRequest.getEmail() != null) {
+        if (userRequest.getEmail() != null && !userRequest.getEmail().isBlank()) {
             user.setEmail(userRequest.getEmail());
         }
+
+        if (userRequest.getFirstName() != null && !userRequest.getFirstName().isBlank()) {
+            user.setFirstName(userRequest.getFirstName());
+        }
+
+        if (userRequest.getLastName() != null && !userRequest.getLastName().isBlank()) {
+            user.setLastName(userRequest.getLastName());
+        }
+
     }
 
     public void changePasswordWithNewPassword(String token, ChangePasswordDto changePasswordDto) {
