@@ -5,6 +5,7 @@ import com.project.userservice.exception.EntityNotFoundException;
 import com.project.userservice.exception.UserAlreadyExistsException;
 import com.project.userservice.user.data.User;
 import com.project.userservice.user.data.dto.request.UserRequest;
+import com.project.userservice.utils.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,9 @@ public class UserServiceTest {
 
     @MockBean
     private UserRepository userRepository;
+
+    @MockBean
+    public JwtUtils jwtUtils;
 
     @Autowired
     private UserService userService;
@@ -83,7 +87,7 @@ public class UserServiceTest {
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> userService.getUserEntityById(id));
 
         assertThat(exception.getMessage()).isEqualTo("user with id '%s' is not found".formatted(id));
-        verify(userRepository, times(1)).findById(id);
+        verify(userRepository, times(1)).findById(any(String.class));
     }
 
     @Test
@@ -131,11 +135,42 @@ public class UserServiceTest {
     }
 
     @Test
-    void updateUserEntity() {
+    void givenUserService_whenUpdateUserEntity_thenSuccess() {
+        final String dummyTokenValue = " ";
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(baseUser));
+        when(jwtUtils.extractTokenFromHeader(any(String.class))).thenReturn(UUID.randomUUID().toString());
+        when(jwtUtils.getUsernameByToken(any(String.class))).thenReturn(baseUser.getUsername());
+
+        userService.updateUserEntity(dummyTokenValue, baseUserRequest);
+
+        User updatedUser = userService.getUserEntityByUsername(baseUser.getUsername());
+
+        assertThat(updatedUser.getUsername()).isEqualTo(baseUser.getUsername());
+        assertThat(updatedUser.getEmail()).isEqualTo(baseUser.getEmail());
+        assertThat(areUserEqual(baseUser, updatedUser)).isTrue();
+
+        verify(userRepository, times(2)).findByUsername(any(String.class));
+        verify(jwtUtils, times(1)).extractTokenFromHeader(any(String.class));
+        verify(jwtUtils, times(1)).getUsernameByToken(any(String.class));
     }
 
     @Test
-    void getUserEntityByUsername() {
+    void givenUserService_whenFindUserByUsername_thenSuccess() {
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(baseUser));
+
+        User obtainedUserEntity = userService.getUserEntityByUsername(baseUserRequest.getUsername());
+
+        assertThat(obtainedUserEntity.getId()).isEqualTo(baseUser.getId());
+        verify(userRepository, times(1)).findByUsername(any(String.class));
+    }
+
+    @Test
+    void givenUserService_whenFindUserByUsername_thenFailure() {
+        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> userService.getUserEntityByUsername(baseUser.getUsername()));
+
+        verify(userRepository, times(1)).findByUsername(any(String.class));
     }
 
     @Test
