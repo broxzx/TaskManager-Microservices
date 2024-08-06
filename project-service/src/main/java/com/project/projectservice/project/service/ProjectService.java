@@ -6,7 +6,6 @@ import com.project.projectservice.feings.UserFeign;
 import com.project.projectservice.project.data.Project;
 import com.project.projectservice.project.data.dto.request.ProjectRequestDto;
 import com.project.projectservice.tags.data.Tag;
-import com.project.projectservice.tags.services.TagRepository;
 import com.project.projectservice.tags.services.TagService;
 import com.project.projectservice.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,6 @@ public class ProjectService {
     private final UserFeign userFeign;
     private final JwtUtils jwtUtils;
     private final ModelMapper modelMapper;
-    private final TagRepository tagRepository;
     private final TagService tagService;
 
     public List<Project> getUserProjects(String authorizationHeader) {
@@ -54,7 +52,6 @@ public class ProjectService {
         String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
 
         Project project = getProjectByIdAndOwnerId(projectIdToUpdate, userId);
-
         Project projectToSave = updateProjectFromProjectRequestDto(project, projectRequestDto);
 
         return projectRepository.save(projectToSave);
@@ -109,46 +106,6 @@ public class ProjectService {
         return projectRepository.saveAll(projectsToChangePosition);
     }
 
-    private Project updateProjectFromProjectRequestDto(Project projectToUpdate, ProjectRequestDto projectRequestDto) {
-        projectToUpdate.setName(projectRequestDto.getName());
-        projectToUpdate.setDescription(projectRequestDto.getDescription());
-        projectToUpdate.setUpdatedAt(LocalDateTime.now());
-        projectToUpdate.setMemberIds(projectRequestDto.getMemberIds());
-        projectToUpdate.setStatus(projectRequestDto.getStatus());
-        projectToUpdate.setTaskIds(projectRequestDto.getTaskIds());
-
-        if (projectRequestDto.getMemberIds() == null) {
-            projectToUpdate.setMemberIds(new HashSet<>());
-        }
-
-        if (projectRequestDto.getTaskIds() == null) {
-            projectToUpdate.setTaskIds(new HashSet<>());
-        }
-
-        return projectToUpdate;
-    }
-
-    private Project getProjectByIdAndOwnerId(String projectId, String ownerId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("projectId '%s' is not found".formatted(projectId)));
-
-        if (!project.getMemberIds().contains(ownerId) && !project.getOwnerId().equals(ownerId)) {
-            throw new ForbiddenException("you don't have access to project with name '%s'".formatted(project.getName()));
-        }
-
-        return project;
-    }
-
-    private void removeNullFieldsFromProject(ProjectRequestDto projectRequestDto, Project mappedProject) {
-        if (projectRequestDto.getTaskIds() == null) {
-            mappedProject.setTaskIds(new HashSet<>());
-        }
-
-        if (projectRequestDto.getMemberIds() == null) {
-            mappedProject.setMemberIds(new HashSet<>());
-        }
-    }
-
     public Project addMembersToProject(String projectId, List<String> memberIds, String authorizationHeader) {
         String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
@@ -199,5 +156,45 @@ public class ProjectService {
         obtainedProject.getTagIds().removeIf(tag -> tag.getId().equals(tagIds));
 
         return projectRepository.save(obtainedProject);
+    }
+
+    private void removeNullFieldsFromProject(ProjectRequestDto projectRequestDto, Project mappedProject) {
+        if (projectRequestDto.getTaskIds() == null) {
+            mappedProject.setTaskIds(new HashSet<>());
+        }
+
+        if (projectRequestDto.getMemberIds() == null) {
+            mappedProject.setMemberIds(new HashSet<>());
+        }
+    }
+
+    private Project updateProjectFromProjectRequestDto(Project projectToUpdate, ProjectRequestDto projectRequestDto) {
+        projectToUpdate.setName(projectRequestDto.getName());
+        projectToUpdate.setDescription(projectRequestDto.getDescription());
+        projectToUpdate.setUpdatedAt(LocalDateTime.now());
+        projectToUpdate.setMemberIds(projectRequestDto.getMemberIds());
+        projectToUpdate.setStatus(projectRequestDto.getStatus());
+        projectToUpdate.setTaskIds(projectRequestDto.getTaskIds());
+
+        if (projectRequestDto.getMemberIds() == null) {
+            projectToUpdate.setMemberIds(new HashSet<>());
+        }
+
+        if (projectRequestDto.getTaskIds() == null) {
+            projectToUpdate.setTaskIds(new HashSet<>());
+        }
+
+        return projectToUpdate;
+    }
+
+    private Project getProjectByIdAndOwnerId(String projectId, String ownerId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("projectId '%s' is not found".formatted(projectId)));
+
+        if (!project.getMemberIds().contains(ownerId) && !project.getOwnerId().equals(ownerId)) {
+            throw new ForbiddenException("you don't have access to project with name '%s'".formatted(project.getName()));
+        }
+
+        return project;
     }
 }

@@ -33,7 +33,16 @@ public class TagService {
         return tagRepository.save(obtainedTag);
     }
 
-    public void removeTag(String tagId) {
+    public void deleteTagFromProject(String tagId, String projectId) {
+        List<Tag> tagsToDelete = tagRepository.findByProjectId(projectId)
+                .stream()
+                .filter(tag -> tag.getId().equals(tagId))
+                .toList();
+
+        tagRepository.deleteAll(tagsToDelete);
+    }
+
+    public void deleteTag(String tagId) {
         tagRepository.deleteById(tagId);
     }
 

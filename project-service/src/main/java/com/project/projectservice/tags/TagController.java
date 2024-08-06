@@ -38,4 +38,14 @@ public class TagController {
         return ResponseEntity.ok(tagService.changeTagName(tagId, newTagName));
     }
 
+    @DeleteMapping("/{tagId}/{projectId}")
+    public void deleteTagFromProject(@PathVariable("projectId") String projectId, @PathVariable("tagId") String tagId) {
+        tagService.deleteTagFromProject(tagId, projectId);
+    }
+
+    @DeleteMapping("/{tagId}")
+    public void deleteTagFromAccount(@PathVariable String tagId) {
+        tagService.deleteTag(tagId);
+    }
+
 }
