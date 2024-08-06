@@ -37,7 +37,7 @@ export class UserControllerService extends BaseService {
     super(config, http);
   }
 
-  private apiUrl = 'http://localhost:8080/users';
+  private apiUrl = 'http://localhost:8081/users';
 
   static readonly UpdateUserDataPath = '/users/updateUserData';
 
