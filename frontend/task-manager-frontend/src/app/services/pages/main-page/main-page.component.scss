@@ -52,24 +52,25 @@ a {
   height: 100%;
   width: 3px;
   left: 0;
-  background-color: pink;
+  background-color: white;
   opacity: 0;
   transform: scaleY(0);
   transition: transform 0.2s, opacity 0.2s;
 }
 
 .list-item.selected {
-  color: white;
+  color: black;
+  background-color: white;
+  border-radius: 5px;
 }
 
 .list-item.selected::before {
-  opacity: 1;
-  transform: scaleY(1)
+  display: none;
 }
 
 .list-item:hover::before {
   opacity: 0.5;
-  transform: scaleY(0.5) scaleX(2);
+  transform: scaleY(0.7) scaleX(2);
 }
 
 .list-item span.material-symbols-outlined {
