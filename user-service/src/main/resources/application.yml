@@ -66,10 +66,6 @@ google:
   client-id:
   client-secret:
 
-db:
-  env:
-    test:
-      user-collection: user-test
 
 eureka:
   instance:

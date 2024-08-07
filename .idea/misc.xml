@@ -12,6 +12,7 @@
         <option value="$PROJECT_DIR$/project-service/pom.xml" />
         <option value="$PROJECT_DIR$/custom-user-provider-mongodb/pom.xml" />
         <option value="$PROJECT_DIR$/KafkaMessageService/pom.xml" />
+        <option value="$PROJECT_DIR$/task-service/pom.xml" />
       </list>
     </option>
   </component>

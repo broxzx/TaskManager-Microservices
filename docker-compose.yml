@@ -6,6 +6,8 @@ x-defaults: &default-backend-configuration
   restart: unless-stopped
 
 services:
+  # --------------------------------- db's ---------------------------------------- #
+
   user-keycloak-db:
     <<: *default-backend-configuration
     container_name: user-keycloak-db
@@ -18,6 +20,41 @@ services:
       - "5411:5432"
     volumes:
       - user-task-manager-db:/var/lib/postgresql/data
+
+  mongo-user-service:
+    <<: *default-backend-configuration
+    container_name: mongo-user-service
+    image: mongo:7-jammy
+    ports:
+      - "27016:27017"
+    volumes:
+      - user-db-service:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: user-db
+
+  mongo-projects-service:
+    <<: *default-backend-configuration
+    container_name: mongo-projects-service
+    image: mongo:7-jammy
+    ports:
+      - "27015:27017"
+    environment:
+      MONGO_INITDB_DATABASE: projects-db
+    volumes:
+      - projects-db-service:/data/db
+
+  mongodb-tasks-service:
+    <<: *default-backend-configuration
+    container_name: mongodb-task-service
+    image: mongo:7-jammy
+    environment:
+      MONGO_INITDB_DATABASE: tasks-db
+    volumes:
+      - tasks-db-service:/data/db
+    ports:
+      - "27001:27017"
+
+  # --------------------------------- security ---------------------------------------- #
 
   keycloak-task-manager:
     <<: *default-backend-configuration
@@ -42,27 +79,8 @@ services:
       - ./custom-user-provider-mongodb/target/keycloak-mongodb-user-storage-provider.jar:/opt/keycloak/providers/keycloak-mongodb-user-storage-provider.jar
       - ./custom-event-listener/target/custom-user-session-listener.jar:/opt/keycloak/providers/custom-user-session-listener.jar
 
-  mongo-user-service:
-    <<: *default-backend-configuration
-    container_name: mongo-user-service
-    image: mongo:7-jammy
-    ports:
-      - "27016:27017"
-    volumes:
-      - user-db-service:/data/db
-    environment:
-      MONGO_INITDB_DATABASE: user-db
 
-  mongo-projects-service:
-    <<: *default-backend-configuration
-    container_name: mongo-projects-service
-    image: mongo:7-jammy
-    ports:
-      - "27015:27017"
-    environment:
-      MONGO_INITDB_DATABASE: projects-db
-    volumes:
-      - projects-db-service:/data/db
+  # --------------------------------- message brokers ---------------------------------------- #
 
   zookeeper:
     <<: *default-backend-configuration
@@ -91,6 +109,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
 
+  # --------------------------------- smtp ---------------------------------------- #
+
   mail-dev:
     <<: *default-backend-configuration
     container_name: mail
@@ -98,6 +118,8 @@ services:
     ports:
       - "1080:1080"
       - "1025:1025"
+
+  # --------------------------------- metrics ---------------------------------------- #
 
   elasticsearch:
     <<: *default-backend-configuration
@@ -175,7 +197,8 @@ services:
     volumes:
       - ./config/data/grafana:/var/lib/grafana
 
-  # dockerize applications
+  # --------------------------------- dockerized applications ---------------------------------------- #
+
   config-cloud-service:
     <<: *default-backend-configuration
     container_name: config-cloud-service
@@ -225,13 +248,18 @@ services:
       SPRING_PROFILES_ACTIVE: dev
 
 
+  # --------------------------------- networks ---------------------------------------- #
+
 networks:
   backend:
     driver: bridge
+
+  # --------------------------------- volumes ---------------------------------------- #
 
 volumes:
   user-task-manager-db:
   user-db-service:
   projects-db-service:
+  tasks-db-service:
   esdata:
     driver: local

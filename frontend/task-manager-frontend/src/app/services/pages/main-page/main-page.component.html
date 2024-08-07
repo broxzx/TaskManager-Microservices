@@ -1,19 +1,22 @@
 <div class="page-container">
   <div class="sidebar">
     <div class="list-items">
-      <a class="list-item" routerLink="projects" routerLinkActive="selected">
+      <a class="list-item" routerLink="projects" routerLinkActive="selected" appClickCoordinates (click)="selectItem($event)">
         <span class="material-symbols-outlined">deployed_code</span>
         Projects
       </a>
-      <a class="list-item" routerLinkActive="selected">
+      <a class="list-item" routerLinkActive="selected" appClickCoordinates (click)="selectItem($event)">
         <span class="material-symbols-outlined">deployed_code</span>
         This is a test item
       </a>
-      <a class="list-item" routerLinkActive="selected">
+      <a class="list-item" routerLinkActive="selected" appClickCoordinates (click)="selectItem($event)">
         <span class="material-symbols-outlined">deployed_code</span>
         This is a test item
       </a>
     </div>
+  </div>
+  <div class="menu">
+    <img class="user-profile-image" src="favicon.ico" alt="asd"/>
   </div>
   <div class="page-content-container">
     <router-outlet></router-outlet>

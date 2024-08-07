@@ -25,6 +25,7 @@
         <module>custom-user-provider-mongodb</module>
         <module>custom-event-listener</module>
         <module>kafka-message-service</module>
+        <module>task-service</module>
     </modules>
 
     <properties>
