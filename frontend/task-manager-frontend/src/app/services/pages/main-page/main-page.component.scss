@@ -1,0 +1,78 @@
+html, body {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+}
+
+.page-container {
+  height: 100%;
+  background: rgb(47, 47, 47);
+  display: flex;
+}
+
+.page-content-container {
+  padding: 50px;
+  height: 100%;
+  width: 100%;
+}
+
+.sidebar {
+  height: 100%;
+  width: 14%;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.list-items {
+  padding-top: 50px;
+}
+
+.list-item {
+  display: flex;
+  font-size: 18px;
+  //font-size: 125%;
+  color: rgba(255,255,255,0.8);
+  padding: 15px 20px;
+  font-family: "Lato", sans-serif;
+  cursor: pointer;
+  position: relative;
+}
+
+.list-item:hover {
+  color: white;
+}
+
+a {
+  text-decoration: none;
+}
+
+.list-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  left: 0;
+  background-color: pink;
+  opacity: 0;
+  transform: scaleY(0);
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.list-item.selected {
+  color: white;
+}
+
+.list-item.selected::before {
+  opacity: 1;
+  transform: scaleY(1)
+}
+
+.list-item:hover::before {
+  opacity: 0.5;
+  transform: scaleY(0.5) scaleX(2);
+}
+
+.list-item span.material-symbols-outlined {
+  margin-right: 15px;
+  font-size: 24px;
+}

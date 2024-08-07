@@ -29,6 +29,12 @@ export const routes: Routes = [
   },
   {
     path: 'main',
-    component: MainPageComponent
+    component: MainPageComponent,
+    children: [
+      {
+        path: 'projects',
+        component: KanbanBoardComponent
+      }
+    ]
   }
 ];

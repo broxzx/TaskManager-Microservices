@@ -1,1 +1,21 @@
-<p>main-page works!</p>
+<div class="page-container">
+  <div class="sidebar">
+    <div class="list-items">
+      <a class="list-item" routerLink="projects" routerLinkActive="selected">
+        <span class="material-symbols-outlined">deployed_code</span>
+        Projects
+      </a>
+      <a class="list-item" routerLinkActive="selected">
+        <span class="material-symbols-outlined">deployed_code</span>
+        This is a test item
+      </a>
+      <a class="list-item" routerLinkActive="selected">
+        <span class="material-symbols-outlined">deployed_code</span>
+        This is a test item
+      </a>
+    </div>
+  </div>
+  <div class="page-content-container">
+    <router-outlet></router-outlet>
+  </div>
+</div>
