@@ -72,17 +72,17 @@ public class UserService {
     }
 
     public User updateUserEntity(String authorizationToken, UserRequest userRequest) {
-        String usernameByToken = jwtUtils.getUsernameByToken(jwtUtils.extractTokenFromHeader(authorizationToken));
-        User userToAlter = getUserEntityByUsername(usernameByToken);
+        String usernameByToken = jwtUtils.getUserIdByToken(jwtUtils.extractTokenFromHeader(authorizationToken));
+        User userToAlter = getUserById(usernameByToken);
 
         updateUserEntityFields(userToAlter, userRequest);
 
         return userRepository.save(userToAlter);
     }
 
-    public User getUserEntityByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("user with id '%s' is not found".formatted(username)));
+    public User getUserById(String id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("user with id '%s' is not found".formatted(id)));
     }
 
     private void checkUserDuplicates(UserRequest userRequest) {
@@ -195,10 +195,7 @@ public class UserService {
     }
 
     public String getUserIdByToken(String token) {
-        String username = jwtUtils.getUsernameByToken(token);
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("user with username '%s' is not found".formatted(username)))
-                .getId();
+        return jwtUtils.getUserIdByToken(token);
     }
 
     @Autowired

@@ -120,7 +120,7 @@ public class KeycloakUtils {
     private TokenResponse buildTokenResponseFromBodyExchange(Map body) {
         String accessToken = body.get(ACCESS_TOKEN).toString();
 
-        User obtainedUser = userService.getUserEntityByUsername(jwtUtils.getUsernameByToken(accessToken));
+        User obtainedUser = userService.getUserById(jwtUtils.getUserIdByToken(accessToken));
 
         return new TokenResponse(body.get(ACCESS_TOKEN).toString(),
                 body.get(REFRESH_TOKEN).toString(), Long.valueOf(body.get(EXPIRES_IN).toString()),

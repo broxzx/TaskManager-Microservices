@@ -143,7 +143,7 @@ public class UserServiceTest {
 
         userService.updateUserEntity(dummyTokenValue, baseUserRequest);
 
-        User updatedUser = userService.getUserEntityByUsername(baseUser.getUsername());
+        User updatedUser = userService.getUserById(baseUser.getUsername());
 
         assertThat(updatedUser.getUsername()).isEqualTo(baseUser.getUsername());
         assertThat(updatedUser.getEmail()).isEqualTo(baseUser.getEmail());
@@ -189,7 +189,7 @@ public class UserServiceTest {
     void givenUserService_whenFindUserByUsername_thenSuccess() {
         when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(baseUser));
 
-        User obtainedUserEntity = userService.getUserEntityByUsername(baseUserRequest.getUsername());
+        User obtainedUserEntity = userService.getUserById(baseUserRequest.getUsername());
 
         assertThat(obtainedUserEntity.getId()).isEqualTo(baseUser.getId());
         verify(userRepository, times(1)).findByUsername(any(String.class));
@@ -199,7 +199,7 @@ public class UserServiceTest {
     void givenUserService_whenFindUserByUsername_thenFailure() {
         when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> userService.getUserEntityByUsername(baseUser.getUsername()));
+        assertThrows(EntityNotFoundException.class, () -> userService.getUserById(baseUser.getUsername()));
 
         verify(userRepository, times(1)).findByUsername(any(String.class));
     }
@@ -225,7 +225,7 @@ public class UserServiceTest {
                 expected.getUsername().equals(actual.getUsername()) &&
                 expected.getPassword().equals(actual.getPassword()) &&
                 expected.getEmail().equals(actual.getEmail()) &&
-                expected.getEmailVerified() == actual.getEmailVerified() &&
+                expected.isEmailVerified() == actual.isEmailVerified() &&
                 expected.getFirstName().equals(actual.getFirstName()) &&
                 expected.getLastName().equals(actual.getLastName()) &&
                 expected.getBirthDate().equals(actual.getBirthDate()) &&
@@ -238,7 +238,7 @@ public class UserServiceTest {
                 expected.getAchievements().equals(actual.getAchievements()) &&
                 Objects.equals(expected.getPoints(), actual.getPoints()) &&
                 Objects.equals(expected.getLevel(), actual.getLevel()) &&
-                expected.getIsDeleted() == actual.getIsDeleted() &&
+                expected.isDeleted() == actual.isDeleted() &&
                 expected.getRoles().equals(actual.getRoles());
     }
 }

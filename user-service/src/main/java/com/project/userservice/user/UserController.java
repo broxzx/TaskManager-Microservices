@@ -35,7 +35,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
-        logger.info("user with name '%s' tried to login".formatted(loginRequest.getUsername()));
+        logger.info("user with name '%s' tried to log in".formatted(loginRequest.getUsername()));
         return ResponseEntity.ok(keycloakUtils.getUserTokenFromUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword(), loginRequest.isRememberMe()));
     }
 

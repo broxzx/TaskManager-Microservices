@@ -18,6 +18,12 @@ public class JwtUtils {
         return (String) claims.getClaimValue("preferred_username");
     }
 
+    public String getUserIdByToken(String token) {
+        JwtClaims claims = getJwtClaims(token);
+
+        return claims.getClaimValueAsString("user_id");
+    }
+
     @SneakyThrows
     public String getEmailFromResetPasswordToken(String token) {
         JwtClaims claims = getJwtClaims(token);

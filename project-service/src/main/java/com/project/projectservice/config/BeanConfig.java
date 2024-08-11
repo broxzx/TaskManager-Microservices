@@ -57,7 +57,10 @@ public class BeanConfig {
 
     @Bean
     public ModelMapper modelMapper() {
-        return new ModelMapper();
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setAmbiguityIgnored(true);
+        modelMapper.getConfiguration().setSkipNullEnabled(true);
+        return modelMapper;
     }
 
 }

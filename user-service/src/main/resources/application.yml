@@ -46,6 +46,7 @@ spring:
               - openid
               - microprofile-jwt
               - metrics
+              - id-mapper
             authorization-grant-type: client_credentials
       resourceserver:
         jwt:
