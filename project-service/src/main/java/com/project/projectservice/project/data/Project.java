@@ -32,8 +32,6 @@ public class Project {
     @Builder.Default
     private Integer position = 0;
     @Builder.Default
-    private Set<Tag> tagIds = new HashSet<>() ;
-    @Builder.Default
     private Set<String> taskIds = new HashSet<>();
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

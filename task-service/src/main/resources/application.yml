@@ -53,6 +53,13 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka
 
+keycloak:
+  realm: task-manager-microservices
+  client-id: task-service
+  client-secret: OIdp06uPaJgdwH1meKRatic6zuLbFLDQ
+  server-url: http://localhost:8280
+  scope: view_users
+
 logging:
   level:
     root: info

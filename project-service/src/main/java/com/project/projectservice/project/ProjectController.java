@@ -76,11 +76,4 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.addTagsToProject(projectId, tagIds, authorizationHeader));
     }
 
-    @DeleteMapping("/{projectId}/tags/{tagId}")
-    public ResponseEntity<Project> deleteTagFromProject(@PathVariable("projectId") String projectId,
-                                                        @PathVariable("tagId") String tagId,
-                                                        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
-        return ResponseEntity.ok(projectService.deleteTagFromProject(projectId, tagId, authorizationHeader));
-    }
-
 }

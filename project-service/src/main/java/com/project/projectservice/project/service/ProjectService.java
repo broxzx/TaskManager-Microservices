@@ -5,7 +5,6 @@ import com.project.projectservice.exceptions.ForbiddenException;
 import com.project.projectservice.feings.UserFeign;
 import com.project.projectservice.project.data.Project;
 import com.project.projectservice.project.data.dto.request.ProjectRequestDto;
-import com.project.projectservice.tags.data.Tag;
 import com.project.projectservice.tags.services.TagService;
 import com.project.projectservice.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -140,20 +139,6 @@ public class ProjectService {
         String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
 
-        List<Tag> tags = tagIds.stream()
-                .map(tagService::getTagById)
-                .toList();
-
-        obtainedProject.getTagIds().addAll(tags);
-
-        return projectRepository.save(obtainedProject);
-    }
-
-    public Project deleteTagFromProject(String projectId, String tagIds, String authorizationHeader) {
-        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
-        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
-
-        obtainedProject.getTagIds().removeIf(tag -> tag.getId().equals(tagIds));
 
         return projectRepository.save(obtainedProject);
     }
