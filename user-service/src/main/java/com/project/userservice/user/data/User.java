@@ -27,8 +27,7 @@ public class User {
 
     private String email;
 
-    @Builder.Default
-    private Boolean emailVerified = false;
+    private boolean emailVerified;
 
     private String firstName;
 
@@ -49,20 +48,16 @@ public class User {
     @Builder.Default
     private LocalDateTime lastLoginDate = LocalDateTime.now();
 
-    @Builder.Default
-    private Double taskCompletionRate = 0.0D;
+    private double taskCompletionRate;
 
     @Builder.Default
     private List<String> achievements = new ArrayList<>();
 
-    @Builder.Default
-    private Long points = 0L;
+    private long points;
 
-    @Builder.Default
-    private Integer level = 0;
+    private int level;
 
-    @Builder.Default
-    private Boolean isDeleted = false;
+    private boolean isDeleted;
 
     @Builder.Default
     private List<String> roles = List.of(Roles.ROLE_USER.toString());
