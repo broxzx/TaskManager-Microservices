@@ -58,9 +58,10 @@ public class KeycloakUtils {
         body.add(CLIENT_SECRET, clientSecret);
         body.add(USERNAME, username);
         body.add(PASSWORD, password);
+        body.add(SCOPE, "id-mapper");
 
         if (rememberMe) {
-            body.add(SCOPE, OFFLINE_ACCESS);
+            body.set(SCOPE, "id-mapper " + OFFLINE_ACCESS);
         }
 
         Map exchangeBody = tokenRequest(body, headers).getBody();

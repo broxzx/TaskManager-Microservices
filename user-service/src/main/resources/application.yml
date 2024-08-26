@@ -64,8 +64,9 @@ kafka:
   forgot-password-topic: forgot-password
 
 google:
-  client-id:
+  client-id: 863784785750-2ol5aj5su9a5v0t5uabium81hdpn4nlc.apps.googleusercontent.com
   client-secret:
+  redirect-uri: http://localhost:8081/users/grantCode
 
 
 eureka:

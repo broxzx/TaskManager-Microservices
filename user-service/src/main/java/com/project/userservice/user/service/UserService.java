@@ -12,8 +12,6 @@ import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.user.data.enums.Roles;
 import com.project.userservice.utils.JwtUtils;
 import com.project.userservice.utils.KeycloakUtils;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +24,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +44,9 @@ public class UserService {
 
     @Value("${google.client-secret}")
     private String googleClientSecret;
+
+    @Value("${google.redirect-uri}")
+    private String googleRedirectUri;
 
     public User getUserEntityById(String id) {
         return userRepository.findById(id)
@@ -130,14 +128,14 @@ public class UserService {
         userRepository.save(userToChangePassword);
     }
 
-    public void processGrantCode(String grantCode, HttpServletResponse response) {
+    public TokenResponse processGrantCode(String grantCode) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("code", grantCode);
-        params.add("redirect_uri", "http://localhost:8080/users/grantCode");
+        params.add("redirect_uri", googleRedirectUri);
         params.add("client_id", googleClientId);
         params.add("client_secret", googleClientSecret);
         params.addAll("scope", List.of("https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile", "https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email", "openid"));
@@ -151,12 +149,13 @@ public class UserService {
 
         JsonObject userProfileDetails = getProfileDetailsGoogle(Objects.requireNonNull(obtainedDataFromCode).get("access_token").toString());
 
+        String googleAccountId = userProfileDetails.get("id").toString().replace("\"", "");
         User userToSave = User.builder()
                 .username(userProfileDetails.get("email").toString().replace("\"", ""))
-                .password(bCryptPasswordEncoder.encode(userProfileDetails.get("id").toString().replace("\"", "")))
+                .password(bCryptPasswordEncoder.encode(googleAccountId))
                 .email(userProfileDetails.get("email").toString().replace("\"", ""))
-                .emailVerified(Boolean.valueOf(userProfileDetails.get("verified_email").toString().replace("\"", "")))
-                .googleAccountId(userProfileDetails.get("id").toString().replace("\"", ""))
+                .emailVerified(Boolean.parseBoolean(userProfileDetails.get("verified_email").toString().replace("\"", "")))
+                .googleAccountId(googleAccountId)
                 .firstName(userProfileDetails.get("given_name").toString().replace("\"", ""))
                 .lastName(userProfileDetails.get("given_name").toString().replace("\"", ""))
                 .profilePictureUrl(userProfileDetails.get("picture").toString().replace("\"", ""))
@@ -165,21 +164,9 @@ public class UserService {
 
 
         userRepository.save(userToSave);
-
         log.info("{}", userProfileDetails);
 
-        TokenResponse userTokenResponse = keycloakUtils.getUserTokenFromUsernameAndPassword(userToSave.getUsername(), userProfileDetails.get("id").toString().replace("\"", ""), true);
-
-        try {
-            String encodedValue = URLEncoder.encode(userTokenResponse.accessToken(), StandardCharsets.UTF_8);
-
-            Cookie cookie = new Cookie(HttpHeaders.AUTHORIZATION, encodedValue);
-            response.addCookie(cookie);
-
-            response.sendRedirect("http://localhost:8080/users/dashboard");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return keycloakUtils.getUserTokenFromUsernameAndPassword(userToSave.getUsername(), googleAccountId, true);
     }
 
     private JsonObject getProfileDetailsGoogle(String accessToken) {

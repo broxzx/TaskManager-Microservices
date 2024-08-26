@@ -8,7 +8,6 @@ import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.user.service.UserService;
 import com.project.userservice.utils.KafkaProducerService;
 import com.project.userservice.utils.KeycloakUtils;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -28,24 +27,41 @@ public class UserController {
     private final KeycloakUtils keycloakUtils;
     private final KafkaProducerService kafkaProducerService;
 
+    /**
+     * Called when user submitted form in /register page
+     *
+     * @param userRequest an object of type UserRequest that contains the user's registration data.
+     *                    This object is expected to be validated using the @Valid annotation.
+     * @return ResponseEntity<User> Returns a ResponseEntity containing the registered user object
+     * and an HTTP status of 200 OK.
+     */
     @PostMapping("/register")
     public ResponseEntity<User> register(@RequestBody @Valid UserRequest userRequest) {
         return ResponseEntity.ok(userService.registerUser(userRequest));
     }
 
+    /**
+     * Called when user submitted his credentials in /login page
+     *
+     * @param loginRequest an object of type LoginRequest that contains the user's login data.
+     *                     This object is expected to be validated using the @Valid annotation.
+     * @return ResponseEntity<TokenResponse> Returns a ResponseEntity containing the token response (including access_token
+     * and refresh_token) and an HTTP status of 200 OK.
+     */
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
         logger.info("user with name '%s' tried to log in".formatted(loginRequest.getUsername()));
         return ResponseEntity.ok(keycloakUtils.getUserTokenFromUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword(), loginRequest.isRememberMe()));
     }
 
+    /**
+     * Called when user logins by google account.
+     *
+     * @param grantCode an object of type String that contains the code that was sent from Google authorization server
+     */
     @GetMapping("/grantCode")
-    public void processGrantCode(@RequestParam("code") String grantCode,
-                                 @RequestParam("scope") String scope,
-                                 @RequestParam("authuser") String authUser,
-                                 @RequestParam("prompt") String prompt,
-                                 HttpServletResponse response) {
-        userService.processGrantCode(grantCode, response);
+    public ResponseEntity<TokenResponse> processGrantCode(@RequestParam("code") String grantCode) {
+        return ResponseEntity.ok(userService.processGrantCode(grantCode));
     }
 
     @PutMapping("/updateUserData")
