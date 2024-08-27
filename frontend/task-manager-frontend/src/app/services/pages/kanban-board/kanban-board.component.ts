@@ -18,7 +18,7 @@ export class KanbanBoardComponent {
   columns = [
     {
       title: 'To Do',
-      tasks: ['Task 1', 'Task 2', 'Task 3']
+      tasks: ['Task 1', 'Task 2', 'Task 3', 'Task 3', 'Task 3', 'Task 3', 'Task 3', 'Task 3','Task 1', 'Task 2', 'Task 3', 'Task 3', 'Task 3', 'Task 3', 'Task 3', 'Task 3']
     },
     {
       title: 'In Progress',
@@ -27,7 +27,36 @@ export class KanbanBoardComponent {
     {
       title: 'Done',
       tasks: ['Task 6']
+    },
+    {
+      title: 'Test',
+      tasks: ['Task 7']
+    },
+    {
+      title: 'Test',
+      tasks: ['Task 7']
+    },
+    {
+      title: 'Test',
+      tasks: ['Task 7']
+    },
+    {
+      title: 'Test',
+      tasks: ['Task 7']
+    },
+    {
+      title: 'Test',
+      tasks: ['Task 7']
+    },
+    {
+      title: 'Test',
+      tasks: ['Task 7']
+    },
+    {
+      title: 'Test',
+      tasks: ['Task 7']
     }
+
   ];
 
   drop(event: CdkDragDrop<any[]>) {
