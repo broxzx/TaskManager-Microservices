@@ -48,11 +48,12 @@ public class UserService {
     @Value("${google.redirect-uri}")
     private String googleRedirectUri;
 
-    public User getUserEntityById(String id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("user with id '%s' is not found".formatted(id)));
-    }
-
+    /**
+     * called by controller class to register user
+     *
+     * @param userRequest represents user that will be registered
+     * @return User's model representing that user was successfully created
+     */
     public User registerUser(UserRequest userRequest) {
         checkUserDuplicates(userRequest);
 
@@ -69,51 +70,39 @@ public class UserService {
         return userRepository.save(userToSave);
     }
 
+    /**
+     * usually called by controller to update user's data
+     *
+     * @param authorizationToken represents authorization header
+     * @param userRequest        represents user's data to be updated
+     * @return Updated user's model
+     */
     public User updateUserEntity(String authorizationToken, UserRequest userRequest) {
-        String usernameByToken = jwtUtils.getUserIdByToken(jwtUtils.extractTokenFromHeader(authorizationToken));
-        User userToAlter = getUserById(usernameByToken);
+        String userIdByToken = jwtUtils.getUserIdByToken(jwtUtils.extractTokenFromHeader(authorizationToken));
+        User userToAlter = getUserById(userIdByToken);
 
         updateUserEntityFields(userToAlter, userRequest);
 
         return userRepository.save(userToAlter);
     }
 
+    /**
+     * used for obtaining user by id
+     *
+     * @param id represents user's id
+     * @return User's model
+     */
     public User getUserById(String id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("user with id '%s' is not found".formatted(id)));
     }
 
-    private void checkUserDuplicates(UserRequest userRequest) {
-        userRepository.findByUsername(userRequest.getUsername())
-                .ifPresent(user -> {
-                    throw new UserAlreadyExistsException("user with username '%s' already exists".formatted(userRequest.getUsername()));
-                });
-
-        userRepository.findByEmail(userRequest.getEmail())
-                .ifPresent(user -> {
-                    throw new UserAlreadyExistsException("user with email '%s' already exists".formatted(userRequest.getEmail()));
-                });
-    }
-
-    private void updateUserEntityFields(User user, UserRequest userRequest) {
-        if (userRequest.getUsername() != null && !userRequest.getUsername().isBlank()) {
-            user.setUsername(user.getUsername());
-        }
-
-        if (userRequest.getEmail() != null && !userRequest.getEmail().isBlank()) {
-            user.setEmail(userRequest.getEmail());
-        }
-
-        if (userRequest.getFirstName() != null && !userRequest.getFirstName().isBlank()) {
-            user.setFirstName(userRequest.getFirstName());
-        }
-
-        if (userRequest.getLastName() != null && !userRequest.getLastName().isBlank()) {
-            user.setLastName(userRequest.getLastName());
-        }
-
-    }
-
+    /**
+     * used when updates password from email (using self-generated jwt token)
+     *
+     * @param token             represents token that user has in his email
+     * @param changePasswordDto new password credentials
+     */
     public void changePasswordWithNewPassword(String token, ChangePasswordDto changePasswordDto) {
         String userEmail = jwtUtils.getEmailFromResetPasswordToken(token);
 
@@ -128,6 +117,12 @@ public class UserService {
         userRepository.save(userToChangePassword);
     }
 
+    /**
+     * used when authorize user using google OAuth 2.0
+     *
+     * @param grantCode represents code that was given by google authorization server
+     * @return TokenResponse to permit user use protected endpoints
+     */
     public TokenResponse processGrantCode(String grantCode) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -169,6 +164,84 @@ public class UserService {
         return keycloakUtils.getUserTokenFromUsernameAndPassword(userToSave.getUsername(), googleAccountId, true);
     }
 
+    /**
+     * retrieves user's id from token
+     *
+     * @param token represents user's token
+     * @return String user's id
+     */
+    public String getUserIdByToken(String token) {
+        return jwtUtils.getUserIdByToken(token);
+    }
+
+    /**
+     * used to avoid dependency circle
+     *
+     * @param keycloakUtils that will be injected
+     */
+    @Autowired
+    public void setKeycloakUtils(@Lazy KeycloakUtils keycloakUtils) {
+        this.keycloakUtils = keycloakUtils;
+    }
+
+    /**
+     * used to check user existence in db
+     *
+     * @param userId represents user's id
+     * @return whether user exists
+     */
+    public boolean checkUserExists(String userId) {
+        return userRepository.existsById(userId);
+    }
+
+    /**
+     * used when there should be check that user doesn't have multiple records in db
+     *
+     * @param userRequest represents user's data
+     */
+    private void checkUserDuplicates(UserRequest userRequest) {
+        userRepository.findByUsername(userRequest.getUsername())
+                .ifPresent(user -> {
+                    throw new UserAlreadyExistsException("user with username '%s' already exists".formatted(userRequest.getUsername()));
+                });
+
+        userRepository.findByEmail(userRequest.getEmail())
+                .ifPresent(user -> {
+                    throw new UserAlreadyExistsException("user with email '%s' already exists".formatted(userRequest.getEmail()));
+                });
+    }
+
+    /**
+     * called when user's data should be updated using UserRequest
+     *
+     * @param user        represents user that will be updated
+     * @param userRequest represents updated data
+     */
+    private void updateUserEntityFields(User user, UserRequest userRequest) {
+        if (userRequest.getUsername() != null && !userRequest.getUsername().isBlank()) {
+            user.setUsername(user.getUsername());
+        }
+
+        if (userRequest.getEmail() != null && !userRequest.getEmail().isBlank()) {
+            user.setEmail(userRequest.getEmail());
+        }
+
+        if (userRequest.getFirstName() != null && !userRequest.getFirstName().isBlank()) {
+            user.setFirstName(userRequest.getFirstName());
+        }
+
+        if (userRequest.getLastName() != null && !userRequest.getLastName().isBlank()) {
+            user.setLastName(userRequest.getLastName());
+        }
+
+    }
+
+    /**
+     * retrieves user's data in google account
+     *
+     * @param accessToken represents token that was given by google authorization server
+     * @return user's info from Google
+     */
     private JsonObject getProfileDetailsGoogle(String accessToken) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -179,18 +252,5 @@ public class UserService {
         String url = "https://www.googleapis.com/oauth2/v2/userinfo";
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class);
         return new Gson().fromJson(response.getBody(), JsonObject.class);
-    }
-
-    public String getUserIdByToken(String token) {
-        return jwtUtils.getUserIdByToken(token);
-    }
-
-    @Autowired
-    public void setKeycloakUtils(@Lazy KeycloakUtils keycloakUtils) {
-        this.keycloakUtils = keycloakUtils;
-    }
-
-    public boolean checkUserExists(String userId) {
-        return userRepository.existsById(userId);
     }
 }

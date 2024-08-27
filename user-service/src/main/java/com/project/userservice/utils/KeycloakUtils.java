@@ -70,7 +70,7 @@ public class KeycloakUtils {
     }
 
     public void forgotPassword(String userId) {
-        User obtainedUser = userService.getUserEntityById(userId);
+        User obtainedUser = userService.getUserById(userId);
 
         try (Keycloak keycloak = KeycloakBuilder.builder()
                 .serverUrl(authServerUrl)

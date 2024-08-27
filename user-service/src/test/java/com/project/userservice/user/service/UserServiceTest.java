@@ -72,7 +72,7 @@ public class UserServiceTest {
 
         when(userRepository.findById(any(String.class))).thenReturn(optionalBaseUser);
 
-        User obtainedUserEntity = userService.getUserEntityById(baseUser.getId());
+        User obtainedUserEntity = userService.getUserById(baseUser.getId());
 
         assertNotNull(obtainedUserEntity);
         assertThat(obtainedUserEntity.getId()).isEqualTo(baseUser.getId());
@@ -84,7 +84,7 @@ public class UserServiceTest {
         String id = UUID.randomUUID().toString();
         when(userRepository.findById(id)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> userService.getUserEntityById(id));
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> userService.getUserById(id));
 
         assertThat(exception.getMessage()).isEqualTo("user with id '%s' is not found".formatted(id));
         verify(userRepository, times(1)).findById(any(String.class));

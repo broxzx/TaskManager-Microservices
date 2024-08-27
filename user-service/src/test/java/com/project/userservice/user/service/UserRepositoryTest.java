@@ -110,7 +110,7 @@ public class UserRepositoryTest extends MongoDBBaseIntegrationTest {
                 expected.getUsername().equals(actual.getUsername()) &&
                 expected.getPassword().equals(actual.getPassword()) &&
                 expected.getEmail().equals(actual.getEmail()) &&
-                expected.getEmailVerified() == actual.getEmailVerified() &&
+                expected.isEmailVerified() == actual.isEmailVerified() &&
                 expected.getFirstName().equals(actual.getFirstName()) &&
                 expected.getLastName().equals(actual.getLastName()) &&
                 expected.getBirthDate().equals(actual.getBirthDate()) &&
@@ -123,7 +123,7 @@ public class UserRepositoryTest extends MongoDBBaseIntegrationTest {
                 expected.getAchievements().equals(actual.getAchievements()) &&
                 Objects.equals(expected.getPoints(), actual.getPoints()) &&
                 Objects.equals(expected.getLevel(), actual.getLevel()) &&
-                expected.getIsDeleted() == actual.getIsDeleted() &&
+                expected.isDeleted() == actual.isDeleted() &&
                 expected.getRoles().equals(actual.getRoles());
     }
 
