@@ -1,14 +1,13 @@
 package com.project.keycloak;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
 import com.project.entity.User;
 import com.project.entity.UserAdapter;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.BsonDocument;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialInput;
@@ -24,7 +23,11 @@ import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -189,13 +192,52 @@ public class MongoUserStorageProvider implements UserStorageProvider,
     @Override
     public Stream<UserModel> searchForUserStream(RealmModel realm, Map<String, String> params, Integer firstResult, Integer maxResults) {
         log.info("Searching users with parameters: {}", params);
-        List<UserModel> users = new ArrayList<>();
+        params.forEach((k, v) -> log.info("key: {}, value: {}", k, v));
 
-        for (Document document : usersCollection.find()) {
-            users.add(new UserAdapter(session, realm, model, buildUserAdapter(document)));
-        }
+        List<UserModel> users = new ArrayList<>();
+        Bson filter = createFilter(params);
+
+        FindIterable<Document> findIterable = usersCollection.find(filter);
+        applyPagination(findIterable, firstResult, maxResults)
+                .forEach(data -> users.add(new UserAdapter(session, realm, model, buildUserAdapter(data))));
 
         return users.stream();
+    }
+
+    private Bson createFilter(Map<String, String> params) {
+        if (params.containsKey("keycloak.session.realm.users.query.search")) {
+            String searchValue = params.get("keycloak.session.realm.users.query.search");
+            if (searchValue.equals("*")) {
+                return new BsonDocument();
+            } else {
+                return Filters.regex("email", searchValue, "i");
+            }
+        }
+
+        if (params.containsKey("username")) {
+            return Filters.regex("username", params.get("username"), "i");
+        }
+        if (params.containsKey("email")) {
+            return Filters.regex("email", params.get("email"), "i");
+        }
+        if (params.containsKey("firstName")) {
+            return Filters.regex("firstName", params.get("firstName"), "i");
+        }
+        if (params.containsKey("lastName")) {
+            return Filters.regex("lastName", params.get("lastName"), "i");
+        }
+
+        return new BsonDocument();
+    }
+
+    private FindIterable<Document> applyPagination(FindIterable<Document> findIterable, Integer firstResult, Integer maxResults) {
+        if (firstResult != null) {
+            findIterable = findIterable.skip(firstResult);
+        }
+        if (maxResults != null) {
+            findIterable = findIterable.limit(maxResults);
+        }
+        return findIterable;
     }
 
     @Override
@@ -227,12 +269,36 @@ public class MongoUserStorageProvider implements UserStorageProvider,
     private User buildUserAdapter(Document userDoc) {
         User user = new User();
         user.setId(userDoc.getObjectId("_id"));
-        user.setEmail(userDoc.getString("email"));
         user.setUsername(userDoc.getString("username"));
         user.setPassword(userDoc.getString("password"));
+        user.setEmail(userDoc.getString("email"));
         user.setFirstName(userDoc.getString("firstName"));
         user.setLastName(userDoc.getString("lastName"));
         user.setRoles(userDoc.getList("roles", String.class));
+        user.setEmailVerified(userDoc.getBoolean("emailVerified"));
+        Date birthDate = userDoc.getDate("birthDate");
+        if (birthDate != null) {
+            LocalDate localDate = birthDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            user.setBirthDate(localDate);
+        }
+        user.setProfilePictureUrl(userDoc.getString("profilePictureUrl"));
+        user.setGoogleAccountId(userDoc.getString("googleAccountId"));
+        user.setCalendarSyncEnabled(userDoc.getBoolean("calendarSyncEnabled"));
+        Date createdDate = userDoc.getDate("createdDate");
+        if (createdDate != null) {
+            LocalDateTime localDate = createdDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            user.setCreatedDate(localDate);
+        }
+        Date lastLoginDate = userDoc.getDate("lastLoginDate");
+        if (lastLoginDate != null) {
+            LocalDateTime localDate = lastLoginDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            user.setLastLoginDate(localDate);
+        }
+        user.setTaskCompletionRate(userDoc.getDouble("taskCompletionRate"));
+        user.setAchievements(userDoc.getList("achievements", String.class));
+        user.setPoints(userDoc.getLong("points"));
+        user.setLevel(userDoc.getInteger("level"));
+        user.setDeleted(userDoc.getBoolean("isDeleted"));
         return user;
     }
 
