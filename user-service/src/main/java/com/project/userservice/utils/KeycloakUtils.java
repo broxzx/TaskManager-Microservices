@@ -48,7 +48,14 @@ public class KeycloakUtils {
     @Value("${keycloak.realm}")
     private String realm;
 
-
+    /**
+     * method for obtaining access and refresh token using user's credentials (keycloak jwt)
+     *
+     * @param username   represents user's username
+     * @param password   represents user's password
+     * @param rememberMe represents user's choice whether to prolong lifetime of token or not
+     * @return access and refresh token from keycloak authorization server
+     */
     public TokenResponse getUserTokenFromUsernameAndPassword(String username, String password, boolean rememberMe) {
         HttpHeaders headers = buildHttpHeadersToObtainToken();
 
@@ -69,6 +76,11 @@ public class KeycloakUtils {
         return buildTokenResponseFromBodyExchange(Objects.requireNonNull(exchangeBody));
     }
 
+    /**
+     * force user to change password next time when he authorizes
+     *
+     * @param userId represents user's id
+     */
     public void forgotPassword(String userId) {
         User obtainedUser = userService.getUserById(userId);
 
@@ -99,6 +111,12 @@ public class KeycloakUtils {
 
     }
 
+    /**
+     * used for refreshing token
+     *
+     * @param refreshToken represents refresh token obtained from keycloak auth. server
+     * @return new access and refresh tokens
+     */
     public TokenResponse refreshToken(String refreshToken) {
         HttpHeaders headers = buildHttpHeadersToObtainToken();
 
@@ -112,12 +130,23 @@ public class KeycloakUtils {
         return buildTokenResponseFromBodyExchange(Objects.requireNonNull(exchangeBody));
     }
 
+    /**
+     * used to send http request for obtaining token
+     *
+     * @return headers with appropriate content type for keycloak
+     */
     private static HttpHeaders buildHttpHeadersToObtainToken() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         return headers;
     }
 
+    /**
+     * builds TokenResponse model using obtained Map
+     *
+     * @param body represents response from keycloak
+     * @return access and response tokens
+     */
     private TokenResponse buildTokenResponseFromBodyExchange(Map body) {
         String accessToken = body.get(ACCESS_TOKEN).toString();
 
@@ -128,6 +157,13 @@ public class KeycloakUtils {
                 modelMapper.map(obtainedUser, UserResponse.class));
     }
 
+    /**
+     * builds request to obtain token
+     *
+     * @param body    represents body key/values
+     * @param headers represents built headers for request
+     * @return response from keycloak
+     */
     private ResponseEntity<Map> tokenRequest(MultiValueMap<String, String> body, HttpHeaders headers) {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 

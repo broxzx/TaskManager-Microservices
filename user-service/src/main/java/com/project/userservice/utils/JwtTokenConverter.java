@@ -15,6 +15,11 @@ import java.util.*;
 public class JwtTokenConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
 
+    /**
+     * converting authorities from jwt token
+     * @param source processing jwt token
+     * @return AbstractAuthenticationToken which has authorities
+     */
     @Override
     public AbstractAuthenticationToken convert(Jwt source) {
         Map<String, Collection<String>> realm_access = source.getClaim("realm_access");

@@ -16,6 +16,11 @@ public class KafkaProducerService {
     @Value("${kafka.forgot-password-topic}")
     private String topicForgotPassword;
 
+    /**
+     * used for sending 'forgot password' email
+     *
+     * @param userEmail represents where to send email
+     */
     public void sendForgotPasswordMail(String userEmail) {
         producer.send(topicForgotPassword, userEmail);
         log.info("reset password mail to email '%s' was sent".formatted(userEmail));
