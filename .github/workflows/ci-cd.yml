@@ -31,8 +31,8 @@ jobs:
       - name: Build with Maven
         run: mvn clean install -DskipTests
 
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+#      - name: Log in to Docker Hub
+#        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
       - name: Build and push Docker images
         run: |
