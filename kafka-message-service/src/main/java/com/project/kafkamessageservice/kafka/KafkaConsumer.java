@@ -13,6 +13,11 @@ public class KafkaConsumer {
 
     private final MailSenderService mailSenderService;
 
+    /**
+     * listens to topic and when message occurs then sends email
+     *
+     * @param userEmail represents user's email
+     */
     @KafkaListener(topics = {"${kafka.forgot-password-topic}"}, groupId = "message-service")
     public void consume(String userEmail) {
         log.info("Received message: {}", userEmail);

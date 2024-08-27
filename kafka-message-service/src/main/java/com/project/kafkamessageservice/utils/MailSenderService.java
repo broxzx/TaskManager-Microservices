@@ -17,6 +17,10 @@ public class MailSenderService {
     @Value("${common.baseUrl}")
     private String baseUrl;
 
+    /**
+     * sends 'forgot password' email to user's email
+     * @param email represents user's email
+     */
     public void sendResetPasswordMail(String email) {
         String resetPasswordUrl = baseUrl + "users/changePassword?token=%s".formatted(jwtUtils.generateResetPasswordToken(email));
 

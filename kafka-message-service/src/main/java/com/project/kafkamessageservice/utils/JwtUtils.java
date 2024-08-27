@@ -20,6 +20,12 @@ public class JwtUtils {
     @Value("${jwt.expires}")
     private Duration expirationTime;
 
+    /**
+     * generates token for changing password
+     *
+     * @param email represents user's email
+     * @return user's changing password token
+     */
     public String generateResetPasswordToken(String email) {
         Map<String, String> claims = Map.of("resetPasswordToken", "true");
 
