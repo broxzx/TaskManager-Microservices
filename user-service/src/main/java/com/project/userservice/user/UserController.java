@@ -90,7 +90,7 @@ public class UserController {
     }
 
     /**
-     * Called when user wants to change his password
+     * Called when user makes request to send email to change his password
      *
      * @param userEmail an object of type String that represents user's email
      */

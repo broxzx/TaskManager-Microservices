@@ -50,14 +50,14 @@ public class ProjectController {
 
     @PostMapping("/{projectId}/addMembers")
     public ResponseEntity<Project> addMembersToProject(@PathVariable("projectId") String projectId,
-                                                       @RequestParam("members") List<String> memberIds,
+                                                       @RequestBody List<String> memberIds,
                                                        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return ResponseEntity.ok(projectService.addMembersToProject(projectId, memberIds, authorizationHeader));
     }
 
     @DeleteMapping("/{projectId}/deleteMembers")
     public ResponseEntity<Project> deleteMembersFromProject(@PathVariable("projectId") String projectId,
-                                                            @RequestParam("members") List<String> memberIds,
+                                                            @RequestBody List<String> memberIds,
                                                             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return ResponseEntity.ok(projectService.deleteMembersFromProject(projectId, memberIds, authorizationHeader));
     }

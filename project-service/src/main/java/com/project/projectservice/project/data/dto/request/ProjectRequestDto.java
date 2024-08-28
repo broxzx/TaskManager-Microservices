@@ -18,6 +18,5 @@ public class ProjectRequestDto {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private String status;
-    private Set<String> taskIds;
 
 }

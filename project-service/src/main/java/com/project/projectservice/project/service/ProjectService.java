@@ -106,28 +106,27 @@ public class ProjectService {
     }
 
     public Project addMembersToProject(String projectId, List<String> memberIds, String authorizationHeader) {
-        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
 
-        List<String> existMemberIds = memberIds
-                .stream()
-                .filter(userFeign::checkUserExists)
-                .toList();
+        checkOwnerPermissionToProject(obtainedProject, userId);
+        addMembersToProject(memberIds, obtainedProject);
 
-        obtainedProject.getMemberIds().addAll(existMemberIds);
         return projectRepository.save(obtainedProject);
     }
 
     public Project deleteMembersFromProject(String projectId, List<String> memberIds, String authorizationHeader) {
-        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
 
-        memberIds.forEach(obtainedProject.getMemberIds()::remove);
+        checkOwnerPermissionToProject(obtainedProject, userId);
+        deleteMembersFromProject(memberIds, obtainedProject);
+
         return projectRepository.save(obtainedProject);
     }
 
     public Project changeProjectStatus(String projectId, String newStatus, String authorizationHeader) {
-        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
 
         obtainedProject.setStatus(newStatus);
@@ -136,18 +135,13 @@ public class ProjectService {
     }
 
     public Project addTagsToProject(String projectId, List<String> tagIds, String authorizationHeader) {
-        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
-
 
         return projectRepository.save(obtainedProject);
     }
 
     private void removeNullFieldsFromProject(ProjectRequestDto projectRequestDto, Project mappedProject) {
-        if (projectRequestDto.getTaskIds() == null) {
-            mappedProject.setTaskIds(new HashSet<>());
-        }
-
         if (projectRequestDto.getMemberIds() == null) {
             mappedProject.setMemberIds(new HashSet<>());
         }
@@ -159,27 +153,45 @@ public class ProjectService {
         projectToUpdate.setUpdatedAt(LocalDateTime.now());
         projectToUpdate.setMemberIds(projectRequestDto.getMemberIds());
         projectToUpdate.setStatus(projectRequestDto.getStatus());
-        projectToUpdate.setTaskIds(projectRequestDto.getTaskIds());
 
         if (projectRequestDto.getMemberIds() == null) {
             projectToUpdate.setMemberIds(new HashSet<>());
         }
 
-        if (projectRequestDto.getTaskIds() == null) {
-            projectToUpdate.setTaskIds(new HashSet<>());
-        }
-
         return projectToUpdate;
     }
 
-    private Project getProjectByIdAndOwnerId(String projectId, String ownerId) {
+    public Project getProjectByIdAndOwnerId(String projectId, String userId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("projectId '%s' is not found".formatted(projectId)));
 
-        if (!project.getMemberIds().contains(ownerId) && !project.getOwnerId().equals(ownerId)) {
+        if (!project.getMemberIds().contains(userId) && !project.getOwnerId().equals(userId)) {
             throw new ForbiddenException("you don't have access to project with name '%s'".formatted(project.getName()));
         }
 
         return project;
+    }
+
+    private String getUserIdByTokenUsingFeign(String authorizationHeader) {
+        return userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+    }
+
+    private void checkOwnerPermissionToProject(Project projectToCheck, String userId) {
+        if (!projectToCheck.getOwnerId().equals(userId)) {
+            throw new ForbiddenException("You do not have permission to change members to this project");
+        }
+    }
+
+    private void addMembersToProject(List<String> memberIds, Project obtainedProject) {
+        List<String> existMemberIds = memberIds
+                .stream()
+                .filter(userFeign::checkUserExists)
+                .toList();
+
+        obtainedProject.getMemberIds().addAll(existMemberIds);
+    }
+
+    private void deleteMembersFromProject(List<String> memberIds, Project obtainedProject) {
+        memberIds.forEach(obtainedProject.getMemberIds()::remove);
     }
 }

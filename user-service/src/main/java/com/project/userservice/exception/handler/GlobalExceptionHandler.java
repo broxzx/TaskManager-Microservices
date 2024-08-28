@@ -52,14 +52,9 @@ public class GlobalExceptionHandler {
                 .body(problemDetail);
     }
 
-    @ExceptionHandler(value = {UserAlreadyExistsException.class, AuthorizationFailed.class, TokenInvalidException.class, ResetPasswordTokenIncorrectException.class})
+    @ExceptionHandler(value = {UserAlreadyExistsException.class, AuthorizationFailed.class, TokenInvalidException.class, ResetPasswordTokenIncorrectException.class, EntityNotFoundException.class})
     public ResponseEntity<ProblemDetail> handleCommonBadRequestExceptions(RuntimeException ex) {
         return buildExceptionHandling(ex, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(value = {EntityNotFoundException.class})
-    public ResponseEntity<ProblemDetail> handleCommonNotfoundException(RuntimeException ex) {
-        return buildExceptionHandling(ex, HttpStatus.NOT_FOUND);
     }
 
     private static ResponseEntity<ProblemDetail> buildExceptionHandling(RuntimeException ex, HttpStatus httpStatus) {
