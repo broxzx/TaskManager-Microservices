@@ -1,4 +1,4 @@
-package com.project.taskservice.columns.data.request;
+package com.project.taskservice.columns.data.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

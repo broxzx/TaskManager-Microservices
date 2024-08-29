@@ -7,25 +7,24 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class JwtTokenConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     @Override
     public AbstractAuthenticationToken convert(Jwt source) {
-        List<String> groups = source.getClaimAsStringList("groups");
+        Map<String, Collection<String>> realm_access = source.getClaim("realm_access");
+        Collection<String> roles = realm_access.get("roles");
 
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>(groups.stream()
-                .filter(group -> group.startsWith("ROLE_"))
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>(roles.stream()
+                .filter(role -> role.startsWith("ROLE_"))
                 .map(SimpleGrantedAuthority::new)
                 .toList());
 
         List<String> scopes = source.getClaimAsStringList("scope");
 
-        if (scopes != null && !scopes.isEmpty()) {
+        if (scopes != null) {
             authorities.addAll(Arrays.stream(scopes.get(0).split(" ")).map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope)).toList());
         }
 

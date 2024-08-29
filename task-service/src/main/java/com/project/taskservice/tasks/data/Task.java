@@ -10,7 +10,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Document(collection = "tasks")
 @AllArgsConstructor
@@ -44,7 +46,7 @@ public class Task {
     private LocalDateTime dueDate = LocalDateTime.now();
 
     @Builder.Default
-    private List<String> tags = new ArrayList<>();
+    private Set<String> tags = new HashSet<>();
 
     @Builder.Default
     private List<String> comments = new ArrayList<>();

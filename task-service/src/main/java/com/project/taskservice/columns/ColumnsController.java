@@ -1,7 +1,7 @@
 package com.project.taskservice.columns;
 
 import com.project.taskservice.columns.data.Column;
-import com.project.taskservice.columns.data.request.ColumnRequest;
+import com.project.taskservice.columns.data.dto.ColumnRequest;
 import com.project.taskservice.columns.services.ColumnService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -24,8 +24,8 @@ public class ColumnsController {
     }
 
     @PostMapping
-    public void createProject(@RequestBody ColumnRequest columnRequest,
-                              @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+    public void createColumn(@RequestBody ColumnRequest columnRequest,
+                             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         columnsService.createColumn(columnRequest, authorizationHeader);
     }
 

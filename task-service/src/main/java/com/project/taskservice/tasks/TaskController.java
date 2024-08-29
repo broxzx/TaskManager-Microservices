@@ -1,7 +1,7 @@
 package com.project.taskservice.tasks;
 
 import com.project.taskservice.tasks.data.Task;
-import com.project.taskservice.tasks.data.requests.TaskRequest;
+import com.project.taskservice.tasks.data.dto.TaskRequest;
 import com.project.taskservice.tasks.services.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +19,12 @@ public class TaskController {
     public ResponseEntity<Task> createTask(@RequestBody TaskRequest taskRequest,
                                            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return ResponseEntity.ok(taskService.createTask(taskRequest, authorizationHeader));
+    }
+
+    @GetMapping("/{taskId}")
+    public ResponseEntity<Task> getTaskById(@PathVariable String taskId,
+                                            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return ResponseEntity.ok(taskService.getTaskById(taskId, authorizationHeader));
     }
 
 }

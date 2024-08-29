@@ -1,4 +1,4 @@
-package com.project.taskservice.tasks.data.requests;
+package com.project.taskservice.tasks.data.dto;
 
 import com.project.taskservice.tasks.data.enums.SecurityLevel;
 import com.project.taskservice.tasks.data.enums.Status;
@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,7 +34,7 @@ public class TaskRequest {
     private LocalDateTime dueDate = LocalDateTime.now();
 
     @Builder.Default
-    private List<String> tags = new ArrayList<>();
+    private Set<String> tags = new HashSet<>();
 
     @Builder.Default
     private List<String> comments = new ArrayList<>();

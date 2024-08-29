@@ -56,7 +56,7 @@ eureka:
 keycloak:
   realm: task-manager-microservices
   client-id: task-service
-  client-secret: OIdp06uPaJgdwH1meKRatic6zuLbFLDQ
+  client-secret: pvI9oSFYeKKKNml9fkUt57dS4R3hECwj
   server-url: http://localhost:8280
   scope: view_users
 

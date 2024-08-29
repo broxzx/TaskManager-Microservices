@@ -4,6 +4,7 @@ import com.project.projectservice.exceptions.EntityNotFoundException;
 import com.project.projectservice.exceptions.ForbiddenException;
 import com.project.projectservice.feings.UserFeign;
 import com.project.projectservice.project.data.Project;
+import com.project.projectservice.project.data.dto.ProjectAccessDto;
 import com.project.projectservice.project.data.dto.ProjectQueryResponseDto;
 import com.project.projectservice.project.data.dto.ProjectRequestDto;
 import com.project.projectservice.tags.services.TagService;
@@ -15,6 +16,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -235,5 +237,12 @@ public class ProjectService {
         aggregationOperations.add(lookUpOperation);
 
         return aggregationOperations;
+    }
+
+    public ProjectAccessDto getProjectAccess(String projectId, String authorizationHeader) {
+        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
+        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
+
+        return new ProjectAccessDto(obtainedProject.getOwnerId(), obtainedProject.getMemberIds());
     }
 }

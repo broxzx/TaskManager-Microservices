@@ -1,6 +1,7 @@
 package com.project.projectservice.project;
 
 import com.project.projectservice.project.data.Project;
+import com.project.projectservice.project.data.dto.ProjectAccessDto;
 import com.project.projectservice.project.data.dto.ProjectQueryResponseDto;
 import com.project.projectservice.project.data.dto.ProjectRequestDto;
 import com.project.projectservice.project.service.ProjectService;
@@ -75,6 +76,12 @@ public class ProjectController {
                                                     @RequestParam List<String> tagIds,
                                                     @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return ResponseEntity.ok(projectService.addTagsToProject(projectId, tagIds, authorizationHeader));
+    }
+
+    @GetMapping("/{projectId}/access")
+    public ResponseEntity<ProjectAccessDto> getProjectAccess(@PathVariable("projectId") String projectId,
+                                                             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return ResponseEntity.ok(projectService.getProjectAccess(projectId, authorizationHeader));
     }
 
 }

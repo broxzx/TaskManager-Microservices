@@ -1,7 +1,7 @@
 package com.project.taskservice.columns.services;
 
 import com.project.taskservice.columns.data.Column;
-import com.project.taskservice.columns.data.request.ColumnRequest;
+import com.project.taskservice.columns.data.dto.ColumnRequest;
 import com.project.taskservice.feigns.UserFeign;
 import com.project.taskservice.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +22,7 @@ public class ColumnService {
 
     public List<Column> getAllProjectColumns(String projectId, String authorizationHeader) {
         String userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
+        //todo: project members also should be able to see columns
         return columnRepository.findByProjectIdAndCreatedById(projectId, userId);
     }
 
@@ -35,6 +36,7 @@ public class ColumnService {
                 .peek(column -> column.setPosition(column.getPosition() + 1))
                 .toList());
 
+        mappedColumn.setCreatedById(userId);
         columnsToUpdatePosition.add(mappedColumn);
         columnRepository.saveAll(columnsToUpdatePosition);
     }

@@ -1,7 +1,10 @@
 package com.project.taskservice.config;
 
+import com.project.taskservice.columns.data.Column;
+import com.project.taskservice.columns.data.dto.ColumnRequest;
 import com.project.taskservice.exceptions.TokenInvalidException;
 import feign.RequestInterceptor;
+import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.representations.AccessTokenResponse;
@@ -10,8 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
-
-import java.util.List;
 
 @Configuration
 public class BeanConfiguration {
@@ -32,6 +33,7 @@ public class BeanConfiguration {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setAmbiguityIgnored(true);
         modelMapper.getConfiguration().setSkipNullEnabled(true);
+        modelMapper.typeMap(ColumnRequest.class, Column.class).addMappings(mapper -> mapper.skip(Column::setId));
         return modelMapper;
     }
 
@@ -39,11 +41,12 @@ public class BeanConfiguration {
     public RequestInterceptor requestInterceptor() {
         return requestTemplate -> {
             Keycloak keycloak = KeycloakBuilder.builder()
-                    .serverUrl(keycloakServerUrl)
                     .realm(keycloakRealm)
+                    .serverUrl(keycloakServerUrl)
                     .clientId(keycloakClientId)
                     .clientSecret(keycloakClientSecret)
-                    .scope(keycloakScope)
+                    .scope("view_users")
+                    .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                     .build();
 
             AccessTokenResponse accessToken = keycloak.tokenManager().getAccessToken();
