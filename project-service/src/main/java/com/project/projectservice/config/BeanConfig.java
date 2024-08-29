@@ -1,5 +1,7 @@
 package com.project.projectservice.config;
 
+import com.project.projectservice.tags.data.Tag;
+import com.project.projectservice.tags.data.dto.TagRequest;
 import feign.RequestInterceptor;
 import io.micrometer.observation.ObservationRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +62,7 @@ public class BeanConfig {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setAmbiguityIgnored(true);
         modelMapper.getConfiguration().setSkipNullEnabled(true);
+        modelMapper.typeMap(TagRequest.class, Tag.class).addMappings(mapper -> mapper.skip(Tag::setId));
         return modelMapper;
     }
 

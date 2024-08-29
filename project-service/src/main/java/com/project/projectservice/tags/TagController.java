@@ -25,13 +25,15 @@ public class TagController {
     }
 
     @PostMapping
-    public ResponseEntity<Tag> createTag(@RequestBody TagRequest tag) {
-        return ResponseEntity.ok(tagService.createTag(tag));
+    public ResponseEntity<Tag> createTag(@RequestBody TagRequest tag,
+                                         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return ResponseEntity.ok(tagService.createTag(tag, authorizationHeader));
     }
 
     @GetMapping("/{tagId}")
-    public ResponseEntity<Tag> getTagById(@PathVariable String tagId) {
-        return ResponseEntity.ok(tagService.getTagById(tagId));
+    public ResponseEntity<Tag> getTagById(@PathVariable String tagId,
+                                          @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return ResponseEntity.ok(tagService.getTagById(tagId, authorizationHeader));
     }
 
     @PutMapping("/{tagId}")
@@ -41,14 +43,10 @@ public class TagController {
         return ResponseEntity.ok(tagService.changeTagName(tagId, newTagName, authorizationHeader));
     }
 
-    @DeleteMapping("/{tagId}/{projectId}")
-    public void deleteTagFromProject(@PathVariable("projectId") String projectId, @PathVariable("tagId") String tagId) {
-        tagService.deleteTagFromProject(tagId, projectId);
-    }
-
     @DeleteMapping("/{tagId}")
-    public void deleteTagFromAccount(@PathVariable String tagId) {
-        tagService.deleteTag(tagId);
+    public void deleteTagFromProject(@PathVariable String tagId,
+                                     @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        tagService.deleteTag(tagId, authorizationHeader);
     }
 
 }

@@ -26,11 +26,11 @@ public class TagService {
     private final UserFeign userFeign;
     private final ProjectRepository projectRepository;
 
-    public Tag createTag(TagRequest tagRequest) {
+    public Tag createTag(TagRequest tagRequest, String authorizationHeader) {
+        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
+        checkAccessToProject(tagRequest.getProjectId(), userId);
+
         Tag mappedTag = modelMapper.map(tagRequest, Tag.class);
-        // for some reason id is being associated with projectId field in tagRequest. So, the following code
-        // should resolve this problem
-        mappedTag.setId(null);
 
         log.info(mappedTag.toString());
         return tagRepository.save(mappedTag);
@@ -44,31 +44,26 @@ public class TagService {
     }
 
     public Tag changeTagName(String tagId, String newTagName, String authorizationHeader) {
-        Tag obtainedTag = getTagById(tagId);
-        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
-
-        checkAccessToProject(obtainedTag.getProjectId(), userId);
+        Tag obtainedTag = getTagById(tagId, authorizationHeader);
 
         obtainedTag.setName(newTagName);
         return tagRepository.save(obtainedTag);
     }
 
-    public void deleteTagFromProject(String tagId, String projectId) {
-        List<Tag> tagsToDelete = tagRepository.findByProjectId(projectId)
-                .stream()
-                .filter(tag -> tag.getId().equals(tagId))
-                .toList();
+    public void deleteTag(String tagId, String authorizationHeader) {
+        Tag obtainedTagById = getTagById(tagId, authorizationHeader);
 
-        tagRepository.deleteAll(tagsToDelete);
+        tagRepository.delete(obtainedTagById);
     }
 
-    public void deleteTag(String tagId) {
-        tagRepository.deleteById(tagId);
-    }
-
-    public Tag getTagById(String tagId) {
-        return tagRepository.findById(tagId)
+    public Tag getTagById(String tagId, String authorizationHeader) {
+        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
+        Tag obtainedTag = tagRepository.findById(tagId)
                 .orElseThrow(() -> new EntityNotFoundException("tag with id '%s' not found".formatted(tagId)));
+
+        checkAccessToProject(obtainedTag.getProjectId(), userId);
+
+        return obtainedTag;
     }
 
     public void deleteTagsByProjectId(String projectId) {
