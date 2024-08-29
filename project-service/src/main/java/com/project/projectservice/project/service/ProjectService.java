@@ -4,16 +4,22 @@ import com.project.projectservice.exceptions.EntityNotFoundException;
 import com.project.projectservice.exceptions.ForbiddenException;
 import com.project.projectservice.feings.UserFeign;
 import com.project.projectservice.project.data.Project;
-import com.project.projectservice.project.data.dto.request.ProjectRequestDto;
+import com.project.projectservice.project.data.dto.ProjectQueryResponseDto;
+import com.project.projectservice.project.data.dto.ProjectRequestDto;
 import com.project.projectservice.tags.services.TagService;
 import com.project.projectservice.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
+import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -27,11 +33,15 @@ public class ProjectService {
     private final JwtUtils jwtUtils;
     private final ModelMapper modelMapper;
     private final TagService tagService;
+    private final MongoTemplate mongoTemplate;
 
-    public List<Project> getUserProjects(String authorizationHeader) {
+    public List<ProjectQueryResponseDto> getUserProjects(String authorizationHeader) {
         String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
 
-        return projectRepository.findUserProjects(userId);
+        List<AggregationOperation> aggregationOperations = buildQueryToGetAllUsersProjectWithTags(userId);
+        TypedAggregation<Document> aggregation = buildAggregationToGetProjects(aggregationOperations);
+
+        return mongoTemplate.aggregate(aggregation, "projects", ProjectQueryResponseDto.class).getMappedResults();
     }
 
     public Project createProject(ProjectRequestDto projectRequestDto, String authorizationHeader) {
@@ -193,5 +203,37 @@ public class ProjectService {
 
     private void deleteMembersFromProject(List<String> memberIds, Project obtainedProject) {
         memberIds.forEach(obtainedProject.getMemberIds()::remove);
+    }
+
+    private TypedAggregation<Document> buildAggregationToGetProjects(List<AggregationOperation> aggregationOperations) {
+        return TypedAggregation.newAggregation(Document.class, aggregationOperations);
+    }
+
+    private List<AggregationOperation> buildQueryToGetAllUsersProjectWithTags(String userId) {
+        List<AggregationOperation> aggregationOperations = new ArrayList<>();
+
+        AggregationOperation matchFields = context -> new Document("$match",
+                new Document("$or", Arrays.asList(new Document("ownerId", userId),
+                        new Document("memberIds",
+                                new Document("$in", List.of(userId))))));
+
+        AggregationOperation addFieldsOperation = context -> new Document("$addFields",
+                new Document("_id",
+                        new Document("$toString", "$_id")));
+
+        AggregationOperation lookUpOperation = context -> new Document("$lookup",
+                new Document("from", "tags")
+                        .append("localField", "_id")
+                        .append("foreignField", "projectId")
+                        .append("as", "tags")
+                        .append("pipeline", List.of(new Document("$project",
+                                new Document("_id", 1L)
+                                        .append("name", 1L)))));
+
+        aggregationOperations.add(matchFields);
+        aggregationOperations.add(addFieldsOperation);
+        aggregationOperations.add(lookUpOperation);
+
+        return aggregationOperations;
     }
 }

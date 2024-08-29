@@ -1,7 +1,8 @@
 package com.project.projectservice.project;
 
 import com.project.projectservice.project.data.Project;
-import com.project.projectservice.project.data.dto.request.ProjectRequestDto;
+import com.project.projectservice.project.data.dto.ProjectQueryResponseDto;
+import com.project.projectservice.project.data.dto.ProjectRequestDto;
 import com.project.projectservice.project.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +19,7 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @GetMapping("/getUserProjects")
-    public ResponseEntity<List<Project>> getUserProjects(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+    public ResponseEntity<List<ProjectQueryResponseDto>> getUserProjects(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return ResponseEntity.ok(projectService.getUserProjects(authorizationHeader));
     }
 
