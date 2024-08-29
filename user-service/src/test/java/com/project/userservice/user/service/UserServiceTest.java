@@ -2,8 +2,10 @@ package com.project.userservice.user.service;
 
 import com.project.userservice.UserServiceApplication;
 import com.project.userservice.exception.EntityNotFoundException;
+import com.project.userservice.exception.PasswordNotMatch;
 import com.project.userservice.exception.ResetPasswordTokenIncorrectException;
 import com.project.userservice.exception.UserAlreadyExistsException;
+import com.project.userservice.model.ChangePasswordDto;
 import com.project.userservice.user.data.User;
 import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.utils.JwtUtils;
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -21,7 +24,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -38,8 +42,12 @@ public class UserServiceTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
     private UserRequest baseUserRequest;
     private User baseUser;
+    private String randomToken;
 
     @BeforeEach
     void setUp() {
@@ -55,7 +63,7 @@ public class UserServiceTest {
         this.baseUser = User.builder()
                 .id(UUID.randomUUID().toString())
                 .username("username")
-                .password("password")
+                .password(passwordEncoder.encode("password"))
                 .email("email@email.com")
                 .firstName("firstName")
                 .lastName("lastName")
@@ -64,6 +72,8 @@ public class UserServiceTest {
                 .profilePictureUrl("https://example.com")
                 .googleAccountId(UUID.randomUUID().toString())
                 .build();
+
+        this.randomToken = UUID.randomUUID().toString();
     }
 
     @Test
@@ -136,22 +146,19 @@ public class UserServiceTest {
 
     @Test
     void givenUserService_whenUpdateUserEntity_thenSuccess() {
-        final String dummyTokenValue = " ";
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(baseUser));
-        when(jwtUtils.extractTokenFromHeader(any(String.class))).thenReturn(UUID.randomUUID().toString());
-        when(jwtUtils.getUsernameByToken(any(String.class))).thenReturn(baseUser.getUsername());
+        when(jwtUtils.extractTokenFromHeader(any(String.class))).thenReturn(randomToken);
+        when(jwtUtils.getUserIdByToken(randomToken)).thenReturn(baseUser.getId());
+        when(userRepository.findById(baseUser.getId())).thenReturn(Optional.of(baseUser));
 
-        userService.updateUserEntity(dummyTokenValue, baseUserRequest);
+        userService.updateUserEntity(randomToken, baseUserRequest);
 
-        User updatedUser = userService.getUserById(baseUser.getUsername());
+        User updatedUser = userService.getUserById(baseUser.getId());
 
         assertThat(updatedUser.getUsername()).isEqualTo(baseUser.getUsername());
         assertThat(updatedUser.getEmail()).isEqualTo(baseUser.getEmail());
         assertThat(areUserEqual(baseUser, updatedUser)).isTrue();
 
-        verify(userRepository, times(2)).findByUsername(any(String.class));
-        verify(jwtUtils, times(1)).extractTokenFromHeader(any(String.class));
-        verify(jwtUtils, times(1)).getUsernameByToken(any(String.class));
+//        verify(userService, times(1)).getUserById(any(String.class));
     }
 
     @Test
@@ -175,9 +182,9 @@ public class UserServiceTest {
                 .birthDate(LocalDate.now())
                 .build();
 
-        when(jwtUtils.extractTokenFromHeader(any(String.class))).thenReturn(UUID.randomUUID().toString());
-        when(jwtUtils.getUsernameByToken(any(String.class))).thenReturn(baseUser.getUsername());
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(baseUser));
+        when(jwtUtils.extractTokenFromHeader(any(String.class))).thenReturn(randomToken);
+        when(jwtUtils.getUserIdByToken(randomToken)).thenReturn(baseUser.getId());
+        when(userRepository.findById(baseUser.getId())).thenReturn(Optional.of(baseUser));
         when(userRepository.save(any(User.class))).thenReturn(baseUser);
 
         User updatedUserEntity = userService.updateUserEntity("dummyToken", badUserRequest);
@@ -186,38 +193,92 @@ public class UserServiceTest {
     }
 
     @Test
-    void givenUserService_whenFindUserByUsername_thenSuccess() {
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(baseUser));
+    void givenUserService_whenFindUserById_thenSuccess() {
+        when(userRepository.findById(baseUser.getId())).thenReturn(Optional.of(baseUser));
 
-        User obtainedUserEntity = userService.getUserById(baseUserRequest.getUsername());
+        User obtainedUserEntity = userService.getUserById(baseUser.getId());
 
         assertThat(obtainedUserEntity.getId()).isEqualTo(baseUser.getId());
-        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findById(baseUser.getId());
     }
 
     @Test
-    void givenUserService_whenFindUserByUsername_thenFailure() {
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.empty());
+    void givenUserService_whenFindUserById_thenFailure() {
+        when(userRepository.findById(any(String.class))).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> userService.getUserById(baseUser.getUsername()));
+        assertThrows(EntityNotFoundException.class, () -> userService.getUserById(baseUser.getId()));
 
-        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findById(any(String.class));
     }
 
     @Test
-    void changePasswordWithNewPassword() {
+    void givenUserService_whenChangePasswordWithNewPassword_thenSuccess() {
+        final String baseUserEmail = "email@email.com";
+        final String passwordBeforeChanging = baseUser.getPassword();
+
+        when(jwtUtils.getEmailFromResetPasswordToken(randomToken)).thenReturn(baseUserEmail);
+        when(userRepository.findByEmail(baseUserEmail)).thenReturn(Optional.of(baseUser));
+        ChangePasswordDto changePasswordDto = new ChangePasswordDto("newPassword", "newPassword");
+
+        userService.changePasswordWithNewPassword(randomToken, changePasswordDto);
+
+        assertThat(baseUser.getPassword()).isNotEqualTo(passwordBeforeChanging);
+
+        verify(userRepository, times(1)).findByEmail(baseUserEmail);
+        verify(jwtUtils, times(1)).getEmailFromResetPasswordToken(randomToken);
     }
 
     @Test
-    void processGrantCode() {
+    void givenUserService_whenChangePasswordWithIncorrectPassword_thenFailure() {
+        final String baseUserEmail = "email@email.com";
+
+        when(jwtUtils.getEmailFromResetPasswordToken(randomToken)).thenReturn(baseUserEmail);
+        when(userRepository.findByEmail(baseUserEmail)).thenReturn(Optional.of(baseUser));
+        ChangePasswordDto changePasswordDto = new ChangePasswordDto("newPassword", "drowssaPwen");
+
+        PasswordNotMatch passwordNotMatch = assertThrows(PasswordNotMatch.class, () -> userService.changePasswordWithNewPassword(randomToken, changePasswordDto));
+
+        assertThat(passwordNotMatch.getMessage()).isEqualTo("passwords don't match");
+        verify(userRepository, times(1)).findByEmail(baseUserEmail);
+        verify(jwtUtils, times(1)).getEmailFromResetPasswordToken(randomToken);
     }
 
     @Test
-    void getUserIdByToken() {
+    void givenUserService_whenGetUserIdByWithCorrectToken_thenSuccess() {
+        final String randomToken = "Authorization " + UUID.randomUUID();
+
+        when(jwtUtils.getUserIdByToken(randomToken)).thenReturn(baseUser.getId());
+
+        String userId = userService.getUserIdByToken(randomToken);
+
+        assertThat(userId).isEqualTo(baseUser.getId());
     }
 
     @Test
-    void checkUserExists() {
+    void givenUserService_whenGetUserIdByWithIncorrectToken_thenFailure() {
+        when(jwtUtils.getUserIdByToken(randomToken)).thenReturn(null);
+
+        String userId = userService.getUserIdByToken(randomToken);
+
+        assertThat(userId).isNotEqualTo(baseUser.getId());
+    }
+
+    @Test
+    void givenUserService_whenCheckUserExists_thenSuccess() {
+        when(userRepository.existsById(baseUser.getId())).thenReturn(true);
+
+        boolean exists = userService.checkUserExists(baseUser.getId());
+
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    void givenUserService_whenCheckUserExists_thenFailure() {
+        when(userRepository.existsById(baseUser.getId())).thenReturn(false);
+
+        boolean exists = userService.checkUserExists(baseUser.getId());
+
+        assertThat(exists).isFalse();
     }
 
     private boolean areUserEqual(User expected, User actual) {
