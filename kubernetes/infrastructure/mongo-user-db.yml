@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongo-user-deployment
+  name: mongo-user
 spec:
   replicas: 1
   selector:
@@ -13,7 +13,7 @@ spec:
         app: mongodb-user
     spec:
       containers:
-        - name: mongo-user-db
+        - name: mongodb-user
           image: mongo:7.0-jammy
           ports:
             - containerPort: 27017
@@ -32,7 +32,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongo-user-service
+  name: mongo-user
 spec:
   type: NodePort
   selector:

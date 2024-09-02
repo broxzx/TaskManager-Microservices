@@ -10,7 +10,7 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://mongo-user-service.default.svc.cluster.local:27017
+      uri: mongodb://mongodb-user:27017
 
 
   jpa:
@@ -26,14 +26,14 @@ spring:
       - public
 
   kafka:
-    bootstrap-servers: http://kafka:9092
+    bootstrap-servers: http://broker:9092
 
   security:
     oauth2:
       client:
         provider:
           keycloak:
-            issuer-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices
+            issuer-uri: http://keycloak:8080/realms/task-manager-microservices
             user-name-attribute: preferred_username
         registration:
           keycloak:
@@ -47,15 +47,15 @@ spring:
             authorization-grant-type: client_credentials
       resourceserver:
         jwt:
-          jwk-set-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices/protocol/openid-connect/certs
+          jwk-set-uri: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/certs
 
 keycloak:
-  serverUrl: http://keycloak-task-manager:8080
+  serverUrl: http://keycloak:8080
   realm: task-manager-microservices
   token:
     client_id: api-gateway-service
     client_secret: K8sqcbKrTEl2631n8nynSuGMScjvgJCe
-    request: http://keycloak-task-manager:8080/realms/task-manager-microservices/protocol/openid-connect/token
+    request: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/token
 
 kafka:
   forgot-password-topic: forgot-password
