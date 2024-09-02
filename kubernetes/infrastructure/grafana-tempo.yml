@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-tempo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-tempo
+  template:
+    metadata:
+      labels:
+        app: grafana-tempo
+    spec:
+      containers:
+        - name: grafana-tempo
+          image: grafana/tempo:2.3.1
+          ports:
+            - containerPort: 3200
+            - containerPort: 9095
+            - containerPort: 4317
+            - containerPort: 4318
+            - containerPort: 9411
+            - containerPort: 14268
+          args: [ "-config.file=/etc/tempo.yml" ]
+          volumeMounts:
+            - mountPath: /etc/tempo.yml
+              name: tempo-config
+              subPath: tempo.yml
+      volumes:
+        - name: tempo-config
+          configMap:
+            name: grafana-tempo-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-tempo
+spec:
+  type: ClusterIP
+  selector:
+    app: grafana-tempo
+  ports:
+    - name: http-metrics
+      port: 3200
+      targetPort: 3200
+      protocol: TCP
+    - name: health-check
+      port: 9095
+      targetPort: 9095
+      protocol: TCP
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
+    - name: zipkin
+      port: 9411
+      targetPort: 9411
+      protocol: TCP
+    - name: jaeger-thrift-http
+      port: 14268
+      targetPort: 14268
+      protocol: TCP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-tempo-config
+data:
+  tempo.yml: |
+    stream_over_http_enabled: true
+    server:
+      http_listen_port: 3200
+      log_level: info
+
+    query_frontend:
+      search:
+        duration_slo: 5s
+        throughput_bytes_slo: 1.073741824e+09
+      trace_by_id:
+        duration_slo: 5s
+
+    distributor:
+      receivers:
+        jaeger:
+          protocols:
+            thrift_http:
+            grpc:
+            thrift_binary:
+            thrift_compact:
+        zipkin:
+        otlp:
+          protocols:
+            http:
+            grpc:
+        opencensus:
+
+    ingester:
+      max_block_duration: 5m
+
+    compactor:
+      compaction:
+        block_retention: 1h
+
+    metrics_generator:
+      registry:
+        external_labels:
+          source: tempo
+          cluster: docker-compose
+      storage:
+        path: /tmp/tempo/generator/wal
+        remote_write:
+          - url: http://victoria-metrics:8428/api/v1/write
+            send_exemplars: true
+
+    storage:
+      trace:
+        backend: local
+        wal:
+          path: /tmp/tempo/wal
+        local:
+          path: /tmp/tempo/blocks
+
+    overrides:
+      defaults:
+        metrics_generator:
+          processors: [ service-graphs, span-metrics ]
