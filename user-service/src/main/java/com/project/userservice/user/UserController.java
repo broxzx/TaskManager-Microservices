@@ -27,6 +27,16 @@ public class UserController {
     private final KeycloakUtils keycloakUtils;
     private final KafkaProducerService kafkaProducerService;
 
+    @GetMapping("/lock")
+    public void lock() throws InterruptedException {
+        Thread.sleep(5000);
+    }
+
+    @GetMapping("/test")
+    public String test() {
+        return "test";
+    }
+
     /**
      * Called when user submitted form in /register page
      *

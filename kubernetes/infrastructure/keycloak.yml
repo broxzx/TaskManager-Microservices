@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak-deployment
+  template:
+    metadata:
+      labels:
+        app: keycloak-deployment
+    spec:
+      containers:
+        - name: keycloak-deployment
+          image: fyuizee/keycloak-data
+          ports:
+            - containerPort: 8080
+          args: [ "start-dev", "--import-realm" ]
+          env:
+            - name: KEYCLOAK_ADMIN
+              valueFrom:
+                secretKeyRef:
+                  key: keycloak_admin
+                  name: keycloak-secrets
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: keycloak_admin_password
+                  name: keycloak-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-service
+spec:
+  selector:
+    app: keycloak-deployment
+  type: NodePort
+  ports:
+    - port: 8280
+      targetPort: 8080
+      nodePort: 30280
+      protocol: TCP
+---
+apiVersion: v1
+data:
+  keycloak_admin: YWRtaW4=
+  keycloak_admin_password: YWRtaW4=
+kind: Secret
+metadata:
+  name: keycloak-secrets
