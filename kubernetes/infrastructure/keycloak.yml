@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: keycloak-deployment
+  name: keycloak
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: keycloak-deployment
+      app: keycloak
   template:
     metadata:
       labels:
-        app: keycloak-deployment
+        app: keycloak
     spec:
       containers:
-        - name: keycloak-deployment
+        - name: keycloak
           image: fyuizee/keycloak-data
           ports:
             - containerPort: 8080
@@ -33,10 +33,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: keycloak-service
+  name: keycloak
 spec:
   selector:
-    app: keycloak-deployment
+    app: keycloak
   type: ClusterIP
   ports:
     - port: 8080

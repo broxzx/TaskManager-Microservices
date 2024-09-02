@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: victoria-metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: victoria-metrics
+  template:
+    metadata:
+      labels:
+        app: victoria-metrics
+    spec:
+      containers:
+        - name: victoria-metrics
+          image: victoriametrics/victoria-metrics:v1.93.12
+          args: [ "-promscrape.config=/etc/promscrape/promscrape.yml" ]
+          ports:
+            - containerPort: 8428
+          volumeMounts:
+            - mountPath: /etc/promscrape/promscrape.yml
+              name: victoria-metrics-config
+              subPath: promscrape.yml
+      volumes:
+        - name: victoria-metrics-config
+          configMap:
+            name: victoria-metrics-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: victoria-metrics
+spec:
+  selector:
+    app: victoria-metrics
+  type: ClusterIP
+  ports:
+    - port: 8428
+      targetPort: 8428
+      protocol: TCP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: victoria-metrics-config
+data:
+  promscrape.yml: |
+    scrape_configs:
+      - job_name: gateway-service
+        static_configs:
+          - targets: [ "http://gateway-service:8081" ]
+            labels:
+              application: gateway-service
+        metrics_path: /actuator/prometheus
+        oauth2:
+          client_id: victoria-metrics
+          client_secret: hUSY5iMFjZxRTW4UJqX6DukheNMukZnA
+          scopes:
+            - metrics
+          token_url: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/token
+          endpoint_params:
+            grant_type: client_credentials
+      - job_name: eureka-discovery-service
+        static_configs:
+          - targets: [ "eureka-discovery-service:8761" ]
+            labels:
+              application: eureka-discovery-service
+        metrics_path: /actuator/prometheus
+        oauth2:
+          client_id: victoria-metrics
+          client_secret: hUSY5iMFjZxRTW4UJqX6DukheNMukZnA
+          scopes:
+            - metrics
+          token_url: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/token
+          endpoint_params:
+            grant_type: client_credentials
+      - job_name: kafka-message-service
+        static_configs:
+          - targets: [ "kafka-message-service:9100" ]
+            labels:
+              application: kafka-message-service
+        metrics_path: /actuator/prometheus
+        oauth2:
+          client_id: victoria-metrics
+          client_secret: hUSY5iMFjZxRTW4UJqX6DukheNMukZnA
+          scopes:
+            - metrics
+          token_url: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/token
+          endpoint_params:
+            grant_type: client_credentials
+      - job_name: project-service
+        static_configs:
+          - targets: [ "project-service:9100" ]
+            labels:
+              application: project-service
+        metrics_path: /actuator/prometheus
+        oauth2:
+          client_id: victoria-metrics
+          client_secret: hUSY5iMFjZxRTW4UJqX6DukheNMukZnA
+          scopes:
+            - metrics
+          token_url: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/token
+          endpoint_params:
+            grant_type: client_credentials
+
+      - job_name: task-service
+        static_configs:
+          - targets: [ "task-service:9100" ]
+            labels:
+              application: task-service
+        metrics_path: /actuator/prometheus
+        oauth2:
+          client_id: victoria-metrics
+          client_secret: hUSY5iMFjZxRTW4UJqX6DukheNMukZnA
+          scopes:
+            - metrics
+          token_url: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/token
+          endpoint_params:
+            grant_type: client_credentials
