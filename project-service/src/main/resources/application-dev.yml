@@ -64,6 +64,9 @@ management:
     sampling:
       probability: 1.0
 
+loki:
+  url: http://grafana-loki:3100/loki/api/v1/push
+
 logging:
   level:
     root: info

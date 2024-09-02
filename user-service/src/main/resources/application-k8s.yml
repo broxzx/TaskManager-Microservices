@@ -89,6 +89,9 @@ management:
     sampling:
       probability: 1.0
 
+loki:
+  url: http://grafana-loki:3100/loki/api/v1/push
+
 logging:
   level:
     root: info
@@ -96,4 +99,4 @@ logging:
     org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
     org.springframework.security.access.vote.AffirmativeBased: DEBUG
     org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
-  config: classpath:logback-dev.xml
+  config: classpath:logback.xml

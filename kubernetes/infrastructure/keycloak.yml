@@ -37,9 +37,9 @@ metadata:
 spec:
   selector:
     app: keycloak-deployment
-  type: NodePort
+  type: ClusterIP
   ports:
-    - port: 8280
+    - port: 8080
       targetPort: 8080
       protocol: TCP
 ---
