@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-projects-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-projects-db
+  template:
+    metadata:
+      labels:
+        app: mongo-projects-db
+    spec:
+      containers:
+        - name: mongo-projects-db
+          image: mongo:7.0-jammy
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  key: MONGO_INITDB_DATABASE
+                  name: mongo-projects-db-config
+          volumeMounts:
+            - mountPath: /data/db
+              name: mongo-projects-data
+      volumes:
+        - name: mongo-projects-data
+          persistentVolumeClaim:
+            claimName: mongo-projects-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-projects-db
+spec:
+  selector:
+    app: mongo-projects-db
+  type: NodePort
+  ports:
+    - port: 27017
+      targetPort: 27017
+      protocol: TCP
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongo-projects-db-pv
+spec:
+  storageClassName: 'standard'
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 1Gi
+  hostPath:
+    path: /data/project-db
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-projects-db-pvc
+spec:
+  storageClassName: 'standard'
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongo-projects-db-config
+data:
+  MONGO_INITDB_DATABASE: "projects-db"
