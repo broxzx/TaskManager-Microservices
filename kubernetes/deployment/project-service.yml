@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: project-service
+spec:
+  selector:
+    matchLabels:
+      app: project-service
+  template:
+    metadata:
+      labels:
+        app: project-service
+    spec:
+      containers:
+        - name: project-service
+          image: fyuizee/project-service
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: project-service-config
+                  key: SPRING_PROFILES_ACTIVE
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: project-service-config
+data:
+  SPRING_PROFILES_ACTIVE: k8s

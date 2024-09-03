@@ -1,0 +1,75 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+      mvc:
+        routes:
+          - id: user-service
+            uri: lb://user-service
+            predicates:
+              - Path=/users/**
+          - id: project-service
+            uri: lb://project-service
+            predicates:
+              - Path=/projects/**
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices/protocol/openid-connect/certs
+      client:
+        registration:
+          keycloak:
+            redirect-uri: http://gateway-service:8081/login/oauth2/code/keycloak
+            client-id: api-gateway-service
+            client-secret: K8sqcbKrTEl2631n8nynSuGMScjvgJCe
+            scope:
+              - openid
+              - microprofile-jwt
+              - metrics
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices
+            user-name-attribute: preferred_username
+
+eureka:
+  instance:
+    lease-expiration-duration-in-seconds: 10
+    lease-renewal-interval-in-seconds: 10
+  client:
+    registry-fetch-interval-seconds: 10
+    service-url:
+      defaultZone: http://eureka-discovery-service:8761/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - prometheus
+  zipkin:
+    tracing:
+      endpoint: http://grafana-tempo:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  level:
+    root: info
+    org.springframework.security.web.FilterChainProxy: DEBUG
+    org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
+    org.springframework.security.access.vote.AffirmativeBased: DEBUG
+    org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
+  config: classpath:logback-dev.xml

@@ -1,0 +1,77 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: project-service
+
+  data:
+    mongodb:
+      host: mongo-projects-service
+      port: 27017
+      database: projects-db
+
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices
+            user-name-attribute: preferred_username
+
+        registration:
+          keycloak:
+            redirect-uri: http://gateway-service:8081/login/oauth2/code/keycloak
+            client-id: project-service
+            client-secret: SKW61GhBo1qz6whNaeJzMaUVpRZerI5J
+            authorization-grant-type: client_credentials
+            scope:
+              - openid
+              - microprofile-jwt
+              - metrics
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices/protocol/openid-connect/certs
+
+eureka:
+  instance:
+    lease-expiration-duration-in-seconds: 10
+    lease-renewal-interval-in-seconds: 10
+  client:
+    registry-fetch-interval-seconds: 10
+    service-url:
+      defaultZone: http://eureka-discovery-service:8761/eureka
+
+keycloak:
+  realm: task-manager-microservices
+  client-id: project-service
+  client-secret: SKW61GhBo1qz6whNaeJzMaUVpRZerI5J
+  server-url: http://keycloak-task-manager:8080
+
+management:
+  server:
+    port: 9100
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - prometheus
+  zipkin:
+    tracing:
+      endpoint: http://grafana-tempo:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1.0
+
+loki:
+  url: http://grafana-loki:3100/loki/api/v1/push
+
+logging:
+  level:
+    root: info
+    org.springframework.security.web.FilterChainProxy: DEBUG
+    org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
+    org.springframework.security.access.vote.AffirmativeBased: DEBUG
+    org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
+  config: classpath:logback-dev.xml
