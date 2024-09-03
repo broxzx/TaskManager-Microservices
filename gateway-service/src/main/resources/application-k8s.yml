@@ -25,7 +25,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices/protocol/openid-connect/certs
+          jwk-set-uri: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/certs
       client:
         registration:
           keycloak:
@@ -39,7 +39,7 @@ spring:
             authorization-grant-type: client_credentials
         provider:
           keycloak:
-            issuer-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices
+            issuer-uri: http://keycloak:8080/realms/task-manager-microservices
             user-name-attribute: preferred_username
 
 eureka:

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongo-user
+  name: mongodb-user
 spec:
   replicas: 1
   selector:
@@ -22,17 +22,17 @@ spec:
               value: user-db
           volumeMounts:
             - mountPath: /data/user-db
-              name: mongo-user-data
+              name: mongodb-user-data
           resources: { }
       volumes:
-        - name: mongo-user-data
+        - name: mongodb-user-data
           persistentVolumeClaim:
-            claimName: mongo-user-pvc
+            claimName: mongodb-user-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongo-user
+  name: mongodb-user
 spec:
   type: NodePort
   selector:
@@ -45,7 +45,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: mongo-user-pv
+  name: mongodb-user-pv
 spec:
   storageClassName: 'standard'
   accessModes:
@@ -58,7 +58,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mongo-user-pvc
+  name: mongodb-user-pvc
 spec:
   storageClassName: 'standard'
   accessModes:

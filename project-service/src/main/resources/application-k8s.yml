@@ -7,16 +7,14 @@ spring:
 
   data:
     mongodb:
-      host: mongo-projects-service
-      port: 27017
-      database: projects-db
+      uri: mongodb://mongo-projects-db:27017/projects-db
 
   security:
     oauth2:
       client:
         provider:
           keycloak:
-            issuer-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices
+            issuer-uri: http://keycloak:8080/realms/task-manager-microservices
             user-name-attribute: preferred_username
 
         registration:
@@ -31,7 +29,7 @@ spring:
               - metrics
       resourceserver:
         jwt:
-          jwk-set-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices/protocol/openid-connect/certs
+          jwk-set-uri: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/certs
 
 eureka:
   instance:
@@ -46,7 +44,7 @@ keycloak:
   realm: task-manager-microservices
   client-id: project-service
   client-secret: SKW61GhBo1qz6whNaeJzMaUVpRZerI5J
-  server-url: http://keycloak-task-manager:8080
+  server-url: http://keycloak:8080
 
 management:
   server:

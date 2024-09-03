@@ -12,7 +12,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices/protocol/openid-connect/certs
+          jwk-set-uri: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/certs
       client:
         registration:
           keycloak:
@@ -24,7 +24,7 @@ spring:
               - microprofile-jwt
         provider:
           keycloak:
-            issuer-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices
+            issuer-uri: http://keycloak:8080/realms/task-manager-microservices
             user-name-attribute: preferred_username
 
 eureka:
@@ -57,6 +57,9 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+loki:
+  url: http://grafana-loki:3100/loki/api/v1/push
 
 logging:
   level:

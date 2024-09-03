@@ -10,7 +10,7 @@ spring:
     port: 25
 
   kafka:
-    bootstrap-servers: kafka:29092
+    bootstrap-servers: broker:29092
     consumer:
       group-id: message-service
       auto-offset-reset: earliest
@@ -20,7 +20,7 @@ spring:
       client:
         provider:
           keycloak:
-            issuer-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices
+            issuer-uri: http://keycloak:8080/realms/task-manager-microservices
             user-name-attribute: preferred_username
         registration:
           keycloak:
@@ -34,7 +34,7 @@ spring:
             authorization-grant-type: client_credentials
       resourceserver:
         jwt:
-          jwk-set-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices/protocol/openid-connect/certs
+          jwk-set-uri: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/certs
 
 eureka:
   instance:
@@ -47,7 +47,7 @@ eureka:
 
 kafka:
   forgot-password-topic: forgot-password
-  bootstrap-server: kafka:29092
+  bootstrap-server: broker:29092
 
 jwt:
   secretKey: ccb63ce7180e6ebc737ac6da9570fe55b785d924b074261b5a542e38cfb4a54d
