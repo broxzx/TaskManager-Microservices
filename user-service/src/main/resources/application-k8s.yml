@@ -64,14 +64,6 @@ google:
   client-id:
   client-secret:
 
-eureka:
-  instance:
-    lease-expiration-duration-in-seconds: 10
-    lease-renewal-interval-in-seconds: 10
-  client:
-    registry-fetch-interval-seconds: 10
-    service-url:
-      defaultZone: http://eureka-discovery-service:8761/eureka
 
 management:
   server:
@@ -99,4 +91,4 @@ logging:
     org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
     org.springframework.security.access.vote.AffirmativeBased: DEBUG
     org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
-  config: classpath:logback.xml
+  config: classpath:logback-dev.xml

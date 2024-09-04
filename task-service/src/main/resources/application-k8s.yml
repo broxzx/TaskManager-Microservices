@@ -1,13 +1,13 @@
 server:
-  port: 8083
+  port: 8084
 
 spring:
   application:
-    name: project-service
+    name: task-service
 
   data:
     mongodb:
-      uri: mongodb://mongo-projects-db:27017/projects-db
+      uri: mongodb://mongo-task-db:27017/tasks-db
 
   security:
     oauth2:
@@ -15,31 +15,20 @@ spring:
         provider:
           keycloak:
             issuer-uri: http://keycloak:8080/realms/task-manager-microservices
-            user-name-attribute: preferred_username
-
         registration:
           keycloak:
-            redirect-uri: http://gateway-service:8081/login/oauth2/code/keycloak
-            client-id: project-service
-            client-secret: SKW61GhBo1qz6whNaeJzMaUVpRZerI5J
-            authorization-grant-type: client_credentials
+            client-id: task-service
+            client-secret: pvI9oSFYeKKKNml9fkUt57dS4R3hECwj
             scope:
               - openid
               - microprofile-jwt
               - metrics
+            authorization-grant-type: client_credentials
       resourceserver:
         jwt:
           jwk-set-uri: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/certs
 
-keycloak:
-  realm: task-manager-microservices
-  client-id: project-service
-  client-secret: SKW61GhBo1qz6whNaeJzMaUVpRZerI5J
-  server-url: http://keycloak:8080
-
 management:
-  server:
-    port: 9100
   endpoints:
     web:
       exposure:
@@ -53,11 +42,17 @@ management:
     sampling:
       probability: 1.0
 
-url:
-  user-service: http://user-serivce:8082
 
-loki:
-  url: http://grafana-loki:3100/loki/api/v1/push
+keycloak:
+  realm: task-manager-microservices
+  client-id: task-service
+  client-secret: pvI9oSFYeKKKNml9fkUt57dS4R3hECwj
+  server-url: http://keycloak:8080
+  scope: view_users
+
+url:
+  user-service: http://user-service:8082
+  project-service: http://project-service:8083
 
 logging:
   level:

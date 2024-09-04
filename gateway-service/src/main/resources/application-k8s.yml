@@ -16,6 +16,10 @@ spring:
             uri: http://project-service:8083
             predicates:
               - Path=/projects/**
+          - id: task-service
+            uri: http://localhost:8084
+            predicates:
+              - Path=/columns/**, /tasks/**
 
   security:
     oauth2:
@@ -37,15 +41,6 @@ spring:
           keycloak:
             issuer-uri: http://keycloak:8080/realms/task-manager-microservices
             user-name-attribute: preferred_username
-
-eureka:
-  instance:
-    lease-expiration-duration-in-seconds: 10
-    lease-renewal-interval-in-seconds: 10
-  client:
-    registry-fetch-interval-seconds: 10
-    service-url:
-      defaultZone: http://eureka-discovery-service:8761/eureka
 
 management:
   endpoints:

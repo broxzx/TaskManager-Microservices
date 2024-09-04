@@ -6,22 +6,18 @@ spring:
     name: gateway-service
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lowerCaseServiceId: true
       mvc:
         routes:
           - id: user-service
-            uri: lb://user-service
+            uri: http://localhost:8082
             predicates:
               - Path=/users/**
           - id: project-service
-            uri: lb://project-service
+            uri: http://localhost:8083
             predicates:
               - Path=/projects/**
           - id: task-service
-            uri: lb://task-service
+            uri: http://localhost:8084
             predicates:
               - Path=/columns/**, /tasks/**
 
@@ -45,15 +41,6 @@ spring:
           keycloak:
             issuer-uri: http://localhost:8280/realms/task-manager-microservices
             user-name-attribute: preferred_username
-
-eureka:
-  instance:
-    lease-expiration-duration-in-seconds: 10
-    lease-renewal-interval-in-seconds: 10
-  client:
-    registry-fetch-interval-seconds: 10
-    service-url:
-      defaultZone: http://localhost:8761/eureka
 
 management:
   endpoints:

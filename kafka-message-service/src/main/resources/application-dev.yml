@@ -36,15 +36,6 @@ spring:
         jwt:
           jwk-set-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices/protocol/openid-connect/certs
 
-eureka:
-  instance:
-    lease-expiration-duration-in-seconds: 10
-    lease-renewal-interval-in-seconds: 10
-  client:
-    registry-fetch-interval-seconds: 10
-    service-url:
-      defaultZone: http://eureka-discovery-service:8761/eureka
-
 kafka:
   forgot-password-topic: forgot-password
   bootstrap-server: kafka:29092

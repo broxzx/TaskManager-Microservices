@@ -1,5 +1,5 @@
 server:
-  port: 0
+  port: 8083
 
 spring:
   application:
@@ -33,15 +33,6 @@ spring:
         jwt:
           jwk-set-uri: http://localhost:8280/realms/task-manager-microservices/protocol/openid-connect/certs
 
-eureka:
-  instance:
-    lease-expiration-duration-in-seconds: 10
-    lease-renewal-interval-in-seconds: 10
-  client:
-    registry-fetch-interval-seconds: 10
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-
 keycloak:
   realm: task-manager-microservices
   client-id: project-service
@@ -63,6 +54,9 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+url:
+  user-service: http://localhost:8082
 
 loki:
   url: http://localhost:3100/loki/api/v1/push

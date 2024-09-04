@@ -1,34 +1,13 @@
 server:
-  port: 8082
+  port: 8084
 
 spring:
   application:
-    name: user-service
-
-  config:
-    import: "optional:configserver:http://config-cloud-service:8888"
+    name: task-service
 
   data:
     mongodb:
-      database: user-db
-      host: mongo-user-service
-      port: 27017
-
-
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: validate
-
-  flyway:
-    enabled: true
-    user: admin
-    password: admin
-    schemas:
-      - public
-
-  kafka:
-    bootstrap-servers: http://kafka:9092
+      uri: mongodb://mongodb-task-service:27017/tasks-db
 
   security:
     oauth2:
@@ -36,12 +15,10 @@ spring:
         provider:
           keycloak:
             issuer-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices
-            user-name-attribute: preferred_username
         registration:
           keycloak:
-            redirect-uri: http://gateway-service:8081/login/oauth2/code/keycloak
-            client-id: user-service
-            client-secret: OIdp06uPaJgdwH1meKRatic6zuLbFLDQ
+            client-id: task-service
+            client-secret: pvI9oSFYeKKKNml9fkUt57dS4R3hECwj
             scope:
               - openid
               - microprofile-jwt
@@ -51,24 +28,7 @@ spring:
         jwt:
           jwk-set-uri: http://keycloak-task-manager:8080/realms/task-manager-microservices/protocol/openid-connect/certs
 
-keycloak:
-  serverUrl: http://keycloak-task-manager:8080
-  realm: task-manager-microservices
-  token:
-    client_id: api-gateway-service
-    client_secret: K8sqcbKrTEl2631n8nynSuGMScjvgJCe
-    request: http://keycloak-task-manager:8080/realms/task-manager-microservices/protocol/openid-connect/token
-
-kafka:
-  forgot-password-topic: forgot-password
-
-google:
-  client-id:
-  client-secret:
-
 management:
-  server:
-    port: 9100
   endpoints:
     web:
       exposure:
@@ -82,6 +42,17 @@ management:
     sampling:
       probability: 1.0
 
+keycloak:
+  realm: task-manager-microservices
+  client-id: task-service
+  client-secret: pvI9oSFYeKKKNml9fkUt57dS4R3hECwj
+  server-url: http://keycloak-task-manager:8080
+  scope: view_users
+
+url:
+  user-service: http://localhost:8082
+  project-service: http://localhost:8083
+
 logging:
   level:
     root: info
@@ -89,4 +60,4 @@ logging:
     org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
     org.springframework.security.access.vote.AffirmativeBased: DEBUG
     org.springframework.security.access.vote.AuthenticatedVoter: DEBUG
-  config: classpath:logback-dev.xml
+  config: classpath:logback.xml
