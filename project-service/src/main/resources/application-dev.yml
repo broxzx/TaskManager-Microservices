@@ -56,7 +56,7 @@ management:
       probability: 1.0
 
 url:
-  user-service: http://user-serivce:8082
+  user-service: http://user-service:8082
 
 loki:
   url: http://grafana-loki:3100/loki/api/v1/push

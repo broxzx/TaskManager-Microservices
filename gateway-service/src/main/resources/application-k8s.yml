@@ -17,7 +17,7 @@ spring:
             predicates:
               - Path=/projects/**
           - id: task-service
-            uri: http://localhost:8084
+            uri: http://task-service:8084
             predicates:
               - Path=/columns/**, /tasks/**
 
