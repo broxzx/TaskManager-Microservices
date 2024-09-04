@@ -2566,22 +2566,6 @@
         }
       }
     ],
-    "org.keycloak.storage.UserStorageProvider": [
-      {
-        "id": "19009245-9007-4b25-b9a1-d5f95835caf5",
-        "name": "mongodb",
-        "providerId": "mongo-user-provider",
-        "subComponents": {},
-        "config": {
-          "cachePolicy": [
-            "NO_CACHE"
-          ],
-          "enabled": [
-            "true"
-          ]
-        }
-      }
-    ],
     "org.keycloak.keys.KeyProvider": [
       {
         "id": "24a9b79e-1dab-42d1-af5d-aeb12e9fab6e",

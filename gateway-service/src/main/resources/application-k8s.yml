@@ -6,18 +6,14 @@ spring:
     name: gateway-service
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lowerCaseServiceId: true
       mvc:
         routes:
           - id: user-service
-            uri: lb://user-service
+            uri: http://user-service:8082
             predicates:
               - Path=/users/**
           - id: project-service
-            uri: lb://project-service
+            uri: http://project-service:8083
             predicates:
               - Path=/projects/**
 

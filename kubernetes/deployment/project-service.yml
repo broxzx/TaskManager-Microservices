@@ -14,16 +14,24 @@ spec:
       containers:
         - name: project-service
           image: fyuizee/project-service
+          ports:
+            - containerPort: 8083
           env:
             - name: SPRING_PROFILES_ACTIVE
               valueFrom:
                 configMapKeyRef:
-                  name: project-service-config
+                  name: common-config
                   key: SPRING_PROFILES_ACTIVE
 ---
 apiVersion: v1
-kind: ConfigMap
+kind: Service
 metadata:
-  name: project-service-config
-data:
-  SPRING_PROFILES_ACTIVE: k8s
+  name: project-service
+spec:
+  selector:
+    app: project-service
+  type: ClusterIP
+  ports:
+    - port: 8083
+      targetPort: 8083
+      protocol: TCP

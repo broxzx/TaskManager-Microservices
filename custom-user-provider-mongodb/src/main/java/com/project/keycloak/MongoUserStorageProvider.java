@@ -1,9 +1,11 @@
 package com.project.keycloak;
 
-import com.mongodb.client.*;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.project.entity.User;
 import com.project.entity.UserAdapter;
+import com.project.utils.MongoDbConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.BsonDocument;
 import org.bson.Document;
@@ -13,7 +15,6 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
-import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.*;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.storage.StorageId;
@@ -40,17 +41,18 @@ public class MongoUserStorageProvider implements UserStorageProvider,
 
     private final KeycloakSession session;
     private final ComponentModel model;
-    private final MongoClient mongoClient;
     private final MongoCollection<Document> usersCollection;
+    private final MongoDbConnection mongoDbConnection;
 
     public MongoUserStorageProvider(KeycloakSession session, ComponentModel model) {
         log.info("MongoUserStorageProvider constructor");
         this.session = session;
         this.model = model;
+        this.mongoDbConnection = new MongoDbConnection(model);
         try {
-            this.mongoClient = MongoClients.create("mongodb://mongo-user-service:27017");
-            MongoDatabase database = mongoClient.getDatabase("user-db");
-            this.usersCollection = database.getCollection("users");
+            log.info("before db init");
+            this.usersCollection = mongoDbConnection.getUserCollection(model);
+            log.info("after db init");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -58,7 +60,6 @@ public class MongoUserStorageProvider implements UserStorageProvider,
 
     @Override
     public void close() {
-        mongoClient.close();
     }
 
     @Override

@@ -15,16 +15,24 @@ spec:
       containers:
         - name: user-service
           image: fyuizee/user-service
+          ports:
+            - containerPort: 8082
           env:
             - name: SPRING_PROFILES_ACTIVE
               valueFrom:
                 configMapKeyRef:
                   key: SPRING_PROFILES_ACTIVE
-                  name: user-service-config
+                  name: common-config
 ---
 apiVersion: v1
-kind: ConfigMap
+kind: Service
 metadata:
-  name: user-service-config
-data:
-  SPRING_PROFILES_ACTIVE: "k8s"
+  name: user-service
+spec:
+  selector:
+    app: user-service
+  type: ClusterIP
+  ports:
+    - port: 8082
+      targetPort: 8082
+      protocol: TCP

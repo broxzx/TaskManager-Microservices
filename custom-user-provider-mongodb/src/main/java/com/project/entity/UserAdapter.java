@@ -1,11 +1,9 @@
 package com.project.entity;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import com.project.utils.MongoDbConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -30,18 +28,18 @@ import java.util.stream.Stream;
 public class UserAdapter extends AbstractUserAdapter {
 
     private final User user;
-    private final MongoClient mongoClient;
     private final MongoCollection<Document> usersCollection;
+    private final MongoDbConnection mongoDbConnection;
 
     public UserAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, User user) {
         super(session, realm, model);
         this.storageId = new StorageId(storageProviderModel.getId(), user.getUsername());
         this.user = user;
+        this.mongoDbConnection = new MongoDbConnection(model);
         try {
-            this.mongoClient = MongoClients.create("mongodb://mongo-user-service:27017");
-            MongoDatabase database = mongoClient.getDatabase("user-db");
-            this.usersCollection = database.getCollection("users");
+            this.usersCollection = mongoDbConnection.getUserCollection(model);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new RuntimeException(e);
         }
     }

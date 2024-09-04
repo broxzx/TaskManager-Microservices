@@ -4,3 +4,4 @@ metadata:
   name: common-config
 data:
   USER_SERVICE_URL: "http://user-service.default.svc.cluster.local:8081"
+  SPRING_PROFILES_ACTIVE: "k8s"

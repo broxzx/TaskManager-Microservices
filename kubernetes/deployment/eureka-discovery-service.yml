@@ -21,7 +21,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   key: SPRING_PROFILES_ACTIVE
-                  name: eureka-discovery-service-config
+                  name: common-config
 ---
 apiVersion: v1
 kind: Service
@@ -35,10 +35,3 @@ spec:
     - port: 8761
       targetPort: 8761
       protocol: TCP
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: eureka-discovery-service-config
-data:
-  SPRING_PROFILES_ACTIVE: k8s

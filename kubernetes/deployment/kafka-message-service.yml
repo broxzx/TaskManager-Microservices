@@ -19,12 +19,5 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               valueFrom:
                 configMapKeyRef:
-                  name: kafka-message-service-config
+                  name: common-config
                   key: SPRING_PROFILES_ACTIVE
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: kafka-message-service-config
-data:
-  SPRING_PROFILES_ACTIVE: k8s
