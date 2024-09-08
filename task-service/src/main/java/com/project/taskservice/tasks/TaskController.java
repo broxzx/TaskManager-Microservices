@@ -8,6 +8,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/tasks")
 @RequiredArgsConstructor
@@ -25,6 +27,12 @@ public class TaskController {
     public ResponseEntity<Task> getTaskById(@PathVariable String taskId,
                                             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return ResponseEntity.ok(taskService.getTaskById(taskId, authorizationHeader));
+    }
+
+    @GetMapping("/column/{columnId}")
+    public ResponseEntity<List<Task>> getTasksByColumnId(@PathVariable("columnId") String columnId,
+                                                         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return ResponseEntity.ok(taskService.getTasksByColumnId(columnId, authorizationHeader));
     }
 
 }

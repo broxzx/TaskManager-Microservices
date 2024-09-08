@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -65,5 +67,9 @@ public class TaskService {
 
         log.info("{}", mappedTask);
         return mappedTask;
+    }
+
+    public List<Task> getTasksByColumnId(String columnId, String authorizationHeader) {
+        return taskRepository.findByColumnId(columnId);
     }
 }

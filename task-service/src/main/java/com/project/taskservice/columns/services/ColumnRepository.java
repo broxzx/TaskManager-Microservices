@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface ColumnRepository extends MongoRepository<Column, String> {
 
-    List<Column> findByProjectIdAndCreatedById(String projectId, String createdById);
+    List<Column> findByProjectIdAndCreatedByIdOrderByPosition(String projectId, String createdById);
 
 }

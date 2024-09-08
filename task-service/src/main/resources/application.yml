@@ -52,8 +52,8 @@ keycloak:
   scope: view_users
 
 url:
-  user-service: http://user-service:8082
-  project-service: http://project-service:8083
+  user-service: http://localhost:8082
+  project-service: http://localhost:8083
 
 logging:
   level:

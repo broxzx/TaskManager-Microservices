@@ -23,14 +23,14 @@ public class ColumnService {
     public List<Column> getAllProjectColumns(String projectId, String authorizationHeader) {
         String userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
         //todo: project members also should be able to see columns
-        return columnRepository.findByProjectIdAndCreatedById(projectId, userId);
+        return columnRepository.findByProjectIdAndCreatedByIdOrderByPosition(projectId, userId);
     }
 
     public void createColumn(ColumnRequest columnRequest, String authorizationHeader) {
         Column mappedColumn = modelMapper.map(columnRequest, Column.class);
         String userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
 
-        List<Column> columnsToUpdatePosition = new ArrayList<>(columnRepository.findByProjectIdAndCreatedById(mappedColumn.getProjectId(), userId)
+        List<Column> columnsToUpdatePosition = new ArrayList<>(columnRepository.findByProjectIdAndCreatedByIdOrderByPosition(mappedColumn.getProjectId(), userId)
                 .stream()
                 .filter(column -> column.getPosition() >= mappedColumn.getPosition())
                 .peek(column -> column.setPosition(column.getPosition() + 1))
@@ -63,7 +63,7 @@ public class ColumnService {
 
     public void deleteColumn(String projectId, String columnId, String authorizationHeader) {
         String userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
-        columnRepository.findByProjectIdAndCreatedById(projectId, userId)
+        columnRepository.findByProjectIdAndCreatedByIdOrderByPosition(projectId, userId)
                 .stream()
                 .filter(column -> column.getId().equals(columnId))
                 .findAny()
@@ -73,13 +73,13 @@ public class ColumnService {
 
     private void moveColumnsPosition(ColumnRequest columnRequest, Column columnToUpdate, List<Column> columnsToChangePosition,
                                      String userId) {
-        columnRepository.findByProjectIdAndCreatedById(columnToUpdate.getProjectId(), userId)
+        columnRepository.findByProjectIdAndCreatedByIdOrderByPosition(columnToUpdate.getProjectId(), userId)
                 .stream()
                 .filter(column -> columnRequest.getPosition() <= column.getPosition())
                 .peek(column -> column.setPosition(column.getPosition() + 1))
                 .forEach(columnsToChangePosition::add);
 
-        columnRepository.findByProjectIdAndCreatedById(columnToUpdate.getProjectId(), userId)
+        columnRepository.findByProjectIdAndCreatedByIdOrderByPosition(columnToUpdate.getProjectId(), userId)
                 .stream()
                 .filter(column -> columnRequest.getPosition() > column.getPosition())
                 .peek(column -> column.setPosition(column.getPosition() - 1))
