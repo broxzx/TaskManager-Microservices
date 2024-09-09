@@ -9,6 +9,7 @@ import com.project.taskservice.feigns.UserFeign;
 import com.project.taskservice.model.ProjectAccessDto;
 import com.project.taskservice.tasks.data.Task;
 import com.project.taskservice.tasks.data.dto.TaskRequest;
+import com.project.taskservice.tasks.data.enums.SecurityLevel;
 import com.project.taskservice.utils.JwtUtils;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -40,10 +41,52 @@ public class TaskService {
 
     public Task getTaskById(String taskId, String authorizationHeader) {
         Task obtainedTask = getTaskById(taskId);
-        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
-        checkAccessToProject(obtainedTask.getProjectId(), userId);
+        String userId = getUserIdByTokenUsingFeign(authorizationHeader), createdById = obtainedTask.getCreatedById(),
+                assigneeId = obtainedTask.getAssigneeId();
 
-        return obtainedTask;
+        checkAccessToProject(obtainedTask.getProjectId(), userId);
+        SecurityLevel taskSecurityLevel = obtainedTask.getSecurityLevel();
+
+        if (checkSecurityLevelAccess(taskSecurityLevel, createdById, userId, assigneeId)) {
+            return obtainedTask;
+        }
+
+        throw new ForbiddenException("You don't have access to this project");
+
+    }
+
+    public List<Task> getTasksByColumnId(String columnId, String authorizationHeader) {
+        Column taskColumn = getColumnByTaskId(columnId);
+        String ownerId = taskColumn.getCreatedById(),
+                userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
+
+        if (!isUserIdAndOwnerIdEqual(userId, ownerId)) {
+            throw new ForbiddenException("You don't have access to this project");
+        }
+
+        return taskRepository.findByColumnIdOrderByPosition(columnId);
+    }
+
+    public void assignUserToTask(String taskId, String assigneeId, String authorizationHeader) {
+        Task obtainedTaskById = getTaskById(taskId);
+        String userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
+        checkAccessToProject(obtainedTaskById.getProjectId(), assigneeId);
+        checkAccessToProject(obtainedTaskById.getProjectId(), userId);
+
+        obtainedTaskById.setAssigneeId(assigneeId);
+
+        taskRepository.save(obtainedTaskById);
+    }
+
+    private Column getColumnByTaskId(String columnId) {
+        return columnRepository.findById(columnId)
+                .orElseThrow(() -> new EntityNotFoundException("column with id '%s' doesn't exists".formatted(columnId)));
+    }
+
+    private boolean checkSecurityLevelAccess(SecurityLevel taskSecurityLevel, String createdById, String userId, String assigneeId) {
+        return (taskSecurityLevel == SecurityLevel.PRIVATE && createdById.equals(userId)) ||
+                (taskSecurityLevel == SecurityLevel.PROTECTED && (createdById.equals(userId) || assigneeId.equals(userId))) ||
+                (taskSecurityLevel == SecurityLevel.PUBLIC);
     }
 
     private String getUserIdByTokenUsingFeign(String authorizationHeader) {
@@ -78,31 +121,7 @@ public class TaskService {
         return mappedTask;
     }
 
-    public List<Task> getTasksByColumnId(String columnId, String authorizationHeader) {
-        Column taskColumn = columnRepository.findById(columnId)
-                .orElseThrow(() -> new EntityNotFoundException("column with id '%s' doesn't exists".formatted(columnId)));
-        String ownerId = taskColumn.getCreatedById();
-        String userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
-
-        if (!isUserIdAndOwnerIdEqual(userId, ownerId)) {
-            throw new ForbiddenException("You don't have access to this project");
-        }
-
-        return taskRepository.findByColumnIdOrderByPosition(columnId);
-    }
-
     private boolean isUserIdAndOwnerIdEqual(String userId, String ownerId) {
         return userId.equals(ownerId);
-    }
-
-    public void assignUserToTask(String taskId, String assigneeId, String authorizationHeader) {
-        Task obtainedTaskById = getTaskById(taskId);
-        String userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
-        checkAccessToProject(obtainedTaskById.getProjectId(), assigneeId);
-        checkAccessToProject(obtainedTaskById.getProjectId(), userId);
-
-        obtainedTaskById.setAssigneeId(assigneeId);
-
-        taskRepository.save(obtainedTaskById);
     }
 }
