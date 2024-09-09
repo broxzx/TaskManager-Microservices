@@ -80,8 +80,14 @@ public class ProjectController {
 
     @PostMapping("/{projectId}/access")
     public ResponseEntity<ProjectAccessDto> getProjectAccess(@PathVariable("projectId") String projectId,
-                                                             @RequestBody String token) {
-        return ResponseEntity.ok(projectService.getProjectAccess(projectId, token));
+                                                             @RequestHeader String authorizationHeader) {
+        return ResponseEntity.ok(projectService.getProjectAccess(projectId, authorizationHeader));
+    }
+
+    @PostMapping("/feign/{projectId}/access")
+    public ProjectAccessDto getProjectAccessFeign(@PathVariable("projectId") String projectId,
+                                                  @RequestBody String userId) {
+        return projectService.getProjectAccessFeign(projectId, userId);
     }
 
 }

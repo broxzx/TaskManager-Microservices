@@ -184,7 +184,13 @@ public class ProjectService {
     }
 
     public ProjectAccessDto getProjectAccess(String projectId, String token) {
-        String userId = userFeign.getUserIdByToken(token);
+        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(token));
+        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
+
+        return new ProjectAccessDto(obtainedProject.getOwnerId(), obtainedProject.getMemberIds());
+    }
+
+    public ProjectAccessDto getProjectAccessFeign(String projectId, String userId) {
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
 
         return new ProjectAccessDto(obtainedProject.getOwnerId(), obtainedProject.getMemberIds());

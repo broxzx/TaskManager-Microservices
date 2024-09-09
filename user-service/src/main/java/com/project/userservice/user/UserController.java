@@ -6,13 +6,11 @@ import com.project.userservice.user.data.User;
 import com.project.userservice.user.data.dto.request.LoginRequest;
 import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.user.service.UserService;
-import com.project.userservice.utils.JwtUtils;
 import com.project.userservice.utils.KafkaProducerService;
 import com.project.userservice.utils.KeycloakUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +18,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
 
-    private final Logger logger = LoggerFactory.getLogger(UserController.class);
-
     private final UserService userService;
-    private final JwtUtils jwtUtils;
     private final KeycloakUtils keycloakUtils;
     private final KafkaProducerService kafkaProducerService;
 
@@ -57,7 +53,7 @@ public class UserController {
      */
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
-        logger.info("user with name '%s' tried to log in".formatted(loginRequest.getUsername()));
+        log.info("user with name '%s' tried to log in".formatted(loginRequest.getUsername()));
         return ResponseEntity.ok(keycloakUtils.getUserTokenFromUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword(), loginRequest.isRememberMe()));
     }
 
@@ -136,7 +132,6 @@ public class UserController {
      */
     @PostMapping("/getUserIdByToken")
     public String getUserIdByToken(@RequestBody String token) {
-        logger.info("obtained: {}", token);
         return userService.getUserIdByToken(token);
     }
 

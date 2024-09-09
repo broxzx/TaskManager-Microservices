@@ -35,4 +35,11 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getTasksByColumnId(columnId, authorizationHeader));
     }
 
+    @PutMapping("/{taskId}")
+    public void assignUserToTask(@PathVariable("taskId") String taskId,
+                                 @RequestBody String assigneeId,
+                                 @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        taskService.assignUserToTask(taskId, assigneeId, authorizationHeader);
+    }
+
 }

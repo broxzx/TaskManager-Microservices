@@ -10,6 +10,7 @@ import com.project.taskservice.model.ProjectAccessDto;
 import com.project.taskservice.tasks.data.Task;
 import com.project.taskservice.tasks.data.dto.TaskRequest;
 import com.project.taskservice.utils.JwtUtils;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -31,7 +32,7 @@ public class TaskService {
 
     public Task createTask(TaskRequest taskRequest, String authorizationHeader) {
         String userId = getUserIdByTokenUsingFeign(authorizationHeader);
-        checkAccessToProject(taskRequest.getProjectId(), userId, authorizationHeader);
+        checkAccessToProject(taskRequest.getProjectId(), userId);
         Task createdTaskByRequest = createTaskByTaskRequest(taskRequest, userId);
 
         return taskRepository.save(createdTaskByRequest);
@@ -40,7 +41,7 @@ public class TaskService {
     public Task getTaskById(String taskId, String authorizationHeader) {
         Task obtainedTask = getTaskById(taskId);
         String userId = getUserIdByTokenUsingFeign(authorizationHeader);
-        checkAccessToProject(obtainedTask.getProjectId(), userId, authorizationHeader);
+        checkAccessToProject(obtainedTask.getProjectId(), userId);
 
         return obtainedTask;
     }
@@ -54,8 +55,13 @@ public class TaskService {
                 .orElseThrow(() -> new EntityNotFoundException("task with id '%s' is not found".formatted(taskId)));
     }
 
-    private void checkAccessToProject(String projectId, String userId, String authorizationHeader) {
-        ProjectAccessDto projectAccess = projectFeign.getProjectAccess(projectId, jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader)).getBody();
+    private void checkAccessToProject(String projectId, String userId) {
+        ProjectAccessDto projectAccess;
+        try {
+            projectAccess = projectFeign.getProjectAccessFeign(projectId, userId);
+        } catch (FeignException exception) {
+            throw new ForbiddenException(exception.getMessage());
+        }
 
         if (projectAccess != null) {
             if (!projectAccess.getOwnerId().equals(userId) && !projectAccess.getMemberIds().contains(userId)) {
@@ -87,5 +93,14 @@ public class TaskService {
 
     private boolean isUserIdAndOwnerIdEqual(String userId, String ownerId) {
         return userId.equals(ownerId);
+    }
+
+    public void assignUserToTask(String taskId, String assigneeId, String authorizationHeader) {
+        Task obtainedTaskById = getTaskById(taskId);
+        String userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
+        checkAccessToProject(obtainedTaskById.getProjectId(), assigneeId);
+        checkAccessToProject(obtainedTaskById.getProjectId(), userId);
+
+        obtainedTaskById.setAssigneeId(assigneeId);
     }
 }
