@@ -1,5 +1,7 @@
 package com.project.taskservice.tasks.services;
 
+import com.project.taskservice.columns.data.Column;
+import com.project.taskservice.columns.services.ColumnRepository;
 import com.project.taskservice.exceptions.EntityNotFoundException;
 import com.project.taskservice.exceptions.ForbiddenException;
 import com.project.taskservice.feigns.ProjectFeign;
@@ -25,6 +27,7 @@ public class TaskService {
     private final UserFeign userFeign;
     private final ModelMapper modelMapper;
     private final ProjectFeign projectFeign;
+    private final ColumnRepository columnRepository;
 
     public Task createTask(TaskRequest taskRequest, String authorizationHeader) {
         String userId = getUserIdByTokenUsingFeign(authorizationHeader);
@@ -52,7 +55,7 @@ public class TaskService {
     }
 
     private void checkAccessToProject(String projectId, String userId, String authorizationHeader) {
-        ProjectAccessDto projectAccess = projectFeign.getProjectAccess(projectId, authorizationHeader).getBody();
+        ProjectAccessDto projectAccess = projectFeign.getProjectAccess(projectId, jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader)).getBody();
 
         if (projectAccess != null) {
             if (!projectAccess.getOwnerId().equals(userId) && !projectAccess.getMemberIds().contains(userId)) {
@@ -70,6 +73,19 @@ public class TaskService {
     }
 
     public List<Task> getTasksByColumnId(String columnId, String authorizationHeader) {
-        return taskRepository.findByColumnId(columnId);
+        Column taskColumn = columnRepository.findById(columnId)
+                .orElseThrow(() -> new EntityNotFoundException("column with id '%s' doesn't exists".formatted(columnId)));
+        String ownerId = taskColumn.getCreatedById();
+        String userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
+
+        if (!isUserIdAndOwnerIdEqual(userId, ownerId)) {
+            throw new ForbiddenException("You don't have access to this project");
+        }
+
+        return taskRepository.findByColumnIdOrderByPosition(columnId);
+    }
+
+    private boolean isUserIdAndOwnerIdEqual(String userId, String ownerId) {
+        return userId.equals(ownerId);
     }
 }

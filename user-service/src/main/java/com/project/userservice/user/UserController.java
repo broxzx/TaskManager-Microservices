@@ -6,6 +6,7 @@ import com.project.userservice.user.data.User;
 import com.project.userservice.user.data.dto.request.LoginRequest;
 import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.user.service.UserService;
+import com.project.userservice.utils.JwtUtils;
 import com.project.userservice.utils.KafkaProducerService;
 import com.project.userservice.utils.KeycloakUtils;
 import jakarta.validation.Valid;
@@ -24,13 +25,9 @@ public class UserController {
     private final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     private final UserService userService;
+    private final JwtUtils jwtUtils;
     private final KeycloakUtils keycloakUtils;
     private final KafkaProducerService kafkaProducerService;
-
-    @GetMapping("/lock")
-    public void lock() throws InterruptedException {
-        Thread.sleep(5000);
-    }
 
     @GetMapping("/test")
     public String test() {
@@ -137,8 +134,9 @@ public class UserController {
      * @param token represents access token
      * @return an object of type String that represents user's id
      */
-    @GetMapping("/getUserIdByToken")
-    public String getUserIdByToken(@RequestParam("token") String token) {
+    @PostMapping("/getUserIdByToken")
+    public String getUserIdByToken(@RequestBody String token) {
+        logger.info("obtained: {}", token);
         return userService.getUserIdByToken(token);
     }
 

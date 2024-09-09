@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface TaskRepository extends MongoRepository<Task, String> {
 
-    List<Task> findByColumnId(String columnId);
+    List<Task> findByColumnIdOrderByPosition(String columnId);
 
 }

@@ -16,7 +16,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -184,6 +183,13 @@ public class ProjectService {
         return project;
     }
 
+    public ProjectAccessDto getProjectAccess(String projectId, String token) {
+        String userId = userFeign.getUserIdByToken(token);
+        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
+
+        return new ProjectAccessDto(obtainedProject.getOwnerId(), obtainedProject.getMemberIds());
+    }
+
     private String getUserIdByTokenUsingFeign(String authorizationHeader) {
         return userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
     }
@@ -237,12 +243,5 @@ public class ProjectService {
         aggregationOperations.add(lookUpOperation);
 
         return aggregationOperations;
-    }
-
-    public ProjectAccessDto getProjectAccess(String projectId, String authorizationHeader) {
-        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
-        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
-
-        return new ProjectAccessDto(obtainedProject.getOwnerId(), obtainedProject.getMemberIds());
     }
 }

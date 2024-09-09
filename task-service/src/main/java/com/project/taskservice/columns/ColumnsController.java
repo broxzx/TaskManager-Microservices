@@ -30,15 +30,15 @@ public class ColumnsController {
     }
 
     @PutMapping("/{columnId}")
-    public ResponseEntity<Column> updateProject(@PathVariable String columnId, @RequestBody ColumnRequest columnRequest,
+    public ResponseEntity<Column> updateColumn(@PathVariable String columnId, @RequestBody ColumnRequest columnRequest,
                                                 @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return ResponseEntity.ok(columnsService.updateColumn(columnId, columnRequest, authorizationHeader));
     }
 
-    @DeleteMapping("/{projectId}/{columnId}")
-    public void deleteColumn(@PathVariable("projectId") String projectId, @PathVariable("columnId") String columnId,
+    @DeleteMapping("/{columnId}")
+    public void deleteColumn(@PathVariable("columnId") String columnId,
                              @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
-        columnsService.deleteColumn(projectId, columnId, authorizationHeader);
+        columnsService.deleteColumn(columnId, authorizationHeader);
     }
 
 }

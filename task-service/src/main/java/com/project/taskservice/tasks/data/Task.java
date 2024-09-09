@@ -32,6 +32,8 @@ public class Task {
 
     private int priority = 0;
 
+    private Integer position;
+
     private String assigneeId;
 
     private String createdById;
@@ -54,8 +56,7 @@ public class Task {
     @Builder.Default
     private List<String> attachments = new ArrayList<>();
 
-    @Builder.Default
-    private int timeSpent = 0;
+    private int timeSpent;
 
     private int timeEstimated;
 

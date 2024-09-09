@@ -61,13 +61,10 @@ public class ColumnService {
         return columnToUpdate;
     }
 
-    public void deleteColumn(String projectId, String columnId, String authorizationHeader) {
+    public void deleteColumn(String columnId, String authorizationHeader) {
         String userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
-        columnRepository.findByProjectIdAndCreatedByIdOrderByPosition(projectId, userId)
-                .stream()
-                .filter(column -> column.getId().equals(columnId))
-                .findAny()
-                .map(Column::getProjectId)
+        columnRepository.findByIdAndCreatedById(columnId, userId)
+                .map(Column::getId)
                 .ifPresent(columnRepository::deleteById);
     }
 

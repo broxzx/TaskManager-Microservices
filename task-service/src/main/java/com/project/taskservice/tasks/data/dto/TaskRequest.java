@@ -26,7 +26,9 @@ public class TaskRequest {
     @Builder.Default
     private Status status = Status.IDLE;
 
-    private int priority = 0;
+    private int priority;
+
+    private int position;
 
     private String assigneeId;
 
