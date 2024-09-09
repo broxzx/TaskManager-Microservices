@@ -102,5 +102,7 @@ public class TaskService {
         checkAccessToProject(obtainedTaskById.getProjectId(), userId);
 
         obtainedTaskById.setAssigneeId(assigneeId);
+
+        taskRepository.save(obtainedTaskById);
     }
 }
