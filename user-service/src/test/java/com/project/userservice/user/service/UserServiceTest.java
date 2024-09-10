@@ -157,8 +157,6 @@ public class UserServiceTest {
         assertThat(updatedUser.getUsername()).isEqualTo(baseUser.getUsername());
         assertThat(updatedUser.getEmail()).isEqualTo(baseUser.getEmail());
         assertThat(areUserEqual(baseUser, updatedUser)).isTrue();
-
-//        verify(userService, times(1)).getUserById(any(String.class));
     }
 
     @Test

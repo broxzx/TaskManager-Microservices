@@ -41,12 +41,14 @@ jobs:
         run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
       - name: Build and push Docker images
-        run: docker-compose -f docker-compose.yml build
+        run: |
+          docker-compose -f docker-compose.yml build
+          docker-compose -f docker-compose.yml push
 
       - name: Deploy
         run: |
-          docker-compose -f docker-compose.yml down
-          docker-compose -f docker-compose.yml up -d
+          docker-compose -f docker-compose.yml down -y
+          docker-compose -f docker-compose.yml up -d -y
 
       - name: Display all containers
         run: docker ps -a

@@ -16,7 +16,7 @@ public class MongoDBBaseIntegrationTest {
     static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:7-jammy").withExposedPorts(27017);
 
     @DynamicPropertySource
-    static void contain1erProperties(DynamicPropertyRegistry registry) {
+    static void containerProperties(DynamicPropertyRegistry registry) {
         mongoDBContainer.start();
         registry.add("spring.data.mongodb.host", mongoDBContainer::getHost);
         registry.add("spring.data.mongodb.port", mongoDBContainer::getFirstMappedPort);
