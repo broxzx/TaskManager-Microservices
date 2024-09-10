@@ -23,6 +23,11 @@ public class TaskController {
         return ResponseEntity.ok(taskService.createTask(taskRequest, authorizationHeader));
     }
 
+    @GetMapping
+    public ResponseEntity<List<Task>> getAllUserTasks(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return ResponseEntity.ok(taskService.getAllUserTasks(authorizationHeader));
+    }
+
     @GetMapping("/{taskId}")
     public ResponseEntity<Task> getTaskById(@PathVariable String taskId,
                                             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {

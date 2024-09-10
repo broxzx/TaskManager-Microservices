@@ -77,6 +77,12 @@ public class TaskService {
         taskRepository.save(obtainedTaskById);
     }
 
+    public List<Task> getAllUserTasks(String authorizationHeader) {
+        String userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
+
+        return taskRepository.getPersonalTasks(userId);
+    }
+
     private Column getColumnByTaskId(String columnId) {
         return columnRepository.findById(columnId)
                 .orElseThrow(() -> new EntityNotFoundException("column with id '%s' doesn't exists".formatted(columnId)));
