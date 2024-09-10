@@ -57,8 +57,7 @@ public class TaskService {
 
     public List<Task> getTasksByColumnId(String columnId, String authorizationHeader) {
         Column taskColumn = getColumnByTaskId(columnId);
-        String ownerId = taskColumn.getCreatedById(),
-                userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
+        String ownerId = taskColumn.getCreatedById(), userId = userFeign.getUserIdByToken(jwtUtils.getTokenFromAuthorizationHeader(authorizationHeader));
 
         if (!isUserIdAndOwnerIdEqual(userId, ownerId)) {
             throw new ForbiddenException("You don't have access to this project");

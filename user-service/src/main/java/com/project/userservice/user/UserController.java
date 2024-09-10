@@ -25,11 +25,6 @@ public class UserController {
     private final KeycloakUtils keycloakUtils;
     private final KafkaProducerService kafkaProducerService;
 
-    @GetMapping("/test")
-    public String test() {
-        return "test";
-    }
-
     /**
      * Called when user submitted form in /register page
      *
@@ -141,7 +136,7 @@ public class UserController {
      * @param userId represents user's id
      * @return boolean that states whether user exists or not
      */
-    @GetMapping("checkUserExists")
+    @GetMapping("/checkUserExists")
     public boolean checkUserExists(@RequestParam("userId") String userId) {
         return userService.checkUserExists(userId);
     }

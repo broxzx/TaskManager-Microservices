@@ -3,6 +3,7 @@ package com.project.taskservice.config;
 import com.project.taskservice.columns.data.Column;
 import com.project.taskservice.columns.data.dto.ColumnRequest;
 import com.project.taskservice.exceptions.TokenInvalidException;
+import com.project.taskservice.utils.UserErrorFeignDecoder;
 import feign.RequestInterceptor;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
@@ -25,8 +26,6 @@ public class BeanConfiguration {
     private String keycloakClientId;
     @Value("${keycloak.client-secret}")
     private String keycloakClientSecret;
-    @Value("${keycloak.scope}")
-    private String keycloakScope;
 
     @Bean
     public ModelMapper modelMapper() {
@@ -56,6 +55,11 @@ public class BeanConfiguration {
 
             requestTemplate.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getToken());
         };
+    }
+
+    @Bean
+    public UserErrorFeignDecoder userErrorFeignDecoder() {
+        return new UserErrorFeignDecoder();
     }
 
 }

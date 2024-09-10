@@ -1,5 +1,6 @@
 package com.project.taskservice.exceptions.handler;
 
+import com.project.taskservice.exceptions.DefaultException;
 import com.project.taskservice.exceptions.EntityNotFoundException;
 import com.project.taskservice.exceptions.ForbiddenException;
 import com.project.taskservice.exceptions.TokenInvalidException;
@@ -22,6 +23,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = {ForbiddenException.class})
     public ResponseEntity<ProblemDetail> handleCommonForbiddenExceptions(RuntimeException ex) {
         return buildCommonExceptionHandler(ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(value = {DefaultException.class})
+    public ResponseEntity<ProblemDetail> handleInternalServerError(RuntimeException exception) {
+        return buildCommonExceptionHandler(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<ProblemDetail> buildCommonExceptionHandler(String message, HttpStatus status) {

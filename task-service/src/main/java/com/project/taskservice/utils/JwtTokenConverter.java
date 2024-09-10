@@ -1,5 +1,6 @@
 package com.project.taskservice.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component
+@Slf4j
 public class JwtTokenConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     @Override
