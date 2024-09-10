@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 @Slf4j
-public class UserErrorFeignDecoder implements ErrorDecoder {
+public class ErrorFeignDecoder implements ErrorDecoder {
 
     @Override
     public Exception decode(String s, Response response) {

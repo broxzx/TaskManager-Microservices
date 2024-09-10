@@ -3,7 +3,7 @@ package com.project.taskservice.config;
 import com.project.taskservice.columns.data.Column;
 import com.project.taskservice.columns.data.dto.ColumnRequest;
 import com.project.taskservice.exceptions.TokenInvalidException;
-import com.project.taskservice.utils.UserErrorFeignDecoder;
+import com.project.taskservice.utils.ErrorFeignDecoder;
 import feign.RequestInterceptor;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
@@ -58,8 +58,8 @@ public class BeanConfiguration {
     }
 
     @Bean
-    public UserErrorFeignDecoder userErrorFeignDecoder() {
-        return new UserErrorFeignDecoder();
+    public ErrorFeignDecoder userErrorFeignDecoder() {
+        return new ErrorFeignDecoder();
     }
 
 }
