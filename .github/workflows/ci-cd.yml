@@ -48,7 +48,7 @@ jobs:
       - name: Deploy
         run: |
           docker-compose -f docker-compose.yml down
-          docker-compose -f docker-compose.yml up -d
+          docker-compose -f docker-compose.yml up -d --force-recreate
 
       - name: Display all containers
         run: docker ps -a
