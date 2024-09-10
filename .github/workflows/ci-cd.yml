@@ -47,8 +47,8 @@ jobs:
 
       - name: Deploy
         run: |
-          docker-compose -f docker-compose.yml down -y
-          docker-compose -f docker-compose.yml up -d -y
+          docker-compose -f docker-compose.yml down
+          docker-compose -f docker-compose.yml up -d
 
       - name: Display all containers
         run: docker ps -a
