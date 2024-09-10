@@ -195,15 +195,6 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: dev
 
-  eureka-discovery-service:
-    <<: *default-backend-configuration
-    container_name: eureka-discovery-service
-    image: eureka-discovery-service
-    ports:
-      - "8761:8761"
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
-
   gateway-service:
     <<: *default-backend-configuration
     container_name: gateway-service
