@@ -41,9 +41,7 @@ jobs:
         run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
       - name: Build and push Docker images
-        run: |
-          docker-compose -f docker-compose.yml build
-          docker-compose -f docker-compose.yml push
+        run: docker-compose -f docker-compose.yml build
 
       - name: Deploy
         run: |
