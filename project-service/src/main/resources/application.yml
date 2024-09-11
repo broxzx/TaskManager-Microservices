@@ -40,6 +40,23 @@ keycloak:
   server-url: http://localhost:8280
 
 management:
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      validate-group-membership: true
+      group:
+        liveness:
+          show-details: true
+          show-components: always
+        readiness:
+          show-details: true
+          show-components: always
   server:
     port: 9102
   endpoints:
