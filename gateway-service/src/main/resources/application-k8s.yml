@@ -55,10 +55,10 @@ management:
       validate-group-membership: true
       group:
         liveness:
-          show-details: true
+          show-details: always
           show-components: always
         readiness:
-          show-details: true
+          show-details: always
           show-components: always
   endpoints:
     web:

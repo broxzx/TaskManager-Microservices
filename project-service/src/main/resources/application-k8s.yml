@@ -38,6 +38,11 @@ keycloak:
   server-url: http://keycloak:8080
 
 management:
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
   server:
     port: 9100
   endpoints:
@@ -52,6 +57,18 @@ management:
   tracing:
     sampling:
       probability: 1.0
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      validate-group-membership: true
+      group:
+        liveness:
+          show-details: always
+          show-components: always
+        readiness:
+          show-details: always
+          show-components: always
 
 url:
   user-service: http://user-service:8082
