@@ -1,5 +1,6 @@
 package com.project.userservice.user.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.userservice.user.data.enums.Roles;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,7 @@ public class User {
 
     private String username;
 
+    @JsonIgnore
     private String password;
 
     private String email;

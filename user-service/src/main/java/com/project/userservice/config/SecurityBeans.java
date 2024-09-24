@@ -51,7 +51,6 @@ public class SecurityBeans {
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtTokenConverter)))
                 .logout(logout -> logout.logoutSuccessUrl("/users/login"))
-//                .exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler((request, response, accessDeniedException) -> response.sendRedirect("http://localhost:8080/users/login")))
                 .build();
     }
 
