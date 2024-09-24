@@ -1,5 +1,6 @@
 package com.project.userservice.user;
 
+import com.project.userservice.config.SecurityBeans;
 import com.project.userservice.user.data.User;
 import com.project.userservice.user.data.dto.request.UserRequest;
 import com.project.userservice.user.service.UserService;
@@ -10,9 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = {UserController.class})
+@Import(value = {SecurityBeans.class})
 public class UserControllerTest {
 
     @Autowired
@@ -72,9 +73,9 @@ public class UserControllerTest {
         this.mockMvc
                 .perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(baseUserJson)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
+                        .content(baseUserJson))
+//                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+//                                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpectAll(jsonPath("$.username").value(userFromUserRequest.getUsername()),

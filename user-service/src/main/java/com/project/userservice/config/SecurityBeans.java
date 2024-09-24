@@ -36,6 +36,7 @@ public class SecurityBeans {
     @Priority(1)
     public SecurityFilterChain gatewaySecurityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers("/actuator/**").hasAuthority("SCOPE_metrics")
                         .requestMatchers("/users/register", "/users/changePassword", "/users/login", "/users/grantCode").permitAll()
@@ -47,7 +48,6 @@ public class SecurityBeans {
                                 "/configuration/ui","/configuration/security","/swagger-ui/**","/webjars/**","/swagger-ui.html").permitAll()
                         .anyRequest().authenticated()
                 )
-                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtTokenConverter)))
                 .logout(logout -> logout.logoutSuccessUrl("/users/login"))
