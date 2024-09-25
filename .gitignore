@@ -12,6 +12,9 @@ target/
 *.iml
 *.ipr
 
+config/data/grafana/grafana.db
+#config/data/grafana/
+
 ### Eclipse ###
 .apt_generated
 .classpath
