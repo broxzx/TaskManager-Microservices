@@ -1,8 +1,12 @@
 package com.project.userservice.user;
 
 import com.project.userservice.config.SecurityBeans;
+import com.project.userservice.config.SecurityTestConfig;
+import com.project.userservice.model.TokenResponse;
 import com.project.userservice.user.data.User;
+import com.project.userservice.user.data.dto.request.LoginRequest;
 import com.project.userservice.user.data.dto.request.UserRequest;
+import com.project.userservice.user.data.dto.response.UserResponse;
 import com.project.userservice.user.service.UserService;
 import com.project.userservice.utils.KafkaProducerService;
 import com.project.userservice.utils.KeycloakUtils;
@@ -12,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,14 +24,17 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.Date;
+import java.util.List;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = {UserController.class})
-@Import(value = {SecurityBeans.class})
+@Import(value = {SecurityBeans.class, SecurityTestConfig.class})
 public class UserControllerTest {
 
     @Autowired
@@ -43,9 +51,11 @@ public class UserControllerTest {
 
     private UserRequest baseUserRequest;
 
-    private String baseUserJson;
+    private String validBaseUserJson;
 
-    private String baseUserJsonWithBadValues;
+    private String invalidBaseUserJson;
+
+    private LoginRequest loginRequest;
 
     @BeforeEach
     public void setUp() {
@@ -58,7 +68,7 @@ public class UserControllerTest {
                 .birthDate(LocalDate.of(2024, 9, 24))
                 .build();
 
-        this.baseUserJson = """
+        this.validBaseUserJson = """
                 {
                     "username": "user",
                     "password": "1234",
@@ -69,7 +79,7 @@ public class UserControllerTest {
                 }
                 """;
 
-        this.baseUserJsonWithBadValues = """
+        this.invalidBaseUserJson = """
                 {
                     "username": " ",
                     "password": " ",
@@ -90,7 +100,7 @@ public class UserControllerTest {
         this.mockMvc
                 .perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(baseUserJson))
+                        .content(validBaseUserJson))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpectAll(jsonPath("$.username").value(userFromUserRequest.getUsername()),
@@ -101,10 +111,10 @@ public class UserControllerTest {
     }
 
     @Test
-    void givenUserRequestWithValidFields_whenUserRegisterWithAuthorizationHeader_thenRedirect() throws Exception {
+    void givenUserRequestWithValidFields_whenLoggedUserRegister_thenRedirect() throws Exception {
         this.mockMvc.perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(baseUserJson)
+                        .content(validBaseUserJson)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andDo(print())
@@ -133,10 +143,10 @@ public class UserControllerTest {
     }
 
     @Test
-    void givenUserRequestWithBadValues_whenUserRegister_thenFailure() throws Exception {
+    void givenUserRequestWithInvalidValues_whenUserRegister_thenFailure() throws Exception {
         this.mockMvc.perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-                        .content(this.baseUserJsonWithBadValues))
+                        .content(this.invalidBaseUserJson))
                 .andDo(print())
                 .andExpectAll(
                         status().is4xxClientError(),
@@ -146,6 +156,118 @@ public class UserControllerTest {
                 );
     }
 
+    @Test
+    void givenValidLoginRequest_whenUserLogin_thenReturnTokenResponse() throws Exception {
+        LoginRequest userRequest = new LoginRequest("user", "1234", false);
+        String loginRequest = """
+                {
+                    "username": "user",
+                    "password": "1234",
+                    "rememberMe": false
+                }
+                """;
+
+        long expiresIn = new Date().getTime() + 3600;
+        TokenResponse tokenResponse = new TokenResponse("token", "refresh_token",
+                expiresIn, new UserResponse("user", "user@mail.com", List.of("ROLE_USER")));
+
+        when(keycloakUtils.getUserTokenFromUsernameAndPassword(userRequest.getUsername(), userRequest.getPassword(),
+                userRequest.isRememberMe())).thenReturn(tokenResponse);
+
+        this.mockMvc.perform(post("/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginRequest))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType(MediaType.APPLICATION_JSON),
+                        jsonPath("$.accessToken").value("token"),
+                        jsonPath("$.refreshToken").value("refresh_token"),
+                        jsonPath("$.expiresIn").value(expiresIn),
+                        jsonPath("$.userResponse.username").value("user"),
+                        jsonPath("$.userResponse.email").value("user@mail.com"),
+                        jsonPath("$.userResponse.roles[0]").value("ROLE_USER")
+                );
+    }
+
+    @Test
+    void givenValidLoginRequest_whenLoggedUserLogin_thenRedirect() throws Exception {
+        String loginRequest = """
+                {
+                    "username": "user",
+                    "password": "1234",
+                    "rememberMe": false
+                }
+                """;
+
+        this.mockMvc.perform(post("/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginRequest)
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.accessToken").doesNotExist(),
+                        jsonPath("$.refreshToken").doesNotExist(),
+                        jsonPath("$.expiresIn").doesNotExist(),
+                        jsonPath("$.userResponse.username").doesNotExist(),
+                        jsonPath("$.userResponse.email").doesNotExist(),
+                        jsonPath("$.userResponse.roles[0]").doesNotExist()
+                );
+    }
+
+    @Test
+    void givenInvalidLoginRequest_whenUserLogin_thenFailure() throws Exception {
+        String invalidLoginRequest = """
+                {
+                    "username": " ",
+                    "password": " ",
+                    "rememberMe": false
+                }
+                """;
+
+        this.mockMvc.perform(post("/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidLoginRequest))
+                .andDo(print())
+                .andExpectAll(
+                        status().is4xxClientError(),
+                        jsonPath("$.status").value(400),
+                        jsonPath("$.detail").exists(),
+                        jsonPath("$.instance").value("/users/login"),
+                        jsonPath("$.occurred").exists()
+                );
+    }
+
+    @Test
+    void givenValidUserRequest_whenUserUpdateData_thenSuccess() throws Exception {
+        final String token = "mocked-jwt-token";
+
+        when(userService.updateUserEntity(token, this.baseUserRequest)).thenReturn(buildUserFromUserRequest(baseUserRequest));
+
+        this.mockMvc.perform(put("/users/updateUserData")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.validBaseUserJson)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER")))
+                )
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk()
+                );
+    }
+
+    @Test
+    void givenValidUserRequest_whenAnonymousUserUpdateData_thenFailure() throws Exception {
+        this.mockMvc.perform(put("/users/updateUserData")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validBaseUserJson)
+                        .with(SecurityMockMvcRequestPostProcessors.anonymous()))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+    }
 
     private User buildUserFromUserRequest(UserRequest basicUserRequest) {
         return User.builder()
