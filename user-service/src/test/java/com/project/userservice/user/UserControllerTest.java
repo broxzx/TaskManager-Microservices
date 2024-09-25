@@ -12,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -20,8 +23,7 @@ import java.time.LocalDate;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = {UserController.class})
 @Import(value = {SecurityBeans.class})
@@ -41,9 +43,13 @@ public class UserControllerTest {
 
     private UserRequest baseUserRequest;
 
+    private String baseUserJson;
+
+    private String baseUserJsonWithBadValues;
+
     @BeforeEach
     public void setUp() {
-        baseUserRequest = UserRequest.builder()
+        this.baseUserRequest = UserRequest.builder()
                 .username("user")
                 .password("1234")
                 .email("user@mail.com")
@@ -51,15 +57,8 @@ public class UserControllerTest {
                 .lastName("Doe")
                 .birthDate(LocalDate.of(2024, 9, 24))
                 .build();
-    }
 
-
-    @Test
-    void givenUserRequestWithValidFields_whenUserRegister_thenSuccess() throws Exception {
-        User userFromUserRequest = buildUserFromUserRequest(baseUserRequest);
-        when(userService.registerUser(baseUserRequest)).thenReturn(userFromUserRequest);
-
-        String baseUserJson = """
+        this.baseUserJson = """
                 {
                     "username": "user",
                     "password": "1234",
@@ -70,12 +69,28 @@ public class UserControllerTest {
                 }
                 """;
 
+        this.baseUserJsonWithBadValues = """
+                {
+                    "username": " ",
+                    "password": " ",
+                    "email": "user",
+                    "firstName": " ",
+                    "lastName": " ",
+                    "birthDate": "2024-09-24"
+                }
+                """;
+    }
+
+
+    @Test
+    void givenUserRequestWithValidFields_whenUserRegister_thenSuccess() throws Exception {
+        User userFromUserRequest = buildUserFromUserRequest(baseUserRequest);
+        when(userService.registerUser(baseUserRequest)).thenReturn(userFromUserRequest);
+
         this.mockMvc
                 .perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(baseUserJson))
-//                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-//                                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpectAll(jsonPath("$.username").value(userFromUserRequest.getUsername()),
@@ -83,6 +98,52 @@ public class UserControllerTest {
                         jsonPath("$.firstName").value(userFromUserRequest.getFirstName()),
                         jsonPath("$.lastName").value(userFromUserRequest.getLastName()),
                         jsonPath("$.birthDate").value("2024-09-24"));
+    }
+
+    @Test
+    void givenUserRequestWithValidFields_whenUserRegisterWithAuthorizationHeader_thenRedirect() throws Exception {
+        this.mockMvc.perform(post("/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(baseUserJson)
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.username").doesNotExist(),
+                        jsonPath("$.email").doesNotExist(),
+                        jsonPath("$.firstName").doesNotExist(),
+                        jsonPath("$.lastName").doesNotExist(),
+                        jsonPath("$.birthDate").doesNotExist()
+                );
+    }
+
+    @Test
+    void givenUserRequestIsNull_whenUserRegister_thenFailure() throws Exception {
+        this.mockMvc.perform(post("/users/register")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpectAll(
+                        status().is4xxClientError(),
+                        content().contentType(MediaType.APPLICATION_PROBLEM_JSON),
+                        jsonPath("$.title").value("Unprocessable Entity"),
+                        jsonPath("$.status").value(422),
+                        jsonPath("$.instance").value("/users/register")
+                );
+    }
+
+    @Test
+    void givenUserRequestWithBadValues_whenUserRegister_thenFailure() throws Exception {
+        this.mockMvc.perform(post("/users/register")
+                        .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                        .content(this.baseUserJsonWithBadValues))
+                .andDo(print())
+                .andExpectAll(
+                        status().is4xxClientError(),
+                        jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()),
+                        jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()),
+                        jsonPath("$.instance").value("/users/register")
+                );
     }
 
 

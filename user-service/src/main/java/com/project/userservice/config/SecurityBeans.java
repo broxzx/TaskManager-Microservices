@@ -1,5 +1,6 @@
 package com.project.userservice.config;
 
+import com.project.userservice.utils.CustomAccessDeniedHandler;
 import com.project.userservice.utils.JwtTokenConverter;
 import jakarta.annotation.Priority;
 import lombok.RequiredArgsConstructor;
@@ -39,18 +40,19 @@ public class SecurityBeans {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers("/actuator/**").hasAuthority("SCOPE_metrics")
-                        .requestMatchers("/users/register", "/users/changePassword", "/users/login", "/users/grantCode").permitAll()
+                        .requestMatchers("/users/register", "/users/changePassword", "/users/login", "/users/grantCode").anonymous()
                         .requestMatchers(HttpMethod.POST, "/users/refreshToken", "/users/resetPassword").permitAll()
                         .requestMatchers("/users/getUserIdByToken").hasAuthority("SCOPE_view_users")
                         .requestMatchers("/users/checkUserExists").hasAuthority("SCOPE_view_users")
                         .requestMatchers("/users/dashboard").authenticated()
-                        .requestMatchers("/v2/api-docs","/v3/api-docs","/v3/api-docs/**","/swagger-resources","/swagger-resources/**",
-                                "/configuration/ui","/configuration/security","/swagger-ui/**","/webjars/**","/swagger-ui.html").permitAll()
+                        .requestMatchers("/v2/api-docs", "/v3/api-docs", "/v3/api-docs/**", "/swagger-resources", "/swagger-resources/**",
+                                "/configuration/ui", "/configuration/security", "/swagger-ui/**", "/webjars/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtTokenConverter)))
                 .logout(logout -> logout.logoutSuccessUrl("/users/login"))
+                .exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(new CustomAccessDeniedHandler()))
                 .build();
     }
 
