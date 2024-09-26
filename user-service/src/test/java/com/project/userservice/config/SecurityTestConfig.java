@@ -13,6 +13,7 @@ import java.util.Map;
 @Configuration
 public class SecurityTestConfig {
 
+    // mocked jwt token
     @Bean
     public JwtDecoder jwtDecoder() {
         return token -> {

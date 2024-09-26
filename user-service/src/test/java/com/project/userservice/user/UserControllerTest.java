@@ -22,10 +22,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -55,7 +57,7 @@ public class UserControllerTest {
 
     private String invalidBaseUserJson;
 
-    private LoginRequest loginRequest;
+    private String token;
 
     @BeforeEach
     public void setUp() {
@@ -89,6 +91,8 @@ public class UserControllerTest {
                     "birthDate": "2024-09-24"
                 }
                 """;
+
+        this.token = "mocked-jwt-token";
     }
 
 
@@ -115,8 +119,7 @@ public class UserControllerTest {
         this.mockMvc.perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validBaseUserJson)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+                        .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpectAll(
                         status().isOk(),
@@ -203,8 +206,7 @@ public class UserControllerTest {
         this.mockMvc.perform(post("/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginRequest)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+                        .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpectAll(
                         status().isOk(),
@@ -242,16 +244,13 @@ public class UserControllerTest {
 
     @Test
     void givenValidUserRequest_whenUserUpdateData_thenSuccess() throws Exception {
-        final String token = "mocked-jwt-token";
-
         when(userService.updateUserEntity(token, this.baseUserRequest)).thenReturn(buildUserFromUserRequest(baseUserRequest));
 
         this.mockMvc.perform(put("/users/updateUserData")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.validBaseUserJson)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER")))
+                        .with(buildPostProcessorWithUserRole())
                 )
                 .andDo(print())
                 .andExpectAll(
@@ -264,9 +263,103 @@ public class UserControllerTest {
         this.mockMvc.perform(put("/users/updateUserData")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validBaseUserJson)
-                        .with(SecurityMockMvcRequestPostProcessors.anonymous()))
+                        .with(buildPostProcessorWithAnonymousUser()))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void givenInvalidUserRequest_whenUserLogin_thenFailure() throws Exception {
+        System.out.println(HttpStatus.BAD_REQUEST.getReasonPhrase());
+
+        this.mockMvc.perform(put("/users/updateUserData")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer %s".formatted(token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidBaseUserJson)
+                        .with(buildPostProcessorWithUserRole()))
+                .andDo(print())
+                .andExpectAll(
+                        status().is4xxClientError(),
+                        jsonPath("$.status").value(400),
+                        jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()),
+                        jsonPath("$.detail").exists(),
+                        jsonPath("$.instance").value("/users/updateUserData"),
+                        jsonPath("$.occurred").exists(),
+                        jsonPath("$.errors").isArray()
+                );
+    }
+
+    @Test
+    void givenValidUserId_whenUserForgotPassword_thenSuccess() throws Exception {
+        this.mockMvc.perform(post("/users/forgotPassword")
+                        .param("userId", UUID.randomUUID().toString())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer %s".formatted(token))
+                        .with(buildPostProcessorWithUserRole()))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenAbsentUserId_whenUserForgotPassword_thenFailure() throws Exception {
+        this.mockMvc.perform(post("/users/forgotPassword")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer %s".formatted(token))
+                        .with(buildPostProcessorWithUserRole()))
+                .andDo(print())
+                .andExpectAll(
+                        status().is4xxClientError(),
+                        content().contentType(MediaType.APPLICATION_PROBLEM_JSON),
+                        jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()),
+                        jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()),
+                        jsonPath("$.detail").exists(),
+                        jsonPath("$.instance").value("/users/forgotPassword"),
+                        jsonPath("$.occurred").exists()
+                );
+    }
+
+    @Test
+    void givenValidUserEmail_whenUserResetPassword_thenSuccess() throws Exception {
+        this.mockMvc.perform(post("/users/resetPassword")
+                        .param("email", this.baseUserRequest.getEmail())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer %s".formatted(token))
+                        .with(buildPostProcessorWithUserRole()))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenAbsentUserEmail_whenUserResetPassword_thenSuccess() throws Exception {
+        this.mockMvc.perform(post("/users/resetPassword")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer %s".formatted(token))
+                        .with(buildPostProcessorWithUserRole()))
+                .andDo(print())
+                .andExpectAll(
+                        status().is4xxClientError(),
+                        content().contentType(MediaType.APPLICATION_PROBLEM_JSON),
+                        jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()),
+                        jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()),
+                        jsonPath("$.detail").exists(),
+                        jsonPath("$.instance").value("/users/resetPassword"),
+                        jsonPath("$.occurred").exists()
+                );
+    }
+
+    @Test
+    void givenValidUserEmail_whenAnonymousUserResetPassword_thenSuccess() throws Exception {
+        this.mockMvc.perform(post("/users/resetPassword")
+                        .param("email", this.baseUserRequest.getEmail())
+                        .with(buildPostProcessorWithAnonymousUser()))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+    }
+
+    private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor buildPostProcessorWithUserRole() {
+        return SecurityMockMvcRequestPostProcessors.jwt()
+                .authorities(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+
+    private RequestPostProcessor buildPostProcessorWithAnonymousUser() {
+        return SecurityMockMvcRequestPostProcessors.anonymous();
     }
 
     private User buildUserFromUserRequest(UserRequest basicUserRequest) {

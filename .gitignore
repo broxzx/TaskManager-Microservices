@@ -13,7 +13,8 @@ target/
 *.ipr
 
 config/data/grafana/grafana.db
-config/data/grafana/
+config/data/grafana/*.db
+*.db
 
 ### Eclipse ###
 .apt_generated
