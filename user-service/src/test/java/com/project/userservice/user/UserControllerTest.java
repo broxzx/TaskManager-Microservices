@@ -57,7 +57,7 @@ public class UserControllerTest {
 
     private String invalidBaseUserJson;
 
-    private String token;
+    private String authorizationHeader;
 
     @BeforeEach
     public void setUp() {
@@ -92,17 +92,19 @@ public class UserControllerTest {
                 }
                 """;
 
-        this.token = "mocked-jwt-token";
+        this.authorizationHeader = "Bearer mocked-jwt-token";
     }
 
 
     @Test
     void givenUserRequestWithValidFields_whenUserRegister_thenSuccess() throws Exception {
+        final String url = "/users/register";
+
         User userFromUserRequest = buildUserFromUserRequest(baseUserRequest);
         when(userService.registerUser(baseUserRequest)).thenReturn(userFromUserRequest);
 
         this.mockMvc
-                .perform(post("/users/register")
+                .perform(post(url)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validBaseUserJson))
                 .andDo(print())
@@ -116,7 +118,9 @@ public class UserControllerTest {
 
     @Test
     void givenUserRequestWithValidFields_whenLoggedUserRegister_thenRedirect() throws Exception {
-        this.mockMvc.perform(post("/users/register")
+        final String url = "/users/register";
+
+        this.mockMvc.perform(post(url)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validBaseUserJson)
                         .with(buildPostProcessorWithUserRole()))
@@ -133,21 +137,25 @@ public class UserControllerTest {
 
     @Test
     void givenUserRequestIsNull_whenUserRegister_thenFailure() throws Exception {
-        this.mockMvc.perform(post("/users/register")
+        final String url = "/users/register";
+
+        this.mockMvc.perform(post(url)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpectAll(
                         status().is4xxClientError(),
                         content().contentType(MediaType.APPLICATION_PROBLEM_JSON),
-                        jsonPath("$.title").value("Unprocessable Entity"),
-                        jsonPath("$.status").value(422),
-                        jsonPath("$.instance").value("/users/register")
+                        jsonPath("$.title").value(HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase()),
+                        jsonPath("$.status").value(HttpStatus.UNPROCESSABLE_ENTITY.value()),
+                        jsonPath("$.instance").value(url)
                 );
     }
 
     @Test
     void givenUserRequestWithInvalidValues_whenUserRegister_thenFailure() throws Exception {
-        this.mockMvc.perform(post("/users/register")
+        final String url = "/users/register";
+
+        this.mockMvc.perform(post(url)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                         .content(this.invalidBaseUserJson))
                 .andDo(print())
@@ -155,7 +163,7 @@ public class UserControllerTest {
                         status().is4xxClientError(),
                         jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()),
                         jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()),
-                        jsonPath("$.instance").value("/users/register")
+                        jsonPath("$.instance").value(url)
                 );
     }
 
@@ -169,6 +177,7 @@ public class UserControllerTest {
                     "rememberMe": false
                 }
                 """;
+        final String url = "/users/login";
 
         long expiresIn = new Date().getTime() + 3600;
         TokenResponse tokenResponse = new TokenResponse("token", "refresh_token",
@@ -177,7 +186,7 @@ public class UserControllerTest {
         when(keycloakUtils.getUserTokenFromUsernameAndPassword(userRequest.getUsername(), userRequest.getPassword(),
                 userRequest.isRememberMe())).thenReturn(tokenResponse);
 
-        this.mockMvc.perform(post("/users/login")
+        this.mockMvc.perform(post(url)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginRequest))
                 .andDo(print())
@@ -202,8 +211,9 @@ public class UserControllerTest {
                     "rememberMe": false
                 }
                 """;
+        final String url = "/users/login";
 
-        this.mockMvc.perform(post("/users/login")
+        this.mockMvc.perform(post(url)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginRequest)
                         .with(buildPostProcessorWithUserRole()))
@@ -228,28 +238,32 @@ public class UserControllerTest {
                     "rememberMe": false
                 }
                 """;
+        final String url = "/users/login";
 
-        this.mockMvc.perform(post("/users/login")
+        this.mockMvc.perform(post(url)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidLoginRequest))
                 .andDo(print())
                 .andExpectAll(
                         status().is4xxClientError(),
-                        jsonPath("$.status").value(400),
+                        jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()),
                         jsonPath("$.detail").exists(),
-                        jsonPath("$.instance").value("/users/login"),
+                        jsonPath("$.instance").value(url),
                         jsonPath("$.occurred").exists()
                 );
     }
 
     @Test
     void givenValidUserRequest_whenUserUpdateData_thenSuccess() throws Exception {
+        final String url = "/users/updateUserData";
+        final String token = "mocked-jwt-token";
+
         when(userService.updateUserEntity(token, this.baseUserRequest)).thenReturn(buildUserFromUserRequest(baseUserRequest));
 
-        this.mockMvc.perform(put("/users/updateUserData")
+        this.mockMvc.perform(put(url)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.validBaseUserJson)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .with(buildPostProcessorWithUserRole())
                 )
                 .andDo(print())
@@ -260,7 +274,9 @@ public class UserControllerTest {
 
     @Test
     void givenValidUserRequest_whenAnonymousUserUpdateData_thenFailure() throws Exception {
-        this.mockMvc.perform(put("/users/updateUserData")
+        final String url = "/users/updateUserData";
+
+        this.mockMvc.perform(put(url)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validBaseUserJson)
                         .with(buildPostProcessorWithAnonymousUser()))
@@ -269,21 +285,21 @@ public class UserControllerTest {
     }
 
     @Test
-    void givenInvalidUserRequest_whenUserLogin_thenFailure() throws Exception {
-        System.out.println(HttpStatus.BAD_REQUEST.getReasonPhrase());
+    void givenInvalidUserRequest_whenUserUpdateData_thenFailure() throws Exception {
+        final String url = "/users/updateUserData";
 
-        this.mockMvc.perform(put("/users/updateUserData")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer %s".formatted(token))
+        this.mockMvc.perform(put(url)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidBaseUserJson)
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpectAll(
                         status().is4xxClientError(),
-                        jsonPath("$.status").value(400),
+                        jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()),
                         jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()),
                         jsonPath("$.detail").exists(),
-                        jsonPath("$.instance").value("/users/updateUserData"),
+                        jsonPath("$.instance").value(url),
                         jsonPath("$.occurred").exists(),
                         jsonPath("$.errors").isArray()
                 );
@@ -291,9 +307,12 @@ public class UserControllerTest {
 
     @Test
     void givenValidUserId_whenUserForgotPassword_thenSuccess() throws Exception {
-        this.mockMvc.perform(post("/users/forgotPassword")
-                        .param("userId", UUID.randomUUID().toString())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer %s".formatted(token))
+        final String url = "/users/forgotPassword";
+        String randomUUID = UUID.randomUUID().toString();
+
+        this.mockMvc.perform(post(url)
+                        .param("userId", randomUUID)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -301,8 +320,10 @@ public class UserControllerTest {
 
     @Test
     void givenAbsentUserId_whenUserForgotPassword_thenFailure() throws Exception {
-        this.mockMvc.perform(post("/users/forgotPassword")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer %s".formatted(token))
+        final String url = "/users/forgotPassword";
+
+        this.mockMvc.perform(post(url)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpectAll(
@@ -311,16 +332,18 @@ public class UserControllerTest {
                         jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()),
                         jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()),
                         jsonPath("$.detail").exists(),
-                        jsonPath("$.instance").value("/users/forgotPassword"),
+                        jsonPath("$.instance").value(url),
                         jsonPath("$.occurred").exists()
                 );
     }
 
     @Test
     void givenValidUserEmail_whenUserResetPassword_thenSuccess() throws Exception {
-        this.mockMvc.perform(post("/users/resetPassword")
+        final String url = "/users/resetPassword";
+
+        this.mockMvc.perform(post(url)
                         .param("email", this.baseUserRequest.getEmail())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer %s".formatted(token))
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -328,8 +351,10 @@ public class UserControllerTest {
 
     @Test
     void givenAbsentUserEmail_whenUserResetPassword_thenSuccess() throws Exception {
-        this.mockMvc.perform(post("/users/resetPassword")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer %s".formatted(token))
+        final String url = "/users/resetPassword";
+
+        this.mockMvc.perform(post(url)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpectAll(
@@ -338,14 +363,16 @@ public class UserControllerTest {
                         jsonPath("$.title").value(HttpStatus.BAD_REQUEST.getReasonPhrase()),
                         jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()),
                         jsonPath("$.detail").exists(),
-                        jsonPath("$.instance").value("/users/resetPassword"),
+                        jsonPath("$.instance").value(url),
                         jsonPath("$.occurred").exists()
                 );
     }
 
     @Test
     void givenValidUserEmail_whenAnonymousUserResetPassword_thenSuccess() throws Exception {
-        this.mockMvc.perform(post("/users/resetPassword")
+        final String url = "/users/resetPassword";
+
+        this.mockMvc.perform(post(url)
                         .param("email", this.baseUserRequest.getEmail())
                         .with(buildPostProcessorWithAnonymousUser()))
                 .andDo(print())
