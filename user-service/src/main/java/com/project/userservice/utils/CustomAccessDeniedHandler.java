@@ -24,7 +24,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
-        String servletPath = request.getServletPath();
+        String servletPath = request.getRequestURI();
 
         boolean contains = anonymousUrls
                 .stream()

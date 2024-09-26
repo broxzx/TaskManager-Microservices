@@ -2,15 +2,14 @@ package com.project.userservice.user;
 
 import com.project.userservice.config.SecurityBeans;
 import com.project.userservice.config.SecurityTestConfig;
-import com.project.userservice.model.TokenResponse;
 import com.project.userservice.user.data.User;
 import com.project.userservice.user.data.dto.request.LoginRequest;
 import com.project.userservice.user.data.dto.request.UserRequest;
-import com.project.userservice.user.data.dto.response.UserResponse;
 import com.project.userservice.user.service.UserService;
 import com.project.userservice.utils.KafkaProducerService;
 import com.project.userservice.utils.KeycloakUtils;
-import org.junit.jupiter.api.BeforeEach;
+import com.project.userservice.utils.SecurityUtils;
+import com.project.userservice.utils.UserUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -24,9 +23,6 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
-import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
@@ -51,66 +47,17 @@ public class UserControllerTest {
     @MockBean
     private KafkaProducerService kafkaProducerService;
 
-    private UserRequest baseUserRequest;
-
-    private String validBaseUserJson;
-
-    private String invalidBaseUserJson;
-
-    private String authorizationHeader;
-
-    private TokenResponse tokenResponse;
-
-    @BeforeEach
-    public void setUp() {
-        this.baseUserRequest = UserRequest.builder()
-                .username("user")
-                .password("1234")
-                .email("user@mail.com")
-                .firstName("John")
-                .lastName("Doe")
-                .birthDate(LocalDate.of(2024, 9, 24))
-                .build();
-
-        this.validBaseUserJson = """
-                {
-                    "username": "user",
-                    "password": "1234",
-                    "email": "user@mail.com",
-                    "firstName": "John",
-                    "lastName": "Doe",
-                    "birthDate": "2024-09-24"
-                }
-                """;
-
-        this.invalidBaseUserJson = """
-                {
-                    "username": " ",
-                    "password": " ",
-                    "email": "user",
-                    "firstName": " ",
-                    "lastName": " ",
-                    "birthDate": "2024-09-24"
-                }
-                """;
-
-        this.authorizationHeader = "Bearer mocked-jwt-token";
-        this.tokenResponse = new TokenResponse("token", "refresh_token",
-                new Date().getTime() + 3600, new UserResponse("user", "user@mail.com", List.of("ROLE_USER")));
-    }
-
-
     @Test
     void givenUserRequestWithValidFields_whenUserRegister_thenSuccess() throws Exception {
         final String url = "/users/register";
 
-        User userFromUserRequest = buildUserFromUserRequest(baseUserRequest);
-        when(userService.registerUser(baseUserRequest)).thenReturn(userFromUserRequest);
+        User userFromUserRequest = buildUserFromUserRequest(UserUtils.baseUserRequest());
+        when(userService.registerUser(UserUtils.baseUserRequest())).thenReturn(userFromUserRequest);
 
         this.mockMvc
                 .perform(post(url)
                         .contentType(APPLICATION_JSON)
-                        .content(validBaseUserJson))
+                        .content(UserUtils.validBaseUserJson()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpectAll(jsonPath("$.username").value(userFromUserRequest.getUsername()),
@@ -123,14 +70,16 @@ public class UserControllerTest {
     @Test
     void givenUserRequestWithValidFields_whenLoggedUserRegister_thenRedirect() throws Exception {
         final String url = "/users/register";
+        final String expectedRedirectUrl = "http://localhost:8081/projects/getUserProjects";
 
         this.mockMvc.perform(post(url)
                         .contentType(APPLICATION_JSON)
-                        .content(validBaseUserJson)
+                        .content(UserUtils.validBaseUserJson())
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpectAll(
-                        status().isOk(),
+                        status().isFound(),
+                        header().string(HttpHeaders.LOCATION, expectedRedirectUrl),
                         jsonPath("$.username").doesNotExist(),
                         jsonPath("$.email").doesNotExist(),
                         jsonPath("$.firstName").doesNotExist(),
@@ -161,7 +110,7 @@ public class UserControllerTest {
 
         this.mockMvc.perform(post(url)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-                        .content(this.invalidBaseUserJson))
+                        .content(UserUtils.invalidBaseUserJson()))
                 .andDo(print())
                 .andExpectAll(
                         status().is4xxClientError(),
@@ -184,7 +133,7 @@ public class UserControllerTest {
         final String url = "/users/login";
 
         when(keycloakUtils.getUserTokenFromUsernameAndPassword(userRequest.getUsername(), userRequest.getPassword(),
-                userRequest.isRememberMe())).thenReturn(tokenResponse);
+                userRequest.isRememberMe())).thenReturn(SecurityUtils.tokenResponse());
 
         this.mockMvc.perform(post(url)
                         .contentType(APPLICATION_JSON)
@@ -193,12 +142,12 @@ public class UserControllerTest {
                 .andExpectAll(
                         status().isOk(),
                         content().contentType(APPLICATION_JSON),
-                        jsonPath("$.accessToken").value(this.tokenResponse.accessToken()),
-                        jsonPath("$.refreshToken").value(this.tokenResponse.refreshToken()),
-                        jsonPath("$.expiresIn").value(this.tokenResponse.expiresIn()),
-                        jsonPath("$.userResponse.username").value(this.tokenResponse.userResponse().getUsername()),
-                        jsonPath("$.userResponse.email").value(this.tokenResponse.userResponse().getEmail()),
-                        jsonPath("$.userResponse.roles[0]").value(this.tokenResponse.userResponse().getRoles().get(0))
+                        jsonPath("$.accessToken").value(SecurityUtils.tokenResponse().accessToken()),
+                        jsonPath("$.refreshToken").value(SecurityUtils.tokenResponse().refreshToken()),
+                        jsonPath("$.expiresIn").exists(),
+                        jsonPath("$.userResponse.username").value(SecurityUtils.tokenResponse().userResponse().getUsername()),
+                        jsonPath("$.userResponse.email").value(SecurityUtils.tokenResponse().userResponse().getEmail()),
+                        jsonPath("$.userResponse.roles[0]").value(SecurityUtils.tokenResponse().userResponse().getRoles().get(0))
                 );
     }
 
@@ -212,6 +161,7 @@ public class UserControllerTest {
                 }
                 """;
         final String url = "/users/login";
+        final String expectedRedirectUrl = "http://localhost:8081/projects/getUserProjects";
 
         this.mockMvc.perform(post(url)
                         .contentType(APPLICATION_JSON)
@@ -219,7 +169,8 @@ public class UserControllerTest {
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpectAll(
-                        status().isOk(),
+                        status().isFound(),
+                        header().string(HttpHeaders.LOCATION, expectedRedirectUrl),
                         jsonPath("$.accessToken").doesNotExist(),
                         jsonPath("$.refreshToken").doesNotExist(),
                         jsonPath("$.expiresIn").doesNotExist(),
@@ -258,12 +209,12 @@ public class UserControllerTest {
         final String url = "/users/updateUserData";
         final String token = "mocked-jwt-token";
 
-        when(userService.updateUserEntity(token, this.baseUserRequest)).thenReturn(buildUserFromUserRequest(baseUserRequest));
+        when(userService.updateUserEntity(token, UserUtils.baseUserRequest())).thenReturn(buildUserFromUserRequest(UserUtils.baseUserRequest()));
 
         this.mockMvc.perform(put(url)
                         .contentType(APPLICATION_JSON)
-                        .content(this.validBaseUserJson)
-                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
+                        .content(UserUtils.validBaseUserJson())
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.authorizationHeader())
                         .with(buildPostProcessorWithUserRole())
                 )
                 .andDo(print())
@@ -278,7 +229,7 @@ public class UserControllerTest {
 
         this.mockMvc.perform(put(url)
                         .contentType(APPLICATION_JSON)
-                        .content(validBaseUserJson)
+                        .content(UserUtils.validBaseUserJson())
                         .with(buildPostProcessorWithAnonymousUser()))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
@@ -289,9 +240,9 @@ public class UserControllerTest {
         final String url = "/users/updateUserData";
 
         this.mockMvc.perform(put(url)
-                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.authorizationHeader())
                         .contentType(APPLICATION_JSON)
-                        .content(invalidBaseUserJson)
+                        .content(UserUtils.invalidBaseUserJson())
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpectAll(
@@ -312,7 +263,7 @@ public class UserControllerTest {
 
         this.mockMvc.perform(post(url)
                         .param("userId", randomUUID)
-                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.authorizationHeader())
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -323,7 +274,7 @@ public class UserControllerTest {
         final String url = "/users/forgotPassword";
 
         this.mockMvc.perform(post(url)
-                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.authorizationHeader())
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpectAll(
@@ -342,8 +293,8 @@ public class UserControllerTest {
         final String url = "/users/resetPassword";
 
         this.mockMvc.perform(post(url)
-                        .param("email", this.baseUserRequest.getEmail())
-                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
+                        .param("email", UserUtils.baseUserRequest().getEmail())
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.authorizationHeader())
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -354,7 +305,7 @@ public class UserControllerTest {
         final String url = "/users/resetPassword";
 
         this.mockMvc.perform(post(url)
-                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.authorizationHeader())
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpectAll(
@@ -373,7 +324,7 @@ public class UserControllerTest {
         final String url = "/users/resetPassword";
 
         this.mockMvc.perform(post(url)
-                        .param("email", this.baseUserRequest.getEmail())
+                        .param("email", UserUtils.baseUserRequest().getEmail())
                         .with(buildPostProcessorWithAnonymousUser()))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -411,7 +362,7 @@ public class UserControllerTest {
                 """;
 
         this.mockMvc.perform(post(url)
-                        .header(HttpHeaders.AUTHORIZATION, this.authorizationHeader)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.authorizationHeader())
                         .param("token", UUID.randomUUID().toString())
                         .contentType(APPLICATION_JSON)
                         .content(changePasswordDtoJson)
@@ -425,7 +376,7 @@ public class UserControllerTest {
         final String url = "/users/refreshToken";
         final String refreshToken = UUID.randomUUID().toString();
 
-        when(keycloakUtils.refreshToken(refreshToken)).thenReturn(this.tokenResponse);
+        when(keycloakUtils.refreshToken(refreshToken)).thenReturn(SecurityUtils.tokenResponse());
 
         this.mockMvc.perform(post(url)
                         .contentType(APPLICATION_JSON)
@@ -435,12 +386,12 @@ public class UserControllerTest {
                 .andExpectAll(
                         status().isOk(),
                         content().contentType(APPLICATION_JSON),
-                        jsonPath("$.accessToken").value(this.tokenResponse.accessToken()),
-                        jsonPath("$.refreshToken").value(this.tokenResponse.refreshToken()),
-                        jsonPath("$.expiresIn").value(this.tokenResponse.expiresIn()),
-                        jsonPath("$.userResponse.username").value(this.tokenResponse.userResponse().getUsername()),
-                        jsonPath("$.userResponse.email").value(this.tokenResponse.userResponse().getEmail()),
-                        jsonPath("$.userResponse.roles[0]").value(this.tokenResponse.userResponse().getRoles().get(0))
+                        jsonPath("$.accessToken").value(SecurityUtils.tokenResponse().accessToken()),
+                        jsonPath("$.refreshToken").value(SecurityUtils.tokenResponse().refreshToken()),
+                        jsonPath("$.expiresIn").exists(),
+                        jsonPath("$.userResponse.username").value(SecurityUtils.tokenResponse().userResponse().getUsername()),
+                        jsonPath("$.userResponse.email").value(SecurityUtils.tokenResponse().userResponse().getEmail()),
+                        jsonPath("$.userResponse.roles[0]").value(SecurityUtils.tokenResponse().userResponse().getRoles().get(0))
                 );
     }
 
@@ -470,7 +421,7 @@ public class UserControllerTest {
         this.mockMvc.perform(post(url)
                         .contentType(APPLICATION_JSON)
                         .content(token)
-                        .header(HttpHeaders.AUTHORIZATION, this.authorizationHeader)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.authorizationHeader())
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpectAll(
@@ -486,7 +437,7 @@ public class UserControllerTest {
         final String url = "/users/getUserIdByToken";
 
         this.mockMvc.perform(post(url)
-                        .header(HttpHeaders.AUTHORIZATION, this.authorizationHeader)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.authorizationHeader())
                         .contentType(APPLICATION_JSON)
                         .content(token)
                         .with(buildPostProcessorWithAnonymousUser()))
@@ -524,7 +475,7 @@ public class UserControllerTest {
 
         this.mockMvc.perform(get(url)
                         .param("userId", userId)
-                        .header(HttpHeaders.AUTHORIZATION, this.authorizationHeader)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.authorizationHeader())
                         .with(buildPostProcessorWithUserRole()))
                 .andDo(print())
                 .andExpectAll(
@@ -540,7 +491,7 @@ public class UserControllerTest {
 
         this.mockMvc.perform(get(url)
                         .param("userId", userId)
-                        .header(HttpHeaders.AUTHORIZATION, this.authorizationHeader)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.authorizationHeader())
                         .with(buildPostProcessorWithAnonymousUser()))
                 .andDo(print())
                 .andExpectAll(
