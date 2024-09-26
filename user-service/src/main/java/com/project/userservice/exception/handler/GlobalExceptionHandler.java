@@ -63,6 +63,11 @@ public class GlobalExceptionHandler {
                 .body(problemDetail);
     }
 
+    @ExceptionHandler(value = {DefaultException.class})
+    public ResponseEntity<ProblemDetail> handleCommonInternalServerError(RuntimeException ex) {
+        return buildExceptionHandling(ex, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(value = {UserAlreadyExistsException.class, AuthorizationFailed.class, TokenInvalidException.class,
             ResetPasswordTokenIncorrectException.class, EntityNotFoundException.class})
     public ResponseEntity<ProblemDetail> handleCommonBadRequestExceptions(RuntimeException ex) {

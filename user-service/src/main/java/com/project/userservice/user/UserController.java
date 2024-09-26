@@ -115,7 +115,7 @@ public class UserController {
      * @return ResponseEntity<TokenResponse> that provide user with new access and refresh tokens
      */
     @PostMapping("/refreshToken")
-    public ResponseEntity<TokenResponse> refreshToken(@RequestParam("token") String refreshToken) {
+    public ResponseEntity<TokenResponse> refreshToken(@RequestBody String refreshToken) {
         return ResponseEntity.ok(keycloakUtils.refreshToken(refreshToken));
     }
 
@@ -126,8 +126,8 @@ public class UserController {
      * @return an object of type String that represents user's id
      */
     @PostMapping("/getUserIdByToken")
-    public String getUserIdByToken(@RequestBody String token) {
-        return userService.getUserIdByToken(token);
+    public ResponseEntity<String> getUserIdByToken(@RequestBody String token) {
+        return ResponseEntity.ok(userService.getUserIdByToken(token));
     }
 
     /**

@@ -40,8 +40,8 @@ public class SecurityBeans {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers("/actuator/**").hasAuthority("SCOPE_metrics")
-                        .requestMatchers("/users/register", "/users/changePassword", "/users/login", "/users/grantCode").anonymous()
-                        .requestMatchers(HttpMethod.POST, "/users/refreshToken", "/users/resetPassword").permitAll()
+                        .requestMatchers("/users/register", "/users/login", "/users/grantCode").anonymous()
+                        .requestMatchers(HttpMethod.POST, "/users/refreshToken", "/users/resetPassword", "/users/changePassword").permitAll()
                         .requestMatchers("/users/getUserIdByToken").hasAuthority("SCOPE_view_users")
                         .requestMatchers("/users/checkUserExists").hasAuthority("SCOPE_view_users")
                         .requestMatchers("/users/dashboard").authenticated()

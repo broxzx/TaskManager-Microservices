@@ -1,5 +1,6 @@
 package com.project.userservice.utils;
 
+import com.project.userservice.exception.DefaultException;
 import com.project.userservice.exception.ResetPasswordTokenIncorrectException;
 import com.project.userservice.exception.TokenInvalidException;
 import lombok.SneakyThrows;
@@ -32,8 +33,13 @@ public class JwtUtils {
      */
     public String getUserIdByToken(String token) {
         JwtClaims claims = getJwtClaims(token);
+        String userId = claims.getClaimValueAsString("user_id");
 
-        return claims.getClaimValueAsString("user_id");
+        if (userId == null || userId.isBlank()) {
+            throw new DefaultException("claim \"user_id\" is not found in token");
+        }
+
+        return userId;
     }
 
     /**

@@ -19,7 +19,6 @@ public class SecurityTestConfig {
         return token -> {
             Map<String, Object> claims = new HashMap<>();
             claims.put("sub", "user");
-            claims.put("scope", "SCOPE_view_users");
             claims.put("realm_access", Map.of("roles", List.of("ROLE_ADMIN")));
 
             return new Jwt(
