@@ -31,8 +31,7 @@ import java.util.UUID;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -449,15 +448,14 @@ public class UserControllerTest {
     @Test
     void givenValidToken_whenClientGetUserIdByToken_thenSuccess() throws Exception {
         final String token = UUID.randomUUID().toString();
+        final String url = "/users/getUserIdByToken";
 
         when(userService.getUserIdByToken(token)).thenReturn(UUID.randomUUID().toString());
 
-        this.mockMvc.perform(post("/users/getUserIdByToken")
+        this.mockMvc.perform(post(url)
                         .contentType(APPLICATION_JSON)
                         .content(token)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("SCOPE_view_users"))
-                        ))
+                        .with(buildPostProcessorWithScopeViewUsers()))
                 .andDo(print())
                 .andExpectAll(
                         status().isOk()
@@ -467,8 +465,9 @@ public class UserControllerTest {
     @Test
     void givenValidToken_whenLoggedUserGetUserId_thenFailure() throws Exception {
         final String token = UUID.randomUUID().toString();
+        final String url = "/users/getUserIdByToken";
 
-        this.mockMvc.perform(post("/users/getUserIdByToken")
+        this.mockMvc.perform(post(url)
                         .contentType(APPLICATION_JSON)
                         .content(token)
                         .header(HttpHeaders.AUTHORIZATION, this.authorizationHeader)
@@ -484,8 +483,9 @@ public class UserControllerTest {
     @Test
     void givenValidToken_whenAnonymousUserGetUserIdByToken_thenFailure() throws Exception {
         final String token = UUID.randomUUID().toString();
+        final String url = "/users/getUserIdByToken";
 
-        this.mockMvc.perform(post("/users/getUserIdByToken")
+        this.mockMvc.perform(post(url)
                         .header(HttpHeaders.AUTHORIZATION, this.authorizationHeader)
                         .contentType(APPLICATION_JSON)
                         .content(token)
@@ -499,13 +499,71 @@ public class UserControllerTest {
 
     }
 
+    @Test
+    void givenValidUserId_whenClientCheckWhetherUserExists_thenFailure() throws Exception {
+        final String url = "/users/checkUserExists";
+        final String userId = UUID.randomUUID().toString();
+
+        when(userService.checkUserExists(userId)).thenReturn(true);
+
+        this.mockMvc.perform(get(url)
+                        .param("userId", userId)
+                        .with(buildPostProcessorWithScopeViewUsers()))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType(APPLICATION_JSON),
+                        content().string("true")
+                );
+    }
+
+    @Test
+    void givenValidUserId_whenLoggedUserCheckWhetherUserExists_thenFailure() throws Exception {
+        final String url = "/users/checkUserExists";
+        final String userId = UUID.randomUUID().toString();
+
+        this.mockMvc.perform(get(url)
+                        .param("userId", userId)
+                        .header(HttpHeaders.AUTHORIZATION, this.authorizationHeader)
+                        .with(buildPostProcessorWithUserRole()))
+                .andDo(print())
+                .andExpectAll(
+                        status().is4xxClientError(),
+                        jsonPath("$.error").exists()
+                );
+    }
+
+    @Test
+    void givenValidUserId_whenAnonymousUserCheckWhetherUserExists_thenFailure() throws Exception {
+        final String url = "/users/checkUserExists";
+        final String userId = UUID.randomUUID().toString();
+
+        this.mockMvc.perform(get(url)
+                        .param("userId", userId)
+                        .header(HttpHeaders.AUTHORIZATION, this.authorizationHeader)
+                        .with(buildPostProcessorWithAnonymousUser()))
+                .andDo(print())
+                .andExpectAll(
+                        status().is4xxClientError(),
+                        jsonPath("$.error").exists()
+                );
+    }
+
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor buildPostProcessorWithUserRole() {
-        return SecurityMockMvcRequestPostProcessors.jwt()
+        return SecurityMockMvcRequestPostProcessors
+                .jwt()
                 .authorities(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     private RequestPostProcessor buildPostProcessorWithAnonymousUser() {
-        return SecurityMockMvcRequestPostProcessors.anonymous();
+        return SecurityMockMvcRequestPostProcessors
+                .anonymous();
+    }
+
+    private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor buildPostProcessorWithScopeViewUsers() {
+        return SecurityMockMvcRequestPostProcessors
+                .jwt()
+                .authorities(new SimpleGrantedAuthority("SCOPE_view_users"));
     }
 
     private User buildUserFromUserRequest(UserRequest basicUserRequest) {
