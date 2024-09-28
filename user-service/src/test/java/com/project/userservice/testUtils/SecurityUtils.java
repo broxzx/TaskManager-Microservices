@@ -1,4 +1,4 @@
-package com.project.userservice.utils;
+package com.project.userservice.testUtils;
 
 import com.project.userservice.model.TokenResponse;
 import com.project.userservice.user.data.dto.response.UserResponse;
