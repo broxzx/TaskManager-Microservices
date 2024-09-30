@@ -3,12 +3,15 @@ package com.project.projectservice.project;
 import com.project.projectservice.ProjectServiceApplication;
 import com.project.projectservice.config.TestBeanConfiguration;
 import com.project.projectservice.feings.UserFeign;
+import com.project.projectservice.project.data.Project;
 import com.project.projectservice.project.data.dto.ProjectQueryResponseDto;
+import com.project.projectservice.project.data.dto.ProjectRequestDto;
 import com.project.projectservice.project.service.ProjectRepository;
 import com.project.projectservice.project.service.ProjectService;
 import com.project.projectservice.tags.services.TagService;
 import com.project.projectservice.utils.JwtUtils;
 import com.project.projectservice.utils.MongoQueryUtils;
+import com.project.projectservice.utils.ProjectUtils;
 import com.project.projectservice.utils.SecurityUtils;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -71,14 +74,43 @@ public class ProjectServiceTest {
 
     @Test
     void givenValidProjectRequestDto_whenUserCreateProject_thenSuccess() {
-        String userId = UUID.randomUUID().toString();
+        final String userId = generateRandomId();
+        final String projectId = generateRandomId();
+
+        final ProjectRequestDto projectRequestDto = ProjectUtils.buildTestProjectRequestDto();
+        final Project mappedProject = ProjectUtils.buildProjectBasedOnProjectRequestDto(projectRequestDto);
+        final Project createdProject = ProjectUtils.buildProjectBasedOnMappedProject(projectId, mappedProject);
+
 
         when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader))
                 .thenReturn(SecurityUtils.mockedToken);
         when(userFeign.getUserIdByToken(SecurityUtils.mockedToken)).thenReturn(userId);
         when(projectRepository.countByOwnerId(userId)).thenReturn(0);
+        when(modelMapper.map(projectRequestDto, Project.class)).thenReturn(mappedProject);
+        when(projectRepository.save(mappedProject)).thenReturn(createdProject);
 
+        Project project = projectService.createProject(projectRequestDto, SecurityUtils.mockedAuthorizationHeader);
 
+        assertThat(project).isNotNull();
+        assertProjectsAreEqual(createdProject, project);
+        assertThat(mappedProject.getOwnerId()).isEqualTo(userId);
+        assertThat(mappedProject.getPosition()).isEqualTo(project.getPosition() + 1);
+    }
+
+    private void assertProjectsAreEqual(Project expected, Project actual) {
+        assertThat(actual.getCreatedAt()).isEqualToIgnoringNanos(expected.getCreatedAt());
+        assertThat(actual.getUpdatedAt()).isEqualToIgnoringNanos(expected.getUpdatedAt());
+        assertThat(actual.getStartDate()).isEqualToIgnoringNanos(expected.getStartDate());
+        assertThat(actual.getEndDate()).isEqualToIgnoringNanos(expected.getEndDate());
+
+        assertThat(actual)
+                .usingRecursiveComparison()
+                .ignoringFields("createdAt", "updatedAt", "startDate", "endDate")
+                .isEqualTo(expected);
+    }
+
+    private String generateRandomId() {
+        return UUID.randomUUID().toString();
     }
 
 }
