@@ -120,7 +120,7 @@ public class ProjectServiceTest {
     }
 
     @Test
-    void givenValidProjectIdAndAuthorizationHeader_whenDeleteProjectByIdAndUserProjectIsEmpty_thenSuccess() {
+    void givenValidProjectIdAndAuthorizationHeader_whenDeleteProjectByIdAndUserProjectsIsEmpty_thenSuccess() {
         final String userId = generateRandomId();
         final String projectId = generateRandomId();
 
@@ -136,8 +136,8 @@ public class ProjectServiceTest {
         final String userId = generateRandomId();
         final String projectId = generateRandomId();
         Project project1 = ProjectUtils.buildPersistedProject(projectId, userId);
-        Project project2 = ProjectUtils.buildPersistedProject(projectId, userId);
-        Project project3 = ProjectUtils.buildPersistedProject(projectId, userId);
+        Project project2 = ProjectUtils.buildPersistedProject(generateRandomId(), userId);
+        Project project3 = ProjectUtils.buildPersistedProject(generateRandomId(), userId);
 
         project2.setPosition(2);
         project3.setPosition(3);
@@ -177,6 +177,103 @@ public class ProjectServiceTest {
 
         assertThrows(ForbiddenException.class, () -> {
             projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader);
+        });
+    }
+
+    @Test
+    void givenProjectIdAndInvalidAuthorizationHeader_whenDeleteProjectById_thenThrowException() {
+        final String projectId = generateRandomId();
+
+        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader)).thenReturn(null);
+
+        assertThrows(DefaultException.class, () -> {
+            projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader);
+        });
+    }
+
+    //from: project1 -> project2 -> project3
+    //to: project2 -> project3 -> project1
+    @Test
+    void givenProjectIdAndNewPositionAndAuthorizationHeader_whenUpdateProjectPositionToBottom_thenSuccess() {
+        final String userId = generateRandomId();
+        final String projectId = generateRandomId();
+        Project project1 = ProjectUtils.buildPersistedProject(projectId, userId);
+        Project project2 = ProjectUtils.buildPersistedProject(generateRandomId(), userId);
+        Project project3 = ProjectUtils.buildPersistedProject(generateRandomId(), userId);
+
+        project2.setPosition(2);
+        project3.setPosition(3);
+
+        checkUserIdAccessibility(userId);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project1));
+        when(projectRepository.findByOwnerId(userId)).thenReturn(List.of(project1, project2, project3));
+
+        projectService.updateProjectPosition(projectId, 3, SecurityUtils.mockedAuthorizationHeader);
+
+        assertThat(project2.getPosition()).isEqualTo(1);
+        assertThat(project3.getPosition()).isEqualTo(2);
+        assertThat(project1.getPosition()).isEqualTo(3);
+    }
+
+    //from: project2 -> project3 -> project1
+    //to: project1 -> project2 -> project3
+    @Test
+    void givenProjectIdAndNewPositionAndAuthorizationHeader_whenUpdateProjectPositionToTop_thenSuccess() {
+        final String userId = generateRandomId();
+        final String projectId = generateRandomId();
+        Project project1 = ProjectUtils.buildPersistedProject(projectId, userId);
+        Project project2 = ProjectUtils.buildPersistedProject(generateRandomId(), userId);
+        Project project3 = ProjectUtils.buildPersistedProject(generateRandomId(), userId);
+
+        project1.setPosition(3);
+        project2.setPosition(1);
+        project3.setPosition(2);
+
+        checkUserIdAccessibility(userId);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project1));
+        when(projectRepository.findByOwnerId(userId)).thenReturn(List.of(project1, project2, project3));
+
+        projectService.updateProjectPosition(projectId, 1, SecurityUtils.mockedAuthorizationHeader);
+
+        assertThat(project1.getPosition()).isEqualTo(1);
+        assertThat(project2.getPosition()).isEqualTo(2);
+        assertThat(project3.getPosition()).isEqualTo(3);
+    }
+
+    //from: project1 -> project2 -> project3 -> project4
+    //to: project2 -> project1 -> project3 -> project4
+    @Test
+    void givenProjectIdAndNewPositionAndAuthorizationHeader_whenUpdateProjectPositionToMiddle_thenSuccess() {
+        final String userId = generateRandomId();
+        final String projectId = generateRandomId();
+        Project project1 = ProjectUtils.buildPersistedProject(projectId, userId);
+        Project project2 = ProjectUtils.buildPersistedProject(generateRandomId(), userId);
+        Project project3 = ProjectUtils.buildPersistedProject(generateRandomId(), userId);
+        Project project4 = ProjectUtils.buildPersistedProject(generateRandomId(), userId);
+
+        project1.setPosition(1);
+        project2.setPosition(2);
+        project3.setPosition(3);
+        project4.setPosition(4);
+
+        checkUserIdAccessibility(userId);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project1));
+        when(projectRepository.findByOwnerId(userId)).thenReturn(List.of(project1, project2, project3, project4));
+
+        projectService.updateProjectPosition(projectId, 2, SecurityUtils.mockedAuthorizationHeader);
+
+        assertThat(project1.getPosition()).isEqualTo(2);
+        assertThat(project2.getPosition()).isEqualTo(1);
+        assertThat(project3.getPosition()).isEqualTo(3);
+        assertThat(project4.getPosition()).isEqualTo(4);
+    }
+
+    @Test
+    void givenProjectIdAndNewPositionAndInvalidAuthorizationHeader_whenUpdateProject_thenThrowException() {
+        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader)).thenReturn(null);
+
+        assertThrows(DefaultException.class, () -> {
+            projectService.updateProjectPosition(generateRandomId(), 1, SecurityUtils.mockedAuthorizationHeader);
         });
     }
 
