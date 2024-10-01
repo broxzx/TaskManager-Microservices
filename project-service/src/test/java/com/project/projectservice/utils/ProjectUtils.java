@@ -46,6 +46,23 @@ public class ProjectUtils {
                 .build();
     }
 
+    public static Project buildPersistedProject(String projectId, String userId) {
+        return Project.builder()
+                .id(projectId)
+                .name("test project")
+                .description("test project description")
+                .memberIds(new HashSet<>(Set.of(generateRandomId(), generateRandomId(), generateRandomId(),
+                        userId)))
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now())
+                .status("CREATED")
+                .ownerId(userId)
+                .position(1)
+                .createdAt(LocalDateTime.now())
+                .endDate(LocalDateTime.now())
+                .build();
+    }
+
     private static String generateRandomId() {
         return UUID.randomUUID().toString();
     }

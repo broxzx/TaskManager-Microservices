@@ -1,5 +1,6 @@
 package com.project.projectservice.project.service;
 
+import com.project.projectservice.exceptions.DefaultException;
 import com.project.projectservice.exceptions.EntityNotFoundException;
 import com.project.projectservice.exceptions.ForbiddenException;
 import com.project.projectservice.feings.UserFeign;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -33,13 +35,14 @@ public class ProjectService {
     private final MongoQueryUtils mongoQueryUtils;
 
     public List<ProjectQueryResponseDto> getUserProjects(String authorizationHeader) {
-        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        String userId = getUserId(authorizationHeader);
 
         return mongoQueryUtils.createQueryToGetAllUserProjects(userId);
     }
 
     public Project createProject(ProjectRequestDto projectRequestDto, String authorizationHeader) {
-        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        String userId = getUserId(authorizationHeader);
+
         int countUserProjects = projectRepository.countByOwnerId(userId);
 
         Project mappedProject = modelMapper.map(projectRequestDto, Project.class);
@@ -52,7 +55,7 @@ public class ProjectService {
     }
 
     public Project updateProject(String projectIdToUpdate, ProjectRequestDto projectRequestDto, String authorizationHeader) {
-        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        String userId = getUserId(authorizationHeader);
 
         Project project = getProjectByIdAndOwnerId(projectIdToUpdate, userId);
         Project projectToSave = updateProjectFromProjectRequestDto(project, projectRequestDto);
@@ -61,7 +64,7 @@ public class ProjectService {
     }
 
     public void deleteProjectById(String projectId, String authorizationHeader) {
-        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        String userId = getUserId(authorizationHeader);
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
 
         List<Project> userProjects = projectRepository.findByOwnerId(userId);
@@ -73,14 +76,12 @@ public class ProjectService {
                 .toList();
 
         projectRepository.saveAll(projectsToChangePosition);
-
         tagService.deleteTagsByProjectId(obtainedProject.getId());
-
         projectRepository.deleteByIdAndOwnerId(obtainedProject.getId(), obtainedProject.getOwnerId());
     }
 
     public List<Project> updateProjectPosition(String projectId, int newPosition, String authorizationHeader) {
-        String userId = userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
+        String userId = getUserId(authorizationHeader);
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
         int oldPosition = obtainedProject.getPosition();
 
@@ -110,7 +111,7 @@ public class ProjectService {
     }
 
     public Project addMembersToProject(String projectId, List<String> memberIds, String authorizationHeader) {
-        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
+        String userId = getUserId(authorizationHeader);
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
 
         checkOwnerPermissionToProject(obtainedProject, userId);
@@ -120,7 +121,7 @@ public class ProjectService {
     }
 
     public Project deleteMembersFromProject(String projectId, List<String> memberIds, String authorizationHeader) {
-        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
+        String userId = getUserId(authorizationHeader);
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
 
         checkOwnerPermissionToProject(obtainedProject, userId);
@@ -130,7 +131,7 @@ public class ProjectService {
     }
 
     public Project changeProjectStatus(String projectId, String newStatus, String authorizationHeader) {
-        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
+        String userId = getUserId(authorizationHeader);
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
 
         obtainedProject.setStatus(newStatus);
@@ -139,7 +140,7 @@ public class ProjectService {
     }
 
     public Project addTagsToProject(String projectId, List<String> tagIds, String authorizationHeader) {
-        String userId = getUserIdByTokenUsingFeign(authorizationHeader);
+        String userId = getUserId(authorizationHeader);
         Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
 
         return projectRepository.save(obtainedProject);
@@ -189,10 +190,6 @@ public class ProjectService {
         return new ProjectAccessDto(obtainedProject.getOwnerId(), obtainedProject.getMemberIds());
     }
 
-    private String getUserIdByTokenUsingFeign(String authorizationHeader) {
-        return userFeign.getUserIdByToken(jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader));
-    }
-
     private void checkOwnerPermissionToProject(Project projectToCheck, String userId) {
         if (!projectToCheck.getOwnerId().equals(userId)) {
             throw new ForbiddenException("You do not have permission to change members to this project");
@@ -210,5 +207,11 @@ public class ProjectService {
 
     private void deleteMembersFromProject(List<String> memberIds, Project obtainedProject) {
         memberIds.forEach(obtainedProject.getMemberIds()::remove);
+    }
+
+    private String getUserId(String authorizationHeader) {
+        return Optional.ofNullable(userFeign.getUserIdByToken(
+                        jwtUtils.extractTokenFromAuthorizationHeader(authorizationHeader)))
+                .orElseThrow(() -> new DefaultException("token is invalid"));
     }
 }
