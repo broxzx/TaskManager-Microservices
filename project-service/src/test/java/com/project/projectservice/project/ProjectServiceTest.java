@@ -23,10 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -81,9 +78,7 @@ public class ProjectServiceTest {
         when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader))
                 .thenReturn(null);
 
-        assertThrows(DefaultException.class, () -> {
-            projectService.getUserProjects(SecurityUtils.mockedAuthorizationHeader);
-        });
+        assertThrows(DefaultException.class, () -> projectService.getUserProjects(SecurityUtils.mockedAuthorizationHeader));
     }
 
     @Test
@@ -159,9 +154,7 @@ public class ProjectServiceTest {
         checkUserIdAccessibility(userId);
         when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> {
-            projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader);
-        });
+        assertThrows(EntityNotFoundException.class, () -> projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader));
     }
 
     @Test
@@ -175,9 +168,7 @@ public class ProjectServiceTest {
         checkUserIdAccessibility(userId);
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(persistedProject));
 
-        assertThrows(ForbiddenException.class, () -> {
-            projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader);
-        });
+        assertThrows(ForbiddenException.class, () -> projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader));
     }
 
     @Test
@@ -186,9 +177,7 @@ public class ProjectServiceTest {
 
         when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader)).thenReturn(null);
 
-        assertThrows(DefaultException.class, () -> {
-            projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader);
-        });
+        assertThrows(DefaultException.class, () -> projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader));
     }
 
     //from: project1 -> project2 -> project3
@@ -272,9 +261,41 @@ public class ProjectServiceTest {
     void givenProjectIdAndNewPositionAndInvalidAuthorizationHeader_whenUpdateProject_thenThrowException() {
         when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader)).thenReturn(null);
 
-        assertThrows(DefaultException.class, () -> {
-            projectService.updateProjectPosition(generateRandomId(), 1, SecurityUtils.mockedAuthorizationHeader);
+        assertThrows(DefaultException.class, () -> projectService.updateProjectPosition(generateRandomId(), 1, SecurityUtils.mockedAuthorizationHeader));
+    }
+
+    @Test
+    void givenProjectIdAndMemberIdsAndAuthorizationHeader_whenAddMembersToProject_thenSuccess() {
+        final String userId = generateRandomId();
+        final String projectId = generateRandomId();
+        List<String> memberIds = List.of(generateRandomId(), generateRandomId());
+        Project project = ProjectUtils.buildPersistedProject(projectId, userId);
+        project.setMemberIds(new HashSet<>());
+
+        checkUserIdAccessibility(userId);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+        memberIds.forEach(memberId -> {
+            when(userFeign.checkUserExists(memberId)).thenReturn(true);
         });
+
+        projectService.addMembersToProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeader);
+
+        assertThat(project).isNotNull();
+        assertThat(project.getMemberIds()).containsAll(memberIds);
+    }
+
+    @Test
+    void givenProjectIdAndMemberIdsAndAuthorizationHeader_whenAddMembersToProjectAndUserIsNotOwner_thenSuccess() {
+        final String userId = generateRandomId();
+        final String projectId = generateRandomId();
+        List<String> memberIds = List.of(generateRandomId(), generateRandomId());
+        Project project = ProjectUtils.buildPersistedProject(projectId, userId);
+        project.setOwnerId(generateRandomId());
+
+        checkUserIdAccessibility(userId);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+
+        assertThrows(ForbiddenException.class, () -> projectService.addMembersToProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeader));
     }
 
     private void assertProjectsAreEqual(Project expected, Project actual) {
