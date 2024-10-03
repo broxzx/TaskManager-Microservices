@@ -274,9 +274,7 @@ public class ProjectServiceTest {
 
         checkUserIdAccessibility(userId);
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
-        memberIds.forEach(memberId -> {
-            when(userFeign.checkUserExists(memberId)).thenReturn(true);
-        });
+        memberIds.forEach(memberId -> when(userFeign.checkUserExists(memberId)).thenReturn(true));
 
         projectService.addMembersToProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeader);
 
@@ -285,7 +283,7 @@ public class ProjectServiceTest {
     }
 
     @Test
-    void givenProjectIdAndMemberIdsAndAuthorizationHeader_whenAddMembersToProjectAndUserIsNotOwner_thenSuccess() {
+    void givenProjectIdAndMemberIdsAndAuthorizationHeader_whenAddMembersToProjectAndUserIsNotOwner_thenThrowException() {
         final String userId = generateRandomId();
         final String projectId = generateRandomId();
         List<String> memberIds = List.of(generateRandomId(), generateRandomId());
@@ -296,6 +294,27 @@ public class ProjectServiceTest {
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
         assertThrows(ForbiddenException.class, () -> projectService.addMembersToProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeader));
+    }
+
+    @Test
+    void givenInvalidAuthorizationHeader_whenAddMembersToProject_thenThrowException() {
+        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader)).thenReturn(null);
+
+        assertThrows(DefaultException.class, () -> projectService.addMembersToProject(generateRandomId(), new ArrayList<>(), SecurityUtils.mockedAuthorizationHeader));
+    }
+
+    @Test
+    void givenValidAuthorizationHeaderAndProjectIdAndMembers_whenAddMembersToProjectAndUserIsNotMemberAndOwner_thenThrowException() {
+        final String userId = generateRandomId();
+        final String projectId = generateRandomId();
+        Project project = ProjectUtils.buildPersistedProject(projectId, generateRandomId());
+
+        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader))
+                .thenReturn(SecurityUtils.mockedToken);
+        when(userFeign.getUserIdByToken(SecurityUtils.mockedToken)).thenReturn(userId);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+
+        assertThrows(ForbiddenException.class, () -> projectService.addMembersToProject(projectId, new ArrayList<>(), SecurityUtils.mockedAuthorizationHeader));
     }
 
     private void assertProjectsAreEqual(Project expected, Project actual) {
