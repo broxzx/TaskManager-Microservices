@@ -309,12 +309,53 @@ public class ProjectServiceTest {
         final String projectId = generateRandomId();
         Project project = ProjectUtils.buildPersistedProject(projectId, generateRandomId());
 
-        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader))
-                .thenReturn(SecurityUtils.mockedToken);
-        when(userFeign.getUserIdByToken(SecurityUtils.mockedToken)).thenReturn(userId);
+        getUserIdTest(userId);
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
         assertThrows(ForbiddenException.class, () -> projectService.addMembersToProject(projectId, new ArrayList<>(), SecurityUtils.mockedAuthorizationHeader));
+    }
+
+    @Test
+    void givenProjectIdAndMemberIdsAndAuthorizationHeader_whenDeleteMemberFromProject_thenSuccess() {
+        final String projectId = generateRandomId();
+        final String userId = generateRandomId();
+        Project project = ProjectUtils.buildPersistedProject(projectId, userId);
+        List<String> memberIds = new ArrayList<>(project.getMemberIds());
+
+        getUserIdTest(userId);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+
+        projectService.deleteMembersFromProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeader);
+        assertThat(project.getMemberIds()).isEmpty();
+    }
+
+    @Test
+    void givenInvalidProjectIdAndMemberIdsAndAuthorizationHeader_whenDeleteMembersFromProject_thenFailure() {
+        final String userId = generateRandomId();
+        final String projectId = generateRandomId();
+
+        getUserIdTest(userId);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            projectService.deleteMembersFromProject(projectId, List.of(), SecurityUtils.mockedAuthorizationHeader);
+        });
+    }
+
+    @Test
+    void givenProjectIdAndNewStatusAndAuthorizationHeader_whenChangeProjectStatus_thenSuccess() {
+        final String projectId = generateRandomId();
+        final String userId = generateRandomId();
+        final String newStatus = "newStatusTest";
+        Project project = ProjectUtils.buildPersistedProject(projectId, userId);
+
+        getUserIdTest(userId);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+
+        projectService.changeProjectStatus(projectId, newStatus, SecurityUtils.mockedAuthorizationHeader);
+
+        assertThat(project).isNotNull();
+        assertThat(project.getStatus()).isEqualTo(newStatus);
     }
 
     private void assertProjectsAreEqual(Project expected, Project actual) {
@@ -334,7 +375,12 @@ public class ProjectServiceTest {
     }
 
     private void checkUserIdAccessibility(String userId) {
-        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader)).thenReturn(SecurityUtils.mockedToken);
+        getUserIdTest(userId);
+    }
+
+    private void getUserIdTest(String userId) {
+        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader))
+                .thenReturn(SecurityUtils.mockedToken);
         when(userFeign.getUserIdByToken(SecurityUtils.mockedToken)).thenReturn(userId);
     }
 

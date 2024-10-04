@@ -71,13 +71,6 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.changeProjectStatus(projectId, status, authorizationHeader));
     }
 
-    @PostMapping("/{projectId}/tags")
-    public ResponseEntity<Project> addTagsToProject(@PathVariable("projectId") String projectId,
-                                                    @RequestParam List<String> tagIds,
-                                                    @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
-        return ResponseEntity.ok(projectService.addTagsToProject(projectId, tagIds, authorizationHeader));
-    }
-
     @PostMapping("/{projectId}/access")
     public ResponseEntity<ProjectAccessDto> getProjectAccess(@PathVariable("projectId") String projectId,
                                                              @RequestHeader String authorizationHeader) {

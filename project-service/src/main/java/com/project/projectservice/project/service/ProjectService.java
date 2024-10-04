@@ -139,13 +139,6 @@ public class ProjectService {
         return projectRepository.save(obtainedProject);
     }
 
-    public Project addTagsToProject(String projectId, List<String> tagIds, String authorizationHeader) {
-        String userId = getUserId(authorizationHeader);
-        Project obtainedProject = getProjectByIdAndOwnerId(projectId, userId);
-
-        return projectRepository.save(obtainedProject);
-    }
-
     private void removeNullFieldsFromProject(ProjectRequestDto projectRequestDto, Project mappedProject) {
         if (projectRequestDto.getMemberIds() == null) {
             mappedProject.setMemberIds(new HashSet<>());
