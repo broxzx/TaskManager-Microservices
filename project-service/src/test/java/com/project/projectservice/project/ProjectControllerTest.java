@@ -24,9 +24,12 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 
 import static com.project.projectservice.utils.ProjectUtils.generateRandomId;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -333,6 +336,39 @@ public class ProjectControllerTest {
                         .with(SecurityMockMvcRequestPostProcessors.anonymous()))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void givenProjectIdAndMemberIds_whenAddMembersToProject_thenSuccess() throws Exception {
+        List<String> ids = List.of(generateRandomId(), generateRandomId(), generateRandomId());
+        final String projectId = generateRandomId();
+        Project project = ProjectUtils.buildPersistedProject(projectId, generateRandomId());
+        final String jsonBody = "[\"%s\", \"%s\", \"%s\"]".formatted(ids.get(0), ids.get(1), ids.get(2));
+        final String url = "/projects/%s/addMembers".formatted(projectId);
+
+
+        when(projectService.addMembersToProject(projectId, ids, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+                .thenReturn(project);
+
+        project.setMemberIds(new HashSet<>(ids));
+
+        this.mockMvc.perform(post(url)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .with(SecurityMockMvcRequestPostProcessors
+                                .jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                        ))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.memberIds").exists(),
+                        jsonPath("$.memberIds").isArray(),
+                        jsonPath("$.memberIds", hasSize(ids.size())),
+                        jsonPath("$.memberIds", containsInAnyOrder(ids.toArray()))
+                );
+
     }
 
 }
