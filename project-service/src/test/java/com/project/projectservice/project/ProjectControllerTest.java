@@ -1,7 +1,9 @@
 package com.project.projectservice.project;
 
+import com.github.loki4j.client.http.HttpHeader;
 import com.project.projectservice.config.SecurityBeans;
 import com.project.projectservice.config.SecurityTestBeans;
+import com.project.projectservice.exceptions.EntityNotFoundException;
 import com.project.projectservice.project.data.Project;
 import com.project.projectservice.project.data.dto.ProjectQueryResponseDto;
 import com.project.projectservice.project.data.dto.ProjectRequestDto;
@@ -18,12 +20,15 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.project.projectservice.utils.ProjectUtils.generateRandomId;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -225,8 +230,109 @@ public class ProjectControllerTest {
                 )
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
+    }
 
+    @Test
+    void givenProjectIdAndAuthorizationHeader_whenDeleteProject_thenSuccess() throws Exception {
+        final String projectId = generateRandomId();
+        final String url = "/projects/deleteProject/%s".formatted(projectId);
 
+        doNothing().when(projectService)
+                .deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeaderWithUserRole);
+
+        this.mockMvc.perform(delete(url)
+                        .header(HttpHeader.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .with(SecurityMockMvcRequestPostProcessors
+                                .jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                        ))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenProjectIdAndAuthorizationHeader_whenAnonymousUserDeleteProject_thenFailure() throws Exception {
+        final String projectId = generateRandomId();
+        final String url = "/projects/deleteProject/%s".formatted(projectId);
+
+        this.mockMvc.perform(delete(url)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithAnonymousUser)
+                        .with(SecurityMockMvcRequestPostProcessors.anonymous()))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void givenProjectIdAndPosition_whenChangeProjectPosition_thenSuccess() throws Exception {
+        final String projectId = generateRandomId();
+        final String url = "/projects/changeProjectPosition";
+        MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
+        multiValueMap.add("projectId", projectId);
+        multiValueMap.add("position", "0");
+
+        when(projectService.updateProjectPosition(projectId, 0, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+                .thenReturn(List.of(
+                        ProjectUtils.buildPersistedProject(projectId, generateRandomId()),
+                        ProjectUtils.buildPersistedProject(generateRandomId(), generateRandomId()),
+                        ProjectUtils.buildPersistedProject(generateRandomId(), generateRandomId())
+                ));
+
+        this.mockMvc.perform(post(url)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .params(multiValueMap)
+                        .with(SecurityMockMvcRequestPostProcessors
+                                .jwt()
+                                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                        ))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$").isArray(),
+                        jsonPath("$[0]").exists(),
+                        jsonPath("$[0].id").exists(),
+                        jsonPath("$[1]").exists(),
+                        jsonPath("$[1].id").exists(),
+                        jsonPath("$[2]").exists(),
+                        jsonPath("$[2].id").exists()
+                );
+    }
+
+    @Test
+    void givenInvalidProjectIdAndPosition_whenChangeProjectPosition_thenFailure() throws Exception {
+        final String projectId = generateRandomId();
+        final String url = "/projects/changeProjectPosition";
+        MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
+        multiValueMap.add("projectId", projectId);
+        multiValueMap.add("position", "0");
+
+        when(projectService.updateProjectPosition(projectId, 0, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+                .thenThrow(EntityNotFoundException.class);
+
+        this.mockMvc.perform(post(url)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .params(multiValueMap)
+                        .with(SecurityMockMvcRequestPostProcessors
+                                .jwt()
+                                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                        ))
+                .andDo(print())
+                .andExpectAll(status().is4xxClientError());
+    }
+
+    @Test
+    void givenProjectIdAndPosition_whenAnonymousUserChangeProjectPosition_thenFailure() throws Exception {
+        final String projectId = generateRandomId();
+        final String url = "/projects/changeProjectPosition";
+        MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
+        multiValueMap.add("projectId", projectId);
+        multiValueMap.add("position", "0");
+
+        this.mockMvc.perform(post(url)
+                        .params(multiValueMap)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithAnonymousUser)
+                        .with(SecurityMockMvcRequestPostProcessors.anonymous()))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
     }
 
 }
