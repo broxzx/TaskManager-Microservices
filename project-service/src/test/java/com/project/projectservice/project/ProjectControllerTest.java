@@ -2,9 +2,12 @@ package com.project.projectservice.project;
 
 import com.project.projectservice.config.SecurityBeans;
 import com.project.projectservice.config.SecurityTestBeans;
+import com.project.projectservice.project.data.Project;
 import com.project.projectservice.project.data.dto.ProjectQueryResponseDto;
+import com.project.projectservice.project.data.dto.ProjectRequestDto;
 import com.project.projectservice.project.service.ProjectService;
 import com.project.projectservice.utils.ProjectUtils;
+import com.project.projectservice.utils.SecurityUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -16,11 +19,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.project.projectservice.utils.ProjectUtils.generateRandomId;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -45,7 +50,7 @@ public class ProjectControllerTest {
         when(projectService.getUserProjects(any(String.class))).thenReturn(projects);
 
         mockMvc.perform(get(url)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer mockedToken")
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
                 .andDo(print())
@@ -65,7 +70,7 @@ public class ProjectControllerTest {
         final String url = "/projects/getUserProjects";
 
         this.mockMvc.perform(get(url)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer mockedToken")
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithAnonymousUser)
                         .with(SecurityMockMvcRequestPostProcessors.anonymous()))
                 .andDo(print())
                 .andExpectAll(status().is4xxClientError());
@@ -73,7 +78,154 @@ public class ProjectControllerTest {
     }
 
     @Test
-    void givenInvalidAuthorizationHeader_whenGetUserProject_thenFailure() {
+    void givenAuthorizationHeader_whenUserCreateProject_thenSuccess() throws Exception {
+        final String url = "/projects/createProject";
+        ProjectRequestDto projectRequestDto = ProjectUtils.buildTestProjectRequestDto();
+        Project project = ProjectUtils.buildProjectBasedOnProjectRequestDto(projectRequestDto);
+        String projectRequestDtoJson = ProjectUtils.buildProjectRequestJson(project);
+
+        when(projectService.createProject(projectRequestDto, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+                .thenReturn(project);
+
+        this.mockMvc
+                .perform(post(url)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(projectRequestDtoJson)
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.name").value(project.getName()),
+                        jsonPath("$.description").value(project.getDescription()),
+                        jsonPath("$.memberIds").isNotEmpty(),
+                        jsonPath("$.status").value(project.getStatus())
+                );
+    }
+
+    @Test
+    void givenAuthorizationHeader_whenUserCreateProjectWithInvalidFields_thenThrowException() throws Exception {
+        final String url = "/projects/createProject";
+
+        this.mockMvc
+                .perform(post(url)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .content(ProjectUtils.buildProjectRequestJsonWithInvalidFields())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors
+                                .jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                        )
+                )
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void givenInvalidAuthorizationHeader_whenUserCreateProject_thenFailure() throws Exception {
+        final String url = "/projects/createProject";
+        ProjectRequestDto projectRequestDto = ProjectUtils.buildTestProjectRequestDto();
+        Project project = ProjectUtils.buildProjectBasedOnProjectRequestDto(projectRequestDto);
+        String projectRequestDtoJson = ProjectUtils.buildProjectRequestJson(project);
+
+        this.mockMvc
+                .perform(post(url)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithAnonymousUser)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(projectRequestDtoJson)
+                        .with(SecurityMockMvcRequestPostProcessors
+                                .anonymous()
+                        ))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    void givenProjectIdAndAuthorizationHeaderAndProjectRequestDto_whenUpdateProject_thenSuccess() throws Exception {
+        String randomId = generateRandomId();
+        final String url = "/projects/updateProject/%s".formatted(randomId);
+        ProjectRequestDto projectRequestDto = ProjectUtils.buildTestProjectRequestDto();
+        Project project = ProjectUtils.buildProjectBasedOnProjectRequestDto(projectRequestDto);
+        String projectRequestDtoJson = ProjectUtils.buildProjectRequestJson(project);
+
+        when(projectService.updateProject(randomId, projectRequestDto, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+                .thenReturn(project);
+
+        project.setName("new test name");
+        project.setDescription("new test name");
+        project.setStatus("New Status");
+        project.setStartDate(LocalDateTime.of(2024, 12, 12, 13, 14, 15));
+
+
+        this.mockMvc.perform(put(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(projectRequestDtoJson)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .with(SecurityMockMvcRequestPostProcessors
+                                .jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                        )
+                )
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.name").value(project.getName()),
+                        jsonPath("$.description").value(project.getDescription()),
+                        jsonPath("$.status").value(project.getStatus()),
+                        jsonPath("$.startDate").value("2024-12-12T13:14:15")
+                );
+    }
+
+    @Test
+    void givenInvalidProjectIdAndAuthorizationHeaderAndProjectRequestDto_whenUpdateProject_thenFailure() throws Exception {
+        final String randomId = generateRandomId();
+        final String url = "/projects/updateProject/%s".formatted(randomId);
+        ProjectRequestDto projectRequestDto = ProjectUtils.buildTestProjectRequestDto();
+        Project project = ProjectUtils.buildProjectBasedOnProjectRequestDto(projectRequestDto);
+        String projectRequestDtoJson = ProjectUtils.buildProjectRequestJson(project);
+
+        when(projectService.updateProject(randomId, projectRequestDto, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+                .thenReturn(null);
+
+        this.mockMvc.perform(put(url)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(projectRequestDtoJson)
+                        .with(SecurityMockMvcRequestPostProcessors
+                                .jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER")))
+                )
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.name").doesNotExist(),
+                        jsonPath("$.description").doesNotExist(),
+                        jsonPath("$.memberIds").doesNotExist(),
+                        jsonPath("$.status").doesNotExist(),
+                        jsonPath("$.startDate").doesNotExist(),
+                        jsonPath("$.endDate").doesNotExist()
+
+                );
+    }
+
+    @Test
+    void givenProjectIdAndAuthorizationHeaderAndProjectRequestDto_whenAnonymousUserUpdateProject_thenFailure() throws Exception {
+        final String randomId = generateRandomId();
+        final String url = "/projects/updateProject/%s".formatted(randomId);
+        ProjectRequestDto projectRequestDto = ProjectUtils.buildTestProjectRequestDto();
+        Project project = ProjectUtils.buildProjectBasedOnProjectRequestDto(projectRequestDto);
+        String projectRequestDtoJson = ProjectUtils.buildProjectRequestJson(project);
+
+        this.mockMvc.perform(put(url)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithAnonymousUser)
+                        .content(projectRequestDtoJson)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.anonymous())
+                )
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
 
     }
 

@@ -13,16 +13,58 @@ import java.util.UUID;
 
 public class ProjectUtils {
 
+    private static final List<String> randomIds = List.of(
+            generateRandomId(), generateRandomId(), generateRandomId()
+    );
+
     public static ProjectRequestDto buildTestProjectRequestDto() {
         return ProjectRequestDto.builder()
                 .name("test project")
                 .description("test project description")
-                .memberIds(new HashSet<>(Set.of(generateRandomId(), generateRandomId(), generateRandomId(),
-                        generateRandomId())))
-                .startDate(LocalDateTime.now())
-                .endDate(LocalDateTime.now())
+                .memberIds(new HashSet<>(randomIds))
+                .startDate(LocalDateTime.of(2024, 7, 7, 13, 0))
+                .endDate(LocalDateTime.of(2024, 7, 8, 13, 0))
                 .status("CREATED")
                 .build();
+    }
+
+    public static String buildProjectRequestJson(Project project) {
+        return """
+                {
+                    "name": "%s",
+                    "description": "%s",
+                    "memberIds": ["%s", "%s", "%s"],
+                    "startDate": "2024-07-07T13:00:00",
+                    "endDate": "2024-07-08T13:00:00",
+                    "status": "%s"
+                }
+                """.formatted(
+                project.getName(),
+                project.getDescription(),
+                randomIds.get(0), randomIds.get(1), randomIds.get(2),
+                project.getStatus()
+        );
+    }
+
+    public static ProjectRequestDto buildProjectRequestDtoWithInvalidFields() {
+        return ProjectRequestDto.builder()
+                .name(" ")
+                .description("test description")
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now())
+                .status("Pending")
+                .build();
+    }
+
+    public static String buildProjectRequestJsonWithInvalidFields() {
+        return """
+                {
+                    "name": " ",
+                    "description": "test description",
+                    "startDate": "2024-07-07T13:00:00",
+                    "endDate": "2024-07-08T13:00:00"
+                }
+                """;
     }
 
     public static Project buildProjectBasedOnProjectRequestDto(ProjectRequestDto projectRequestDto) {

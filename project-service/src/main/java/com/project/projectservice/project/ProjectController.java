@@ -5,6 +5,7 @@ import com.project.projectservice.project.data.dto.ProjectAccessDto;
 import com.project.projectservice.project.data.dto.ProjectQueryResponseDto;
 import com.project.projectservice.project.data.dto.ProjectRequestDto;
 import com.project.projectservice.project.service.ProjectService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class ProjectController {
     }
 
     @PostMapping("/createProject")
-    public ResponseEntity<Project> createProject(@RequestBody ProjectRequestDto projectRequestDto,
+    public ResponseEntity<Project> createProject(@RequestBody @Valid ProjectRequestDto projectRequestDto,
                                                  @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return ResponseEntity.ok(projectService.createProject(projectRequestDto, authorizationHeader));
     }
