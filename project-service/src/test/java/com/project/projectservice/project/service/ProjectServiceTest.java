@@ -1,4 +1,4 @@
-package com.project.projectservice.project;
+package com.project.projectservice.project.service;
 
 import com.project.projectservice.ProjectServiceApplication;
 import com.project.projectservice.config.TestBeanConfiguration;
@@ -9,8 +9,6 @@ import com.project.projectservice.feings.UserFeign;
 import com.project.projectservice.project.data.Project;
 import com.project.projectservice.project.data.dto.ProjectQueryResponseDto;
 import com.project.projectservice.project.data.dto.ProjectRequestDto;
-import com.project.projectservice.project.service.ProjectRepository;
-import com.project.projectservice.project.service.ProjectService;
 import com.project.projectservice.tags.services.TagService;
 import com.project.projectservice.utils.JwtUtils;
 import com.project.projectservice.utils.MongoQueryUtils;
@@ -63,22 +61,22 @@ public class ProjectServiceTest {
         checkUserIdAccessibility(userId);
         when(mongoQueryUtils.createQueryToGetAllUserProjects(userId)).thenReturn(mockProjects);
 
-        List<ProjectQueryResponseDto> result = projectService.getUserProjects(SecurityUtils.mockedAuthorizationHeader);
+        List<ProjectQueryResponseDto> result = projectService.getUserProjects(SecurityUtils.mockedAuthorizationHeaderWithUserRole);
 
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);
         assertThat(result).isEqualTo(mockProjects);
 
-        verify(userFeign).getUserIdByToken(SecurityUtils.mockedToken);
+        verify(userFeign).getUserIdByToken(SecurityUtils.mockedTokenWithUserRole);
         verify(mongoQueryUtils).createQueryToGetAllUserProjects(userId);
     }
 
     @Test
     void givenInvalidAuthorizationHeader_whenGetUserProject_thenThrowException() {
-        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader))
+        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeaderWithUserRole))
                 .thenReturn(null);
 
-        assertThrows(DefaultException.class, () -> projectService.getUserProjects(SecurityUtils.mockedAuthorizationHeader));
+        assertThrows(DefaultException.class, () -> projectService.getUserProjects(SecurityUtils.mockedAuthorizationHeaderWithUserRole));
     }
 
     @Test
@@ -96,7 +94,7 @@ public class ProjectServiceTest {
         when(modelMapper.map(projectRequestDto, Project.class)).thenReturn(mappedProject);
         when(projectRepository.save(mappedProject)).thenReturn(createdProject);
 
-        Project project = projectService.createProject(projectRequestDto, SecurityUtils.mockedAuthorizationHeader);
+        Project project = projectService.createProject(projectRequestDto, SecurityUtils.mockedAuthorizationHeaderWithUserRole);
 
         assertThat(project).isNotNull();
         assertProjectsAreEqual(createdProject, project);
@@ -106,11 +104,11 @@ public class ProjectServiceTest {
 
     @Test
     void givenInvalidAuthorizationHeader_whenCreateProject_thenThrowException() {
-        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader))
+        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeaderWithUserRole))
                 .thenReturn(null);
 
         assertThrows(DefaultException.class, () ->
-                projectService.createProject(ProjectUtils.buildTestProjectRequestDto(), SecurityUtils.mockedAuthorizationHeader)
+                projectService.createProject(ProjectUtils.buildTestProjectRequestDto(), SecurityUtils.mockedAuthorizationHeaderWithUserRole)
         );
     }
 
@@ -123,7 +121,7 @@ public class ProjectServiceTest {
         when(projectRepository.findById(projectId)).thenReturn(Optional.ofNullable(ProjectUtils.buildPersistedProject(projectId, userId)));
         when(projectRepository.findByOwnerId(userId)).thenReturn(new ArrayList<>());
 
-        projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader);
+        projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeaderWithUserRole);
     }
 
     @Test
@@ -141,7 +139,7 @@ public class ProjectServiceTest {
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project1));
         when(projectRepository.findByOwnerId(userId)).thenReturn(List.of(project1, project2, project3));
 
-        projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader);
+        projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeaderWithUserRole);
 
         assertThat(project2.getPosition()).isEqualTo(1);
         assertThat(project3.getPosition()).isEqualTo(2);
@@ -154,7 +152,7 @@ public class ProjectServiceTest {
         checkUserIdAccessibility(userId);
         when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader));
+        assertThrows(EntityNotFoundException.class, () -> projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeaderWithUserRole));
     }
 
     @Test
@@ -168,16 +166,16 @@ public class ProjectServiceTest {
         checkUserIdAccessibility(userId);
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(persistedProject));
 
-        assertThrows(ForbiddenException.class, () -> projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader));
+        assertThrows(ForbiddenException.class, () -> projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeaderWithUserRole));
     }
 
     @Test
     void givenProjectIdAndInvalidAuthorizationHeader_whenDeleteProjectById_thenThrowException() {
         final String projectId = generateRandomId();
 
-        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader)).thenReturn(null);
+        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeaderWithUserRole)).thenReturn(null);
 
-        assertThrows(DefaultException.class, () -> projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeader));
+        assertThrows(DefaultException.class, () -> projectService.deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeaderWithUserRole));
     }
 
     //from: project1 -> project2 -> project3
@@ -197,7 +195,7 @@ public class ProjectServiceTest {
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project1));
         when(projectRepository.findByOwnerId(userId)).thenReturn(List.of(project1, project2, project3));
 
-        projectService.updateProjectPosition(projectId, 3, SecurityUtils.mockedAuthorizationHeader);
+        projectService.updateProjectPosition(projectId, 3, SecurityUtils.mockedAuthorizationHeaderWithUserRole);
 
         assertThat(project2.getPosition()).isEqualTo(1);
         assertThat(project3.getPosition()).isEqualTo(2);
@@ -222,7 +220,7 @@ public class ProjectServiceTest {
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project1));
         when(projectRepository.findByOwnerId(userId)).thenReturn(List.of(project1, project2, project3));
 
-        projectService.updateProjectPosition(projectId, 1, SecurityUtils.mockedAuthorizationHeader);
+        projectService.updateProjectPosition(projectId, 1, SecurityUtils.mockedAuthorizationHeaderWithUserRole);
 
         assertThat(project1.getPosition()).isEqualTo(1);
         assertThat(project2.getPosition()).isEqualTo(2);
@@ -249,7 +247,7 @@ public class ProjectServiceTest {
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project1));
         when(projectRepository.findByOwnerId(userId)).thenReturn(List.of(project1, project2, project3, project4));
 
-        projectService.updateProjectPosition(projectId, 2, SecurityUtils.mockedAuthorizationHeader);
+        projectService.updateProjectPosition(projectId, 2, SecurityUtils.mockedAuthorizationHeaderWithUserRole);
 
         assertThat(project1.getPosition()).isEqualTo(2);
         assertThat(project2.getPosition()).isEqualTo(1);
@@ -259,9 +257,9 @@ public class ProjectServiceTest {
 
     @Test
     void givenProjectIdAndNewPositionAndInvalidAuthorizationHeader_whenUpdateProject_thenThrowException() {
-        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader)).thenReturn(null);
+        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeaderWithUserRole)).thenReturn(null);
 
-        assertThrows(DefaultException.class, () -> projectService.updateProjectPosition(generateRandomId(), 1, SecurityUtils.mockedAuthorizationHeader));
+        assertThrows(DefaultException.class, () -> projectService.updateProjectPosition(generateRandomId(), 1, SecurityUtils.mockedAuthorizationHeaderWithUserRole));
     }
 
     @Test
@@ -276,7 +274,7 @@ public class ProjectServiceTest {
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
         memberIds.forEach(memberId -> when(userFeign.checkUserExists(memberId)).thenReturn(true));
 
-        projectService.addMembersToProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeader);
+        projectService.addMembersToProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeaderWithUserRole);
 
         assertThat(project).isNotNull();
         assertThat(project.getMemberIds()).containsAll(memberIds);
@@ -293,14 +291,14 @@ public class ProjectServiceTest {
         checkUserIdAccessibility(userId);
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
-        assertThrows(ForbiddenException.class, () -> projectService.addMembersToProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeader));
+        assertThrows(ForbiddenException.class, () -> projectService.addMembersToProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeaderWithUserRole));
     }
 
     @Test
     void givenInvalidAuthorizationHeader_whenAddMembersToProject_thenThrowException() {
-        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader)).thenReturn(null);
+        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeaderWithUserRole)).thenReturn(null);
 
-        assertThrows(DefaultException.class, () -> projectService.addMembersToProject(generateRandomId(), new ArrayList<>(), SecurityUtils.mockedAuthorizationHeader));
+        assertThrows(DefaultException.class, () -> projectService.addMembersToProject(generateRandomId(), new ArrayList<>(), SecurityUtils.mockedAuthorizationHeaderWithUserRole));
     }
 
     @Test
@@ -312,7 +310,7 @@ public class ProjectServiceTest {
         getUserIdTest(userId);
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
-        assertThrows(ForbiddenException.class, () -> projectService.addMembersToProject(projectId, new ArrayList<>(), SecurityUtils.mockedAuthorizationHeader));
+        assertThrows(ForbiddenException.class, () -> projectService.addMembersToProject(projectId, new ArrayList<>(), SecurityUtils.mockedAuthorizationHeaderWithUserRole));
     }
 
     @Test
@@ -325,7 +323,7 @@ public class ProjectServiceTest {
         getUserIdTest(userId);
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
-        projectService.deleteMembersFromProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeader);
+        projectService.deleteMembersFromProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeaderWithUserRole);
         assertThat(project.getMemberIds()).isEmpty();
     }
 
@@ -338,7 +336,7 @@ public class ProjectServiceTest {
         when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> {
-            projectService.deleteMembersFromProject(projectId, List.of(), SecurityUtils.mockedAuthorizationHeader);
+            projectService.deleteMembersFromProject(projectId, List.of(), SecurityUtils.mockedAuthorizationHeaderWithUserRole);
         });
     }
 
@@ -352,7 +350,7 @@ public class ProjectServiceTest {
         getUserIdTest(userId);
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
-        projectService.changeProjectStatus(projectId, newStatus, SecurityUtils.mockedAuthorizationHeader);
+        projectService.changeProjectStatus(projectId, newStatus, SecurityUtils.mockedAuthorizationHeaderWithUserRole);
 
         assertThat(project).isNotNull();
         assertThat(project.getStatus()).isEqualTo(newStatus);
@@ -379,9 +377,9 @@ public class ProjectServiceTest {
     }
 
     private void getUserIdTest(String userId) {
-        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeader))
-                .thenReturn(SecurityUtils.mockedToken);
-        when(userFeign.getUserIdByToken(SecurityUtils.mockedToken)).thenReturn(userId);
+        when(jwtUtils.extractTokenFromAuthorizationHeader(SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+                .thenReturn(SecurityUtils.mockedTokenWithUserRole);
+        when(userFeign.getUserIdByToken(SecurityUtils.mockedTokenWithUserRole)).thenReturn(userId);
     }
 
 }

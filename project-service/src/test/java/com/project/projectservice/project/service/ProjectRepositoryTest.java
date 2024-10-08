@@ -1,8 +1,7 @@
-package com.project.projectservice.project;
+package com.project.projectservice.project.service;
 
 import com.project.projectservice.config.MongoDBBaseIntegrationConnection;
 import com.project.projectservice.project.data.Project;
-import com.project.projectservice.project.service.ProjectRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

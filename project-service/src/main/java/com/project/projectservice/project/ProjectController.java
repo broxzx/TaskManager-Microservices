@@ -20,7 +20,8 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @GetMapping("/getUserProjects")
-    public ResponseEntity<List<ProjectQueryResponseDto>> getUserProjects(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+    public ResponseEntity<List<ProjectQueryResponseDto>> getUserProjects(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return ResponseEntity.ok(projectService.getUserProjects(authorizationHeader));
     }
 

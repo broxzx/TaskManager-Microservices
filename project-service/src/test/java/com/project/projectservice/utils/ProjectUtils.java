@@ -1,10 +1,13 @@
 package com.project.projectservice.utils;
 
 import com.project.projectservice.project.data.Project;
+import com.project.projectservice.project.data.dto.ProjectQueryResponseDto;
 import com.project.projectservice.project.data.dto.ProjectRequestDto;
+import com.project.projectservice.tags.data.dto.TagQueryResponse;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -63,7 +66,29 @@ public class ProjectUtils {
                 .build();
     }
 
-    private static String generateRandomId() {
+    public static ProjectQueryResponseDto buildProjectQueryResponseDto() {
+        return ProjectQueryResponseDto.builder()
+                .id(generateRandomId())
+                .name("test")
+                .description("test description")
+                .ownerId(generateRandomId())
+                .memberIds(Set.of(generateRandomId(), generateRandomId(), generateRandomId()))
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now())
+                .status("Pending")
+                .position(0)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .tags(List.of(
+                        TagQueryResponse.builder()
+                                .id(generateRandomId())
+                                .name("test")
+                                .build())
+                )
+                .build();
+    }
+
+    public static String generateRandomId() {
         return UUID.randomUUID().toString();
     }
 
