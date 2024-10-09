@@ -75,10 +75,11 @@ public class ProjectController {
 
     @PostMapping("/{projectId}/access")
     public ResponseEntity<ProjectAccessDto> getProjectAccess(@PathVariable("projectId") String projectId,
-                                                             @RequestHeader String authorizationHeader) {
+                                                             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return ResponseEntity.ok(projectService.getProjectAccess(projectId, authorizationHeader));
     }
 
+    //todo: add another scope for obtaining list of access users between services
     @PostMapping("/feign/{projectId}/access")
     public ProjectAccessDto getProjectAccessFeign(@PathVariable("projectId") String projectId,
                                                   @RequestBody String userId) {

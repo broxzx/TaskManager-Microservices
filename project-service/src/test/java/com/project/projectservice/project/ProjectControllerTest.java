@@ -5,6 +5,7 @@ import com.project.projectservice.config.SecurityBeans;
 import com.project.projectservice.config.SecurityTestBeans;
 import com.project.projectservice.exceptions.EntityNotFoundException;
 import com.project.projectservice.project.data.Project;
+import com.project.projectservice.project.data.dto.ProjectAccessDto;
 import com.project.projectservice.project.data.dto.ProjectQueryResponseDto;
 import com.project.projectservice.project.data.dto.ProjectRequestDto;
 import com.project.projectservice.project.service.ProjectService;
@@ -26,10 +27,10 @@ import org.springframework.util.MultiValueMap;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.project.projectservice.utils.ProjectUtils.generateRandomId;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -368,7 +369,87 @@ public class ProjectControllerTest {
                         jsonPath("$.memberIds", hasSize(ids.size())),
                         jsonPath("$.memberIds", containsInAnyOrder(ids.toArray()))
                 );
+    }
 
+    @Test
+    void givenProjectIdAndMemberIds_whenDeleteMembersFromProject_thenSuccess() throws Exception {
+        final String projectId = generateRandomId();
+        final String url = "/projects/%s/deleteMembers".formatted(projectId);
+        Project project = ProjectUtils.buildPersistedProject(projectId, generateRandomId());
+        List<String> memberIds = List.of(generateRandomId(), generateRandomId());
+        final String jsonBody = "[\"%s\", \"%s\"]".formatted(memberIds.get(0), memberIds.get(1));
+
+        project.setMemberIds(new HashSet<>(memberIds));
+
+        when(projectService.deleteMembersFromProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+                .thenReturn(project);
+
+        project.getMemberIds().removeAll(memberIds);
+
+        this.mockMvc.perform(delete(url)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .with(SecurityMockMvcRequestPostProcessors
+                                .jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                        ))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.memberIds").isArray(),
+                        jsonPath("$.memberIds", not(hasItems(memberIds.toArray())))
+                );
+    }
+
+    @Test
+    void givenProjectIdAndStatus_whenChangeProjectStatus_thenSuccess() throws Exception {
+        final String projectId = generateRandomId();
+        final String url = "/projects/%s/statuses".formatted(projectId);
+        Project project = ProjectUtils.buildPersistedProject(projectId, generateRandomId());
+
+        when(projectService.changeProjectStatus(projectId, "new status", SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+                .thenReturn(project);
+
+        project.setStatus("new status");
+
+        this.mockMvc.perform(post(url)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("status", "new status")
+                        .with(SecurityMockMvcRequestPostProcessors
+                                .jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                        ))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.status").value("new status")
+                );
+    }
+
+    @Test
+    void givenProjectId_whenGetProjectAccess_thenSuccess() throws Exception {
+        final String projectId = generateRandomId();
+        final String url = "/projects/%s/access".formatted(projectId);
+        List<String> randomIds = List.of(generateRandomId(), generateRandomId(), generateRandomId());
+
+        when(projectService.getProjectAccess(projectId, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+                .thenReturn(new ProjectAccessDto(randomIds.get(0), Set.of(randomIds.get(1), randomIds.get(2))));
+
+        this.mockMvc.perform(post(url)
+                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .with(SecurityMockMvcRequestPostProcessors
+                                .jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                        ))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.ownerId").value(randomIds.get(0)),
+                        jsonPath("$.memberIds").isArray(),
+                        jsonPath("$.memberIds", containsInAnyOrder(randomIds.get(1), randomIds.get(2)))
+                );
     }
 
 }
