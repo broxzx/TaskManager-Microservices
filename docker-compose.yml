@@ -12,6 +12,10 @@ services:
     <<: *default-backend-configuration
     container_name: mongo-user-service
     image: mongo:7-jammy
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     ports:
       - "27016:27017"
     volumes:
@@ -23,6 +27,10 @@ services:
     <<: *default-backend-configuration
     container_name: mongo-projects-service
     image: mongo:7-jammy
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     ports:
       - "27015:27017"
     environment:
@@ -34,6 +42,10 @@ services:
     <<: *default-backend-configuration
     container_name: mongodb-task-service
     image: mongo:7-jammy
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     environment:
       MONGO_INITDB_DATABASE: tasks-db
     volumes:
@@ -53,6 +65,10 @@ services:
       timeout: 7s
       retries: 5
     command: [ "start-dev", "--import-realm" ]
+    deploy:
+      resources:
+        limits:
+          memory: 2G
     ports:
       - "8280:8080"
     environment:
@@ -75,6 +91,10 @@ services:
     container_name: zookeeper
     ports:
       - "2181:2181"
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -87,6 +107,10 @@ services:
       - "9092:9092"
     depends_on:
       - zookeeper
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
@@ -102,6 +126,10 @@ services:
     <<: *default-backend-configuration
     container_name: mail
     image: maildev/maildev
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     ports:
       - "1080:1080"
       - "1025:1025"
@@ -112,6 +140,10 @@ services:
     <<: *default-backend-configuration
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
     container_name: elasticsearch
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -124,6 +156,10 @@ services:
     <<: *default-backend-configuration
     image: docker.elastic.co/logstash/logstash:7.17.0
     container_name: logstash
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     ports:
       - "5044:5044"
     volumes:
@@ -136,6 +172,10 @@ services:
     <<: *default-backend-configuration
     image: docker.elastic.co/kibana/kibana:7.17.0
     container_name: kibana
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     ports:
@@ -147,15 +187,23 @@ services:
     <<: *default-backend-configuration
     container_name: victoria-metrics
     image: victoriametrics/victoria-metrics:v1.93.12
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     ports:
       - "8428:8428"
-    command: ["-promscrape.config=promscrape.yml"]
+    command: [ "-promscrape.config=promscrape.yml" ]
     volumes:
       - ./config/victoria-metrics/promscrape.yml:/promscrape.yml
 
   grafana-loki:
     <<: *default-backend-configuration
     container_name: grafana-loki
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     image: grafana/loki:2.9.4
     ports:
       - "3100:3100"
@@ -164,7 +212,11 @@ services:
     <<: *default-backend-configuration
     container_name: grafana-tempo
     image: grafana/tempo:2.3.1
-    command: ["-config.file=/etc/tempo.yml"]
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    command: [ "-config.file=/etc/tempo.yml" ]
     volumes:
       - ./config/tempo/tempo.yml:/etc/tempo.yml
     ports:
@@ -179,6 +231,10 @@ services:
     <<: *default-backend-configuration
     container_name: grafana
     image: grafana/grafana:10.2.4
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     ports:
       - "3000:3000"
     volumes:
@@ -190,6 +246,10 @@ services:
     <<: *default-backend-configuration
     container_name: config-cloud-service
     image: config-cloud-service
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     ports:
       - "8888:8888"
     environment:
@@ -199,6 +259,10 @@ services:
     <<: *default-backend-configuration
     container_name: gateway-service
     image: gateway-service
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     ports:
       - "8081:8081"
     environment:
@@ -208,6 +272,10 @@ services:
     <<: *default-backend-configuration
     container_name: kafka-message-service
     image: kafka-message-service
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     environment:
       SPRING_PROFILES_ACTIVE: dev
 
@@ -215,6 +283,10 @@ services:
     <<: *default-backend-configuration
     container_name: project-service
     image: project-service
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     environment:
       SPRING_PROFILES_ACTIVE: dev
 
@@ -222,6 +294,10 @@ services:
     <<: *default-backend-configuration
     container_name: user-service
     image: user-service
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     environment:
       SPRING_PROFILES_ACTIVE: dev
 

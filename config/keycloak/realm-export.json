@@ -2636,7 +2636,7 @@
             "DEFAULT"
           ],
           "dbUrl": [
-            "mongodb://mongo-user-service:27017"
+            "mongodb://mongodb-user:27017"
           ],
           "enabled": [
             "true"
