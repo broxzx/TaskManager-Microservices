@@ -12,6 +12,9 @@ import com.project.projectservice.project.service.ProjectService;
 import com.project.projectservice.utils.ProjectUtils;
 import com.project.projectservice.utils.SecurityUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -28,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static com.project.projectservice.utils.ProjectUtils.generateRandomId;
 import static org.hamcrest.Matchers.*;
@@ -48,8 +52,9 @@ public class ProjectControllerTest {
     @Autowired
     MockMvc mockMvc;
 
-    @Test
-    void givenAuthorizationHeader_whenGetUserProjects_thenSuccess() throws Exception {
+    @ParameterizedTest
+    @MethodSource(value = {"testMethodWithDifferentUsers"})
+    void givenAuthorizationHeader_whenGetUserProjects_thenSuccess(String authorizationHeader, String grantedAuthority) throws Exception {
         final String url = "/projects/getUserProjects";
         List<ProjectQueryResponseDto> projects = List.of(
                 ProjectUtils.buildProjectQueryResponseDto(),
@@ -59,9 +64,9 @@ public class ProjectControllerTest {
         when(projectService.getUserProjects(any(String.class))).thenReturn(projects);
 
         mockMvc.perform(get(url)
-                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+                                .authorities(new SimpleGrantedAuthority(grantedAuthority))))
                 .andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -86,23 +91,26 @@ public class ProjectControllerTest {
 
     }
 
-    @Test
-    void givenAuthorizationHeader_whenUserCreateProject_thenSuccess() throws Exception {
+
+    @ParameterizedTest
+    @MethodSource(value = {"testMethodWithDifferentUsers"})
+    void givenAuthorizationHeader_whenUserCreateProject_thenSuccess(String authorizationHeader,
+                                                                    String grantedAuthority) throws Exception {
         final String url = "/projects/createProject";
         ProjectRequestDto projectRequestDto = ProjectUtils.buildTestProjectRequestDto();
         Project project = ProjectUtils.buildProjectBasedOnProjectRequestDto(projectRequestDto);
         String projectRequestDtoJson = ProjectUtils.buildProjectRequestJson(project);
 
-        when(projectService.createProject(projectRequestDto, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+        when(projectService.createProject(projectRequestDto, authorizationHeader))
                 .thenReturn(project);
 
         this.mockMvc
                 .perform(post(url)
-                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(projectRequestDtoJson)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+                                .authorities(new SimpleGrantedAuthority(grantedAuthority))))
                 .andDo(print())
                 .andExpectAll(
                         status().isOk(),
@@ -113,18 +121,20 @@ public class ProjectControllerTest {
                 );
     }
 
-    @Test
-    void givenAuthorizationHeader_whenUserCreateProjectWithInvalidFields_thenThrowException() throws Exception {
+    @ParameterizedTest
+    @MethodSource(value = {"testMethodWithDifferentUsers"})
+    void givenAuthorizationHeader_whenUserCreateProjectWithInvalidFields_thenThrowException(String authorizationHeader,
+                                                                                            String grantedAuthority) throws Exception {
         final String url = "/projects/createProject";
 
         this.mockMvc
                 .perform(post(url)
-                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .content(ProjectUtils.buildProjectRequestJsonWithInvalidFields())
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors
                                 .jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                                .authorities(new SimpleGrantedAuthority(grantedAuthority))
                         )
                 )
                 .andDo(print())
@@ -150,15 +160,17 @@ public class ProjectControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
-    @Test
-    void givenProjectIdAndAuthorizationHeaderAndProjectRequestDto_whenUpdateProject_thenSuccess() throws Exception {
+    @ParameterizedTest
+    @MethodSource(value = {"testMethodWithDifferentUsers"})
+    void givenProjectIdAndAuthorizationHeaderAndProjectRequestDto_whenUpdateProject_thenSuccess(String authorizationHeader,
+                                                                                                String grantedAuthority) throws Exception {
         String randomId = generateRandomId();
         final String url = "/projects/updateProject/%s".formatted(randomId);
         ProjectRequestDto projectRequestDto = ProjectUtils.buildTestProjectRequestDto();
         Project project = ProjectUtils.buildProjectBasedOnProjectRequestDto(projectRequestDto);
         String projectRequestDtoJson = ProjectUtils.buildProjectRequestJson(project);
 
-        when(projectService.updateProject(randomId, projectRequestDto, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+        when(projectService.updateProject(randomId, projectRequestDto, authorizationHeader))
                 .thenReturn(project);
 
         project.setName("new test name");
@@ -170,10 +182,10 @@ public class ProjectControllerTest {
         this.mockMvc.perform(put(url)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(projectRequestDtoJson)
-                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .with(SecurityMockMvcRequestPostProcessors
                                 .jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                                .authorities(new SimpleGrantedAuthority(grantedAuthority))
                         )
                 )
                 .andDo(print())
@@ -186,24 +198,26 @@ public class ProjectControllerTest {
                 );
     }
 
-    @Test
-    void givenInvalidProjectIdAndAuthorizationHeaderAndProjectRequestDto_whenUpdateProject_thenFailure() throws Exception {
+    @ParameterizedTest
+    @MethodSource(value = {"testMethodWithDifferentUsers"})
+    void givenInvalidProjectIdAndAuthorizationHeaderAndProjectRequestDto_whenUpdateProject_thenFailure(String authorizationHeader,
+                                                                                                       String grantedAuthority) throws Exception {
         final String randomId = generateRandomId();
         final String url = "/projects/updateProject/%s".formatted(randomId);
         ProjectRequestDto projectRequestDto = ProjectUtils.buildTestProjectRequestDto();
         Project project = ProjectUtils.buildProjectBasedOnProjectRequestDto(projectRequestDto);
         String projectRequestDtoJson = ProjectUtils.buildProjectRequestJson(project);
 
-        when(projectService.updateProject(randomId, projectRequestDto, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+        when(projectService.updateProject(randomId, projectRequestDto, authorizationHeader))
                 .thenReturn(null);
 
         this.mockMvc.perform(put(url)
-                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(projectRequestDtoJson)
                         .with(SecurityMockMvcRequestPostProcessors
                                 .jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER")))
+                                .authorities(new SimpleGrantedAuthority(grantedAuthority)))
                 )
                 .andDo(print())
                 .andExpectAll(
@@ -236,19 +250,21 @@ public class ProjectControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
-    @Test
-    void givenProjectIdAndAuthorizationHeader_whenDeleteProject_thenSuccess() throws Exception {
+    @ParameterizedTest
+    @MethodSource(value = {"testMethodWithDifferentUsers"})
+    void givenProjectIdAndAuthorizationHeader_whenDeleteProject_thenSuccess(String authorizationHeader,
+                                                                            String grantedAuthority) throws Exception {
         final String projectId = generateRandomId();
         final String url = "/projects/deleteProject/%s".formatted(projectId);
 
         doNothing().when(projectService)
-                .deleteProjectById(projectId, SecurityUtils.mockedAuthorizationHeaderWithUserRole);
+                .deleteProjectById(projectId, authorizationHeader);
 
         this.mockMvc.perform(delete(url)
-                        .header(HttpHeader.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .header(HttpHeader.AUTHORIZATION, authorizationHeader)
                         .with(SecurityMockMvcRequestPostProcessors
                                 .jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                                .authorities(new SimpleGrantedAuthority(grantedAuthority))
                         ))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -266,15 +282,17 @@ public class ProjectControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
-    @Test
-    void givenProjectIdAndPosition_whenChangeProjectPosition_thenSuccess() throws Exception {
+    @ParameterizedTest
+    @MethodSource(value = {"testMethodWithDifferentUsers"})
+    void givenProjectIdAndPosition_whenChangeProjectPosition_thenSuccess(String authorizationHeader,
+                                                                         String grantedAuthority) throws Exception {
         final String projectId = generateRandomId();
         final String url = "/projects/changeProjectPosition";
         MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
         multiValueMap.add("projectId", projectId);
         multiValueMap.add("position", "0");
 
-        when(projectService.updateProjectPosition(projectId, 0, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+        when(projectService.updateProjectPosition(projectId, 0, authorizationHeader))
                 .thenReturn(List.of(
                         ProjectUtils.buildPersistedProject(projectId, generateRandomId()),
                         ProjectUtils.buildPersistedProject(generateRandomId(), generateRandomId()),
@@ -282,11 +300,11 @@ public class ProjectControllerTest {
                 ));
 
         this.mockMvc.perform(post(url)
-                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .params(multiValueMap)
                         .with(SecurityMockMvcRequestPostProcessors
                                 .jwt()
-                                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                                .authorities(List.of(new SimpleGrantedAuthority(grantedAuthority)))
                         ))
                 .andDo(print())
                 .andExpectAll(
@@ -301,23 +319,25 @@ public class ProjectControllerTest {
                 );
     }
 
-    @Test
-    void givenInvalidProjectIdAndPosition_whenChangeProjectPosition_thenFailure() throws Exception {
+    @ParameterizedTest
+    @MethodSource(value = {"testMethodWithDifferentUsers"})
+    void givenInvalidProjectIdAndPosition_whenChangeProjectPosition_thenFailure(String authorizationHeader,
+                                                                                String grantedAuthority) throws Exception {
         final String projectId = generateRandomId();
         final String url = "/projects/changeProjectPosition";
         MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
         multiValueMap.add("projectId", projectId);
         multiValueMap.add("position", "0");
 
-        when(projectService.updateProjectPosition(projectId, 0, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+        when(projectService.updateProjectPosition(projectId, 0, authorizationHeader))
                 .thenThrow(EntityNotFoundException.class);
 
         this.mockMvc.perform(post(url)
-                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .params(multiValueMap)
                         .with(SecurityMockMvcRequestPostProcessors
                                 .jwt()
-                                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                                .authorities(List.of(new SimpleGrantedAuthority(grantedAuthority)))
                         ))
                 .andDo(print())
                 .andExpectAll(status().is4xxClientError());
@@ -339,8 +359,10 @@ public class ProjectControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
-    @Test
-    void givenProjectIdAndMemberIds_whenAddMembersToProject_thenSuccess() throws Exception {
+    @ParameterizedTest
+    @MethodSource(value = {"testMethodWithDifferentUsers"})
+    void givenProjectIdAndMemberIds_whenAddMembersToProject_thenSuccess(String authorizationHeader,
+                                                                        String grantedAuthority) throws Exception {
         List<String> ids = List.of(generateRandomId(), generateRandomId(), generateRandomId());
         final String projectId = generateRandomId();
         Project project = ProjectUtils.buildPersistedProject(projectId, generateRandomId());
@@ -348,18 +370,18 @@ public class ProjectControllerTest {
         final String url = "/projects/%s/addMembers".formatted(projectId);
 
 
-        when(projectService.addMembersToProject(projectId, ids, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+        when(projectService.addMembersToProject(projectId, ids, authorizationHeader))
                 .thenReturn(project);
 
         project.setMemberIds(new HashSet<>(ids));
 
         this.mockMvc.perform(post(url)
-                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
                         .with(SecurityMockMvcRequestPostProcessors
                                 .jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                                .authorities(new SimpleGrantedAuthority(grantedAuthority))
                         ))
                 .andDo(print())
                 .andExpectAll(
@@ -371,8 +393,10 @@ public class ProjectControllerTest {
                 );
     }
 
-    @Test
-    void givenProjectIdAndMemberIds_whenDeleteMembersFromProject_thenSuccess() throws Exception {
+    @ParameterizedTest
+    @MethodSource(value = {"testMethodWithDifferentUsers"})
+    void givenProjectIdAndMemberIds_whenDeleteMembersFromProject_thenSuccess(String authorizationHeader,
+                                                                             String grantedAuthority) throws Exception {
         final String projectId = generateRandomId();
         final String url = "/projects/%s/deleteMembers".formatted(projectId);
         Project project = ProjectUtils.buildPersistedProject(projectId, generateRandomId());
@@ -381,18 +405,18 @@ public class ProjectControllerTest {
 
         project.setMemberIds(new HashSet<>(memberIds));
 
-        when(projectService.deleteMembersFromProject(projectId, memberIds, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+        when(projectService.deleteMembersFromProject(projectId, memberIds, authorizationHeader))
                 .thenReturn(project);
 
         project.getMemberIds().removeAll(memberIds);
 
         this.mockMvc.perform(delete(url)
-                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
                         .with(SecurityMockMvcRequestPostProcessors
                                 .jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                                .authorities(new SimpleGrantedAuthority(grantedAuthority))
                         ))
                 .andDo(print())
                 .andExpectAll(
@@ -402,24 +426,26 @@ public class ProjectControllerTest {
                 );
     }
 
-    @Test
-    void givenProjectIdAndStatus_whenChangeProjectStatus_thenSuccess() throws Exception {
+    @ParameterizedTest
+    @MethodSource(value = {"testMethodWithDifferentUsers"})
+    void givenProjectIdAndStatus_whenChangeProjectStatus_thenSuccess(String authorizationHeader,
+                                                                     String grantedAuthority) throws Exception {
         final String projectId = generateRandomId();
         final String url = "/projects/%s/statuses".formatted(projectId);
         Project project = ProjectUtils.buildPersistedProject(projectId, generateRandomId());
 
-        when(projectService.changeProjectStatus(projectId, "new status", SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+        when(projectService.changeProjectStatus(projectId, "new status", authorizationHeader))
                 .thenReturn(project);
 
         project.setStatus("new status");
 
         this.mockMvc.perform(post(url)
-                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("status", "new status")
                         .with(SecurityMockMvcRequestPostProcessors
                                 .jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                                .authorities(new SimpleGrantedAuthority(grantedAuthority))
                         ))
                 .andDo(print())
                 .andExpectAll(
@@ -428,20 +454,22 @@ public class ProjectControllerTest {
                 );
     }
 
-    @Test
-    void givenProjectId_whenGetProjectAccess_thenSuccess() throws Exception {
+    @ParameterizedTest
+    @MethodSource(value = {"testMethodWithDifferentUsers"})
+    void givenProjectId_whenGetProjectAccess_thenSuccess(String authorizationHeader,
+                                                         String grantedAuthority) throws Exception {
         final String projectId = generateRandomId();
         final String url = "/projects/%s/access".formatted(projectId);
         List<String> randomIds = List.of(generateRandomId(), generateRandomId(), generateRandomId());
 
-        when(projectService.getProjectAccess(projectId, SecurityUtils.mockedAuthorizationHeaderWithUserRole))
+        when(projectService.getProjectAccess(projectId, authorizationHeader))
                 .thenReturn(new ProjectAccessDto(randomIds.get(0), Set.of(randomIds.get(1), randomIds.get(2))));
 
         this.mockMvc.perform(post(url)
-                        .header(HttpHeaders.AUTHORIZATION, SecurityUtils.mockedAuthorizationHeaderWithUserRole)
+                        .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                         .with(SecurityMockMvcRequestPostProcessors
                                 .jwt()
-                                .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                                .authorities(new SimpleGrantedAuthority(grantedAuthority))
                         ))
                 .andDo(print())
                 .andExpectAll(
@@ -450,6 +478,12 @@ public class ProjectControllerTest {
                         jsonPath("$.memberIds").isArray(),
                         jsonPath("$.memberIds", containsInAnyOrder(randomIds.get(1), randomIds.get(2)))
                 );
+    }
+
+    private static Stream<Arguments> testMethodWithDifferentUsers() {
+        return Stream.of(
+                Arguments.of("ROLE_USER", SecurityUtils.mockedAuthorizationHeaderWithUserRole),
+                Arguments.of("ROLE_ADMIN", SecurityUtils.mockedAuthorizationHeaderWithAdminRole));
     }
 
 }
