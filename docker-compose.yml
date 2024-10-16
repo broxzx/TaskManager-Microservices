@@ -230,7 +230,7 @@ services:
   grafana:
     <<: *default-backend-configuration
     container_name: grafana
-    image: grafana/grafana:10.2.4
+    image: grafana/grafana:11.2.2
     deploy:
       resources:
         limits:
@@ -238,7 +238,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./config/data/grafana:/var/lib/grafana
+      - grafana-data:/var/lib/grafana
 
   # --------------------------------- dockerized applications ---------------------------------------- #
 
@@ -315,5 +315,7 @@ volumes:
   user-db-service:
   projects-db-service:
   tasks-db-service:
+  grafana-data:
+    driver: local
   esdata:
     driver: local

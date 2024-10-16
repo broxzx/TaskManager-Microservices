@@ -70,3 +70,17 @@ scrape_configs:
       token_url: http://keycloak-task-manager:8080/realms/task-manager-microservices/protocol/openid-connect/token
       endpoint_params:
         grant_type: client_credentials
+  - job_name: user-service
+    static_configs:
+      - targets: [ "task-service:9100" ]
+        labels:
+          application: user-service
+    metrics_path: /actuator/prometheus
+    oauth2:
+      client_id: victoria-metrics
+      client_secret: hUSY5iMFjZxRTW4UJqX6DukheNMukZnA
+      scopes:
+        - metrics
+      token_url: http://keycloak:8080/realms/task-manager-microservices/protocol/openid-connect/token
+      endpoint_params:
+        grant_type: client_credentials
